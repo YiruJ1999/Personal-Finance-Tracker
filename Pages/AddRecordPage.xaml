@@ -1,0 +1,10 @@
+```xml
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="PersonalFinanceApp.Pages.AddRecordPage"
+             Title="新增记录">
+    <VerticalStackLayout Padding="20">
+        <!-- 输入类型、金额、类别、备注、时间 -->
+    </VerticalStackLayout>
+</ContentPage>
+```
