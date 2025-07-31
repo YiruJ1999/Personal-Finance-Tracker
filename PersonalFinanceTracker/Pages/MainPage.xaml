@@ -2,62 +2,68 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:PersonalFinanceTracker.PageModels"
-             xmlns:pullToRefresh="clr-namespace:Syncfusion.Maui.PullToRefresh;assembly=Syncfusion.Maui.PullToRefresh"
+             xmlns:models="clr-namespace:PersonalFinanceTracker.Models"
+             xmlns:chart="clr-namespace:Syncfusion.Maui.Charts;assembly=Syncfusion.Maui.Charts"
              x:Class="PersonalFinanceTracker.Pages.MainPage"
              x:DataType="local:MainPageModel"
              BackgroundColor="White">
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+    <ScrollView>
+        <VerticalStackLayout Spacing="20" Padding="20">
 
-        <!-- Monthly Summary  -->
-        <CollectionView Grid.Row="0" ItemsSource="{Binding MonthlySummaryData}" Margin="10">
-            <CollectionView.ItemsLayout>
-                <LinearItemsLayout Orientation="Horizontal" />
-            </CollectionView.ItemsLayout>
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <VerticalStackLayout Margin="10">
-                        <Label Text="{Binding Label}" FontSize="16" FontAttributes="Bold" />
-                        <Label Text="{Binding Amount, StringFormat='{}{0:C}'}" FontSize="14" />
-                    </VerticalStackLayout>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+            <!-- Monthly Summary -->
+            <Label Text="本月收支平衡情况" FontSize="20" FontAttributes="Bold" HorizontalOptions="Center" />
 
-        <!-- Today's records put here -->
-        <RefreshView Grid.Row="1"
-                     IsRefreshing="{Binding IsRefreshing}"
-                     Command="{Binding RefreshCommand}">
-            <CollectionView ItemsSource="{Binding TodayRecords}" Margin="10">
+            <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto" RowSpacing="5">
+                
+                <Label Text="收入" FontAttributes="Bold" Grid.Column="0" Grid.Row="0" HorizontalOptions="Center" />
+                <Label Text="支出" FontAttributes="Bold" Grid.Column="1" Grid.Row="0" HorizontalOptions="Center" />
+                <Label Text="结余" FontAttributes="Bold" Grid.Column="2" Grid.Row="0" HorizontalOptions="Center" />
+
+                
+                <Label Text="{Binding MonthlySummaryData[0].Amount, StringFormat='{}{0:C}'}" Grid.Row="1" Grid.Column="0" HorizontalOptions="Center" />
+                <Label Text="{Binding MonthlySummaryData[1].Amount, StringFormat='{}{0:C}'}" Grid.Row="1" Grid.Column="1" HorizontalOptions="Center" />
+                <Label Text="{Binding MonthlySummaryData[2].Amount, StringFormat='{}{0:C}'}" Grid.Row="1" Grid.Column="2" HorizontalOptions="Center" />
+            </Grid>
+
+
+            <!-- Monthly Category Chart -->
+            <chart:SfCartesianChart HeightRequest="300">
+                <chart:SfCartesianChart.XAxes>
+                    <chart:CategoryAxis />
+                </chart:SfCartesianChart.XAxes>
+                <chart:SfCartesianChart.YAxes>
+                    <chart:NumericalAxis />
+                </chart:SfCartesianChart.YAxes>
+
+                <chart:SfCartesianChart.Series>
+                    <chart:ColumnSeries ItemsSource="{Binding MonthlyCategoryChartData}"
+                                        XBindingPath="Category"
+                                        YBindingPath="Amount"
+                                        ShowDataLabels="True" />
+                </chart:SfCartesianChart.Series>
+            </chart:SfCartesianChart>
+
+            <!-- Today's list -->
+            <Label Text="今日收支" FontSize="20" FontAttributes="Bold" HorizontalOptions="Center" />
+
+            <CollectionView ItemsSource="{Binding TodayRecords}">
                 <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Frame BorderColor="LightGray" Margin="5" Padding="10">
+                    <DataTemplate x:DataType="models:Record">
+                        <Border BackgroundColor="#F5F5F5" Stroke="LightGray" StrokeThickness="1" Padding="10" Margin="5">
                             <VerticalStackLayout>
                                 <Label Text="{Binding Category}" FontSize="16" />
                                 <Label Text="{Binding Amount, StringFormat='{}{0:C}'}" FontSize="14" />
                                 <Label Text="{Binding Note}" FontSize="12" TextColor="Gray" />
                             </VerticalStackLayout>
-                        </Frame>
+                        </Border>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
+                <CollectionView.EmptyView>
+                    <Label Text="今日暂无记录" HorizontalOptions="Center" VerticalOptions="Center" TextColor="Gray" />
+                </CollectionView.EmptyView>
             </CollectionView>
-        </RefreshView>
 
-        <!-- '+' button at the right-end corner -->
-        <Button Text="＋"
-                WidthRequest="60"
-                HeightRequest="60"
-                CornerRadius="30"
-                FontSize="30"
-                BackgroundColor="#4CAF50"
-                TextColor="White"
-                HorizontalOptions="End"
-                VerticalOptions="End"
-                Margin="20"
-                Command="{Binding AddRecordCommand}" />
-    </Grid>
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

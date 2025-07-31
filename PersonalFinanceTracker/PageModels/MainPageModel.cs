@@ -25,6 +25,9 @@ namespace PersonalFinanceTracker.PageModels
         private List<MonthlySummaryItem> monthlySummaryData;
 
         [ObservableProperty]
+        private List<CategorySummaryItem> monthlyCategoryChartData;
+
+        [ObservableProperty]
         private bool isRefreshing;
 
         [RelayCommand]
@@ -51,7 +54,16 @@ namespace PersonalFinanceTracker.PageModels
         public async Task Appearing()
         {
             await _databaseService.InitAsync();
+
+            if (!Preferences.Default.ContainsKey("is_seeded"))
+            {
+                await _seedDataService.LoadSeedDataAsync();
+                Preferences.Default.Set("is_seeded", true);
+            }
+
             await LoadFinancialData();
+
+
         }
 
         public async Task LoadFinancialData()
@@ -78,8 +90,35 @@ namespace PersonalFinanceTracker.PageModels
                 new("本月支出", expense),
                 new("收支差额", income - expense),
             };
+
+            MonthlyCategoryChartData = monthly
+                .Where(r => r.Type == "支出")
+                .GroupBy(r => r.Category)
+                .Select(g => new CategorySummaryItem
+                {
+                    Category = g.Key,
+                    Amount = g.Sum(r => r.Amount)
+                }).ToList();
+
+            System.Diagnostics.Debug.WriteLine($"Record总数: {allRecords.Count}");
+            System.Diagnostics.Debug.WriteLine($"本月记录: {monthly.Count}");
+            System.Diagnostics.Debug.WriteLine($"今日记录: {TodayRecords?.Count}");
+            System.Diagnostics.Debug.WriteLine("=== 所有记录时间（含毫秒）===");
+            foreach (var record in allRecords)
+            {
+                System.Diagnostics.Debug.WriteLine(record.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff"));
+            }
+            System.Diagnostics.Debug.WriteLine("系统 DateTime.Today 是：" + DateTime.Today.ToString("yyyy-MM-dd"));
+
+
         }
     }
 
     public record MonthlySummaryItem(string Label, decimal Amount);
+
+    public class CategorySummaryItem
+    {
+        public string Category { get; set; }
+        public decimal Amount { get; set; }
+    }
 }

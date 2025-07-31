@@ -36,5 +36,11 @@ namespace PersonalFinanceTracker.Data
         {
             return _database.Database.DeleteAsync(record);
         }
+
+        public Task DeleteAllAsync()
+        {
+            return _database.Database.DeleteAllAsync<Record>();
+        }
+
     }
 }

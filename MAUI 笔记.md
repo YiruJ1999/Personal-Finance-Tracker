@@ -39,3 +39,10 @@
 - Utilities:
     - 转换器（如`InvertedBoolConverter`）、扩展方法、日志工具。
     - 提供复用性强的工具类，提高代码整洁度。
+
+# 运行流程
+1. SeedDataService.cs   ← 加载测试数据到数据库（只在第一次运行时执行）
+2. SQLite 数据库
+3. RecordRepository.cs  ← 从数据库取出数据
+4. MainPageModel.cs     ← 加工数据 → 提供图表/表格绑定
+5. MainPage.xaml        ← 展示 UI
