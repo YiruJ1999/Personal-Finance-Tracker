@@ -9,11 +9,13 @@ namespace PersonalFinanceTracker.PageModels
     {
         private readonly RecordRepository _recordRepository;
         private readonly DatabaseService _databaseService;
+        private readonly SeedDataService _seedDataService;
 
-        public MainPageModel(RecordRepository recordRepository, DatabaseService databaseService)
+        public MainPageModel(RecordRepository recordRepository, DatabaseService databaseService, SeedDataService seedDataService)
         {
             _recordRepository = recordRepository;
             _databaseService = databaseService;
+            _seedDataService = seedDataService;
         }
 
         [ObservableProperty]

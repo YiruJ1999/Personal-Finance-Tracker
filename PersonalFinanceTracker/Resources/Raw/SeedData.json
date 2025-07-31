@@ -1,61 +1,58 @@
-{
-    "Projects": [
-        {
-            "Name": "Balance",
-            "Description": "Improve work-life balance.",
-            "Icon": "\uea28",
-            "Category": { "Title": "work", "Color": "#3068df" },
-            "Tags": [
-                { "Title": "work", "Color": "#3068df" }
-            ],
-            "Tasks": [
-                { "Title": "Survey Employees", "IsCompleted": false },
-                { "Title": "Analyze Survey Results", "IsCompleted": false },
-                { "Title": "Develop Action Plan", "IsCompleted": false }
-            ]
-        },
-        {
-            "Name": "Personal",
-            "Description": "Learn to speak another language.",
-            "Icon": "\uf8fe",
-            "Category": { "Title": "education", "Color": "#8800FF" },
-            "Tags": [
-                { "Title": "personal", "Color": "#FF4500" }
-            ],
-            "Tasks": [
-                { "Title": "Read a Book", "IsCompleted": false },
-                { "Title": "Attend a Workshop", "IsCompleted": false },
-                { "Title": "Practice a Hobby", "IsCompleted": false }
-            ]
-        },
-        {
-            "Name": "Fitness",
-            "Description": "Promote health and fitness activities",
-            "Icon": "\uf837",
-            "Category": { "Title": "self", "Color": "#FF3300" },
-            "Tags": [
-                { "Title": "health", "Color": "#32CD32" }
-            ],
-            "Tasks": [
-                { "Title": "Morning Yoga", "IsCompleted": false },
-                { "Title": "Evening Run", "IsCompleted": false },
-                { "Title": "Healthy Cooking Class", "IsCompleted": false }
-            ]
-        },
-        {
-            "Name": "Family and Friends",
-            "Description": "Strengthen relationships with family and friends.",
-            "Icon": "\uf5a9",
-            "Category": { "Title": "relationships", "Color": "#FF9900" },
-            "Tags": [
-                { "Title": "family", "Color": "#1E90FF" },
-                { "Title": "friends", "Color": "#FF69B4" }
-            ],
-            "Tasks": [
-                { "Title": "Plan a Family Reunion", "IsCompleted": false },
-                { "Title": "Organize a Friends' Get-together", "IsCompleted": false },
-                { "Title": "Weekly Phone Calls", "IsCompleted": false }
-            ]
-        }
-    ]
-}
+[
+  {
+    "Type": "支出",
+    "Amount": 25.5,
+    "Category": "饮食",
+    "Note": "午餐",
+    "Timestamp": "2025-07-30T12:30:00"
+  },
+  {
+    "Type": "收入",
+    "Amount": 200,
+    "Category": "兼职",
+    "Note": "翻译项目",
+    "Timestamp": "2025-07-29T15:00:00"
+  },
+  {
+    "Type": "支出",
+    "Amount": 100,
+    "Category": "购物",
+    "Note": "新书",
+    "Timestamp": "2025-07-28T10:00:00"
+  },
+  {
+    "Type": "收入",
+    "Amount": 1500,
+    "Category": "工资",
+    "Note": "7月工资",
+    "Timestamp": "2025-07-31T09:00:00"
+  },
+  {
+    "Type": "支出",
+    "Amount": 300,
+    "Category": "娱乐",
+    "Note": "电影票",
+    "Timestamp": "2025-07-30T20:00:00"
+  },
+  {
+    "Type": "支出",
+    "Amount": 50,
+    "Category": "交通",
+    "Note": "公交卡充值",
+    "Timestamp": "2025-07-29T08:00:00"
+  },
+  {
+    "Type": "收入",
+    "Amount": 500,
+    "Category": "投资",
+    "Note": "股票分红",
+    "Timestamp": "2025-07-30T14:00:00"
+  },
+  {
+    "Type": "支出",
+    "Amount": 80,
+    "Category": "饮食",
+    "Note": "晚餐",
+    "Timestamp": "2025-07-30T19:00:00"
+  }
+]

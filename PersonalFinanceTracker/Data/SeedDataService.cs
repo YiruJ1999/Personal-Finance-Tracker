@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using PersonalFinanceTracker.Models;
+using PersonalFinanceTracker.Data;
 
 namespace PersonalFinanceTracker.Data
 {
@@ -10,15 +11,24 @@ namespace PersonalFinanceTracker.Data
         private readonly TaskRepository _taskRepository;
         private readonly TagRepository _tagRepository;
         private readonly CategoryRepository _categoryRepository;
-        private readonly string _seedDataFilePath = "SeedData.json";
+        private readonly RecordRepository _recordRepository;
         private readonly ILogger<SeedDataService> _logger;
 
-        public SeedDataService(ProjectRepository projectRepository, TaskRepository taskRepository, TagRepository tagRepository, CategoryRepository categoryRepository, ILogger<SeedDataService> logger)
+        private readonly string _seedDataFilePath = "SeedData.json";
+
+        public SeedDataService(
+            ProjectRepository projectRepository,
+            TaskRepository taskRepository,
+            TagRepository tagRepository,
+            CategoryRepository categoryRepository,
+            RecordRepository recordRepository,
+            ILogger<SeedDataService> logger)
         {
             _projectRepository = projectRepository;
             _taskRepository = taskRepository;
             _tagRepository = tagRepository;
             _categoryRepository = categoryRepository;
+            _recordRepository = recordRepository;
             _logger = logger;
         }
 
@@ -35,7 +45,7 @@ namespace PersonalFinanceTracker.Data
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Error deserializing seed data");
+                _logger.LogError(e, "Error deserializing project seed data");
             }
 
             try
@@ -44,10 +54,7 @@ namespace PersonalFinanceTracker.Data
                 {
                     foreach (var project in payload.Projects)
                     {
-                        if (project is null)
-                        {
-                            continue;
-                        }
+                        if (project is null) continue;
 
                         if (project.Category is not null)
                         {
@@ -78,8 +85,27 @@ namespace PersonalFinanceTracker.Data
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Error saving seed data");
+                _logger.LogError(e, "Error saving project seed data");
                 throw;
+            }
+
+            // load records
+            try
+            {
+                await using Stream recordStream = await FileSystem.OpenAppPackageFileAsync(_seedDataFilePath);
+                var records = await JsonSerializer.DeserializeAsync<List<Record>>(recordStream);
+
+                if (records != null)
+                {
+                    foreach (var record in records)
+                    {
+                        await _recordRepository.SaveAsync(record);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error loading Record seed data");
             }
         }
 
@@ -91,7 +117,8 @@ namespace PersonalFinanceTracker.Data
                     _projectRepository.DropTableAsync(),
                     _taskRepository.DropTableAsync(),
                     _tagRepository.DropTableAsync(),
-                    _categoryRepository.DropTableAsync());
+                    _categoryRepository.DropTableAsync()
+                );
             }
             catch (Exception e)
             {
