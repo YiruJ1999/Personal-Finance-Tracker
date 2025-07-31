@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Syncfusion.Maui.Toolkit.Hosting;
 
+
 namespace PersonalFinanceTracker
 {
     public static class MauiProgram
@@ -41,6 +42,9 @@ namespace PersonalFinanceTracker
             builder.Services.AddSingleton<MainPageModel>();
             builder.Services.AddSingleton<ProjectListPageModel>();
             builder.Services.AddSingleton<ManageMetaPageModel>();
+
+            builder.Services.AddSingleton<DatabaseService>();
+            builder.Services.AddSingleton<RecordRepository>();
 
             builder.Services.AddTransientWithShellRoute<ProjectDetailPage, ProjectDetailPageModel>("project");
             builder.Services.AddTransientWithShellRoute<TaskDetailPage, TaskDetailPageModel>("task");

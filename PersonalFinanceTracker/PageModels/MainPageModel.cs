@@ -1,99 +1,29 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PersonalFinanceTracker.Models;
+using PersonalFinanceTracker.Services;
 
 namespace PersonalFinanceTracker.PageModels
 {
-    public partial class MainPageModel : ObservableObject, IProjectTaskPageModel
+    public partial class MainPageModel : ObservableObject
     {
-        private bool _isNavigatedTo;
-        private bool _dataLoaded;
-        private readonly ProjectRepository _projectRepository;
-        private readonly TaskRepository _taskRepository;
-        private readonly CategoryRepository _categoryRepository;
-        private readonly ModalErrorHandler _errorHandler;
-        private readonly SeedDataService _seedDataService;
+        private readonly RecordRepository _recordRepository;
+        private readonly DatabaseService _databaseService;
 
-        [ObservableProperty]
-        private List<CategoryChartData> _todoCategoryData = [];
-
-        [ObservableProperty]
-        private List<Brush> _todoCategoryColors = [];
-
-        [ObservableProperty]
-        private List<ProjectTask> _tasks = [];
-
-        [ObservableProperty]
-        private List<Project> _projects = [];
-
-        [ObservableProperty]
-        bool _isBusy;
-
-        [ObservableProperty]
-        bool _isRefreshing;
-
-        [ObservableProperty]
-        private string _today = DateTime.Now.ToString("dddd, MMM d");
-
-        public bool HasCompletedTasks
-            => Tasks?.Any(t => t.IsCompleted) ?? false;
-
-        public MainPageModel(SeedDataService seedDataService, ProjectRepository projectRepository,
-            TaskRepository taskRepository, CategoryRepository categoryRepository, ModalErrorHandler errorHandler)
+        public MainPageModel(RecordRepository recordRepository, DatabaseService databaseService)
         {
-            _projectRepository = projectRepository;
-            _taskRepository = taskRepository;
-            _categoryRepository = categoryRepository;
-            _errorHandler = errorHandler;
-            _seedDataService = seedDataService;
+            _recordRepository = recordRepository;
+            _databaseService = databaseService;
         }
 
-        private async Task LoadData()
-        {
-            try
-            {
-                IsBusy = true;
+        [ObservableProperty]
+        private List<Record> todayRecords;
 
-                Projects = await _projectRepository.ListAsync();
+        [ObservableProperty]
+        private List<MonthlySummaryItem> monthlySummaryData;
 
-                var chartData = new List<CategoryChartData>();
-                var chartColors = new List<Brush>();
-
-                var categories = await _categoryRepository.ListAsync();
-                foreach (var category in categories)
-                {
-                    chartColors.Add(category.ColorBrush);
-
-                    var ps = Projects.Where(p => p.CategoryID == category.ID).ToList();
-                    int tasksCount = ps.SelectMany(p => p.Tasks).Count();
-
-                    chartData.Add(new(category.Title, tasksCount));
-                }
-
-                TodoCategoryData = chartData;
-                TodoCategoryColors = chartColors;
-
-                Tasks = await _taskRepository.ListAsync();
-            }
-            finally
-            {
-                IsBusy = false;
-                OnPropertyChanged(nameof(HasCompletedTasks));
-            }
-        }
-
-        private async Task InitData(SeedDataService seedDataService)
-        {
-            bool isSeeded = Preferences.Default.ContainsKey("is_seeded");
-
-            if (!isSeeded)
-            {
-                await seedDataService.LoadSeedDataAsync();
-            }
-
-            Preferences.Default.Set("is_seeded", true);
-            await Refresh();
-        }
+        [ObservableProperty]
+        private bool isRefreshing;
 
         [RelayCommand]
         private async Task Refresh()
@@ -101,11 +31,7 @@ namespace PersonalFinanceTracker.PageModels
             try
             {
                 IsRefreshing = true;
-                await LoadData();
-            }
-            catch (Exception e)
-            {
-                _errorHandler.HandleError(e);
+                await LoadFinancialData();
             }
             finally
             {
@@ -114,61 +40,44 @@ namespace PersonalFinanceTracker.PageModels
         }
 
         [RelayCommand]
-        private void NavigatedTo() =>
-            _isNavigatedTo = true;
-
-        [RelayCommand]
-        private void NavigatedFrom() =>
-            _isNavigatedTo = false;
-
-        [RelayCommand]
-        private async Task Appearing()
+        private async Task AddRecord()
         {
-            if (!_dataLoaded)
-            {
-                await InitData(_seedDataService);
-                _dataLoaded = true;
-                await Refresh();
-            }
-            // This means we are being navigated to
-            else if (!_isNavigatedTo)
-            {
-                await Refresh();
-            }
+            await Shell.Current.GoToAsync("addrecord");
         }
 
         [RelayCommand]
-        private Task TaskCompleted(ProjectTask task)
+        public async Task Appearing()
         {
-            OnPropertyChanged(nameof(HasCompletedTasks));
-            return _taskRepository.SaveItemAsync(task);
+            await _databaseService.InitAsync();
+            await LoadFinancialData();
         }
 
-        [RelayCommand]
-        private Task AddTask()
-            => Shell.Current.GoToAsync($"task");
-
-        [RelayCommand]
-        private Task NavigateToProject(Project project)
-            => Shell.Current.GoToAsync($"project?id={project.ID}");
-
-        [RelayCommand]
-        private Task NavigateToTask(ProjectTask task)
-            => Shell.Current.GoToAsync($"task?id={task.ID}");
-
-        [RelayCommand]
-        private async Task CleanTasks()
+        public async Task LoadFinancialData()
         {
-            var completedTasks = Tasks.Where(t => t.IsCompleted).ToList();
-            foreach (var task in completedTasks)
-            {
-                await _taskRepository.DeleteItemAsync(task);
-                Tasks.Remove(task);
-            }
+            var allRecords = await _recordRepository.ListAsync();
 
-            OnPropertyChanged(nameof(HasCompletedTasks));
-            Tasks = new(Tasks);
-            await AppShell.DisplayToastAsync("All cleaned up!");
+            var today = DateTime.Today;
+            TodayRecords = allRecords
+                .Where(r => r.Timestamp.Date == today)
+                .OrderByDescending(r => r.Timestamp)
+                .ToList();
+
+            var monthStart = new DateTime(today.Year, today.Month, 1);
+            var monthly = allRecords
+                .Where(r => r.Timestamp >= monthStart && r.Timestamp <= today)
+                .ToList();
+
+            var income = monthly.Where(r => r.Type == "收入").Sum(r => r.Amount);
+            var expense = monthly.Where(r => r.Type == "支出").Sum(r => r.Amount);
+
+            MonthlySummaryData = new List<MonthlySummaryItem>
+            {
+                new("本月收入", income),
+                new("本月支出", expense),
+                new("收支差额", income - expense),
+            };
         }
     }
+
+    public record MonthlySummaryItem(string Label, decimal Amount);
 }

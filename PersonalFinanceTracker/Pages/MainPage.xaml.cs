@@ -5,10 +5,23 @@ namespace PersonalFinanceTracker.Pages
 {
     public partial class MainPage : ContentPage
     {
+        private readonly MainPageModel _model;
+
         public MainPage(MainPageModel model)
         {
             InitializeComponent();
-            BindingContext = model;
+            _model = model;
+            BindingContext = _model;
+        }
+
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+
+            if (BindingContext is MainPageModel vm)
+            {
+                await vm.Appearing(); 
+            }
         }
     }
 }
