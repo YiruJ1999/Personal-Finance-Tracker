@@ -25,6 +25,9 @@ namespace PersonalFinanceTracker.PageModels
         private List<MonthlySummaryItem> monthlySummaryData;
 
         [ObservableProperty]
+        private double monthlyBugget;
+
+        [ObservableProperty]
         private List<CategorySummaryItem> monthlyCategoryChartData;
 
         [ObservableProperty]

@@ -79,7 +79,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-<<<<<<< Updated upstream
 	  <Compile Update="Pages\AddRecordPage.xaml.cs">
 	    <DependentUpon>AddRecordPage.xaml</DependentUpon>
 	  </Compile>
@@ -87,9 +86,9 @@
 
 	<ItemGroup>
 	  <MauiXaml Update="Pages\AddRecordPage.xaml">
-=======
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Pages\BuggetPopup.xaml">
->>>>>>> Stashed changes
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	</ItemGroup>

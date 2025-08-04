@@ -14,16 +14,22 @@
             <!-- Monthly Summary -->
             <Label Text="本月收支平衡情况" FontSize="20" FontAttributes="Bold" HorizontalOptions="Center" />
 
-            <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto" RowSpacing="5">
+            <Grid ColumnDefinitions="*,*,*,*" RowDefinitions="Auto,Auto" RowSpacing="5">
                 
                 <Label Text="收入" FontAttributes="Bold" Grid.Column="0" Grid.Row="0" HorizontalOptions="Center" />
                 <Label Text="支出" FontAttributes="Bold" Grid.Column="1" Grid.Row="0" HorizontalOptions="Center" />
                 <Label Text="结余" FontAttributes="Bold" Grid.Column="2" Grid.Row="0" HorizontalOptions="Center" />
+                <Label Text="预算" FontAttributes="Bold" Grid.Column="3" Grid.Row="0" HorizontalOptions="Center" />
 
                 
                 <Label Text="{Binding MonthlySummaryData[0].Amount, StringFormat='{}{0:C}'}" Grid.Row="1" Grid.Column="0" HorizontalOptions="Center" />
                 <Label Text="{Binding MonthlySummaryData[1].Amount, StringFormat='{}{0:C}'}" Grid.Row="1" Grid.Column="1" HorizontalOptions="Center" />
                 <Label Text="{Binding MonthlySummaryData[2].Amount, StringFormat='{}{0:C}'}" Grid.Row="1" Grid.Column="2" HorizontalOptions="Center" />
+                <Label Text="{Binding MonthlyBugget               , StringFormat='{}{0:C}'}" Grid.Row="1" Grid.Column="3" HorizontalOptions="Center" >
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="BuggetTapped"/>
+                    </Label.GestureRecognizers>
+                </Label>
             </Grid>
 
 
