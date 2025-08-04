@@ -82,8 +82,9 @@ namespace PersonalFinanceTracker.PageModels
                 .Where(r => r.Timestamp >= monthStart && r.Timestamp <= today)
                 .ToList();
 
-            var income = monthly.Where(r => r.Type == "收入").Sum(r => r.Amount);
-            var expense = monthly.Where(r => r.Type == "支出").Sum(r => r.Amount);
+            var income = monthly.Where(r => r.Type == RecordType.Income).Sum(r => r.Amount);
+            var expense = monthly.Where(r => r.Type == RecordType.Expense).Sum(r => r.Amount);
+
 
             MonthlySummaryData = new List<MonthlySummaryItem>
             {
@@ -93,7 +94,7 @@ namespace PersonalFinanceTracker.PageModels
             };
 
             MonthlyCategoryChartData = monthly
-                .Where(r => r.Type == "支出")
+                .Where(r => r.Type == RecordType.Expense)
                 .GroupBy(r => r.Category)
                 .Select(g => new CategorySummaryItem
                 {

@@ -18,5 +18,10 @@ namespace PersonalFinanceTracker.Services
             Database = new SQLiteAsyncConnection(dbPath);
             await Database.CreateTableAsync<Record>();  
         }
+
+        internal async Task SaveRecordAsync(Record record)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
