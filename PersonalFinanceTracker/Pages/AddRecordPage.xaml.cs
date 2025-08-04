@@ -1,9 +1,9 @@
 namespace PersonalFinanceTracker.Pages;
 
-public partial class NewPage1 : ContentPage
+public partial class AddRecordPage : ContentPage
 {
-	public NewPage1()
-	{
-		InitializeComponent();
-	}
+    public AddRecordPage()
+    {
+        InitializeComponent();
+    }
 }

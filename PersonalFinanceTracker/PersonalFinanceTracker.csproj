@@ -77,5 +77,17 @@
 		<PackageReference Include="Syncfusion.Maui.PullToRefresh" Version="30.1.42" />
 		<PackageReference Include="Syncfusion.Maui.Toolkit" Version="1.0.4" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Update="Pages\AddRecordPage.xaml.cs">
+	    <DependentUpon>AddRecordPage.xaml</DependentUpon>
+	  </Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <MauiXaml Update="Pages\AddRecordPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	</ItemGroup>
 	
 </Project>

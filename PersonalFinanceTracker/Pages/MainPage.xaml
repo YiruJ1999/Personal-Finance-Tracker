@@ -64,6 +64,12 @@
                 </CollectionView.EmptyView>
             </CollectionView>
 
+            <Button Text="测试新增记录页面" 
+                Command="{Binding AddRecordCommand}" 
+                BackgroundColor="LightGreen" 
+                Margin="20"/>
+
+
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

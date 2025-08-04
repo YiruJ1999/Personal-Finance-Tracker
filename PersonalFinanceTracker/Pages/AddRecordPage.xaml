@@ -2,11 +2,53 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="PersonalFinanceTracker.Pages.AddRecordPage"
-             Title="AddRecordPage">
-    <VerticalStackLayout>
-        <Label 
-            Text="Welcome to .NET MAUI!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
+             Title="Add Record">
+    <VerticalStackLayout Padding="20" Spacing="10">
+        <!--Type Selection-->
+        <Grid ColumnDefinitions="*,*" Margin="0,0,0,10">
+            <Button Text="支出" 
+                    Command="{Binding SelectExpenseCommand}" 
+                    BackgroundColor="{Binding IsExpenseSelected, Converter={StaticResource BoolToColorConverter}, ConverterParameter=Expense}" />
+            <Button Text="收入"
+                    Grid.Column="1"
+                    Command="{Binding SelectIncomeCommand}"
+                    BackgroundColor="{Binding IsExpenseSelected, Converter={StaticResource BoolToColorConverter}, ConverterParameter=Income}" />
+        </Grid>
+
+        <!--Category Selection-->
+        <CollectionView ItemsSource="{Binding Categories}" 
+                        SelectionMode="Single"
+                        SelectedItem="{Binding SelectedCategory}">
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Orientation="Vertical" Span="4" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <VerticalStackLayout Padding="5" HorizontalOptions="Center">
+                        <Image Source="{Binding Icon}" HeightRequest="40" WidthRequest="40"/>
+                        <Label Text="{Binding Name}" FontSize="12" HorizontalOptions="Center"/>
+                    </VerticalStackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        
+        
+        <!--Note Entry-->
+
+        <Entry Placeholder="点击写备注..." 
+               Text="{Binding Note}" />
+        
+        <!--Amount Entry-->
+        <Entry Placeholder="€ 0.00" 
+               Keyboard="Numeric" 
+               Text="{Binding Amount}" />
+        
+        <!--Choose Date-->
+        <DatePicker Date="{Binding SelectedDate}" />
+
+        
+        <!--Save Button-->
+        <Button Text="完成" Command="{Binding SaveCommand}" BackgroundColor="HotPink" TextColor="White"/>
+
     </VerticalStackLayout>
 </ContentPage>
