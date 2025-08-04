@@ -1,58 +1,58 @@
 [
   {
     "Type": "支出",
-    "Amount": 25.5,
+    "Amount": 35.0,
     "Category": "饮食",
-    "Note": "午餐",
-    "Timestamp": "2025-07-30T12:30:00"
-  },
-  {
-    "Type": "收入",
-    "Amount": 200,
-    "Category": "兼职",
-    "Note": "翻译项目",
-    "Timestamp": "2025-07-29T15:00:00"
+    "Note": "早餐",
+    "Account": "现金",
+    "Timestamp": "2025-08-04T08:15:00"
   },
   {
     "Type": "支出",
-    "Amount": 100,
-    "Category": "购物",
-    "Note": "新书",
-    "Timestamp": "2025-07-28T10:00:00"
-  },
-  {
-    "Type": "收入",
-    "Amount": 1500,
-    "Category": "工资",
-    "Note": "7月工资",
-    "Timestamp": "2025-07-31T09:00:00"
-  },
-  {
-    "Type": "支出",
-    "Amount": 300,
-    "Category": "娱乐",
-    "Note": "电影票",
-    "Timestamp": "2025-07-31T20:00:00"
-  },
-  {
-    "Type": "支出",
-    "Amount": 50,
+    "Amount": 12.0,
     "Category": "交通",
-    "Note": "公交卡充值",
-    "Timestamp": "2025-07-29T08:00:00"
-  },
-  {
-    "Type": "收入",
-    "Amount": 500,
-    "Category": "投资",
-    "Note": "股票分红",
-    "Timestamp": "2025-07-30T14:00:00"
+    "Note": "地铁",
+    "Account": "交通卡",
+    "Timestamp": "2025-08-04T09:00:00"
   },
   {
     "Type": "支出",
-    "Amount": 80,
+    "Amount": 75.0,
+    "Category": "购物",
+    "Note": "超市买菜",
+    "Account": "支付宝",
+    "Timestamp": "2025-08-04T12:30:00"
+  },
+  {
+    "Type": "支出",
+    "Amount": 60.0,
     "Category": "饮食",
-    "Note": "晚餐",
-    "Timestamp": "2025-07-30T19:00:00"
+    "Note": "晚餐外卖",
+    "Account": "信用卡",
+    "Timestamp": "2025-08-04T19:00:00"
+  },
+  {
+    "Type": "支出",
+    "Amount": 20.0,
+    "Category": "娱乐",
+    "Note": "小额游戏充值",
+    "Account": "信用卡",
+    "Timestamp": "2025-08-04T21:15:00"
+  },
+  {
+    "Type": "收入",
+    "Amount": 5000.0,
+    "Category": "工资",
+    "Note": "2025年8月工资",
+    "Account": "银行账户",
+    "Timestamp": "2025-08-01T09:00:00"
+  },
+  {
+    "Type": "支出",
+    "Amount": 4500.0,
+    "Category": "数码",
+    "Note": "购买拍立得",
+    "Account": "银行账户",
+    "Timestamp": "2025-08-02T09:00:00"
   }
 ]

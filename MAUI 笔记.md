@@ -46,3 +46,11 @@
 3. RecordRepository.cs  ← 从数据库取出数据
 4. MainPageModel.cs     ← 加工数据 → 提供图表/表格绑定
 5. MainPage.xaml        ← 展示 UI
+
+# 账本数据
+## Record
+- 账户 Account
+- 支出、收入 Type
+- 金额 Amount
+- 支出类别 Category
+- 备注 Note

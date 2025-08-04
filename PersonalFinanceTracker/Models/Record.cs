@@ -9,6 +9,9 @@ namespace PersonalFinanceTracker.Models
         [PrimaryKey, AutoIncrement]
         public int ID { get; set; }
 
+        // Account 
+        public string Account { get; set; } = string.Empty;
+
         // Income or expenditure
         public string Type { get; set; }  
 

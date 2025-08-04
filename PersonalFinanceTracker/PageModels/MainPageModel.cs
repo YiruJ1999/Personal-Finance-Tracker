@@ -62,7 +62,8 @@ namespace PersonalFinanceTracker.PageModels
             }
 
             await LoadFinancialData();
-
+            //await _recordRepository.DeleteAllAsync(); // ← 添加这行
+            //Preferences.Default.Remove("is_seeded");  // 再次允许导入一次
 
         }
 
