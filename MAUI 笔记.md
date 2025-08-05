@@ -41,11 +41,43 @@
     - 提供复用性强的工具类，提高代码整洁度。
 
 # 运行流程
+## 数据处理流程
 1. SeedDataService.cs   ← 加载测试数据到数据库（只在第一次运行时执行）
 2. SQLite 数据库
 3. RecordRepository.cs  ← 从数据库取出数据
 4. MainPageModel.cs     ← 加工数据 → 提供图表/表格绑定
 5. MainPage.xaml        ← 展示 UI
+
+## 应用运行流程
+```
+启动程序
+  ↓
+MauiProgram.cs
+  ├─ builder.UseMauiApp<App>()
+  ├─ 注册组件 (Syncfusion, CommunityToolkit)
+  ├─ 注册服务 (AddSingleton, AddTransient)
+  ↓
+构建 App (builder.Build())
+  ↓
+运行应用
+```
+- `MauiProgram.cs`是 `.NET MAUI` 的标准应用启动流程，它遵循类似 ASP.NET Core 的 `HostBuilder` 模式。
+- `MauiProgram.cs`主要包括：
+    - 创建并配置 App 实例；
+    - 注册依赖服务（Service）；
+    - 配置字体、组件库（Syncfusion、CommunityToolkit 等）；
+    - 可注册的服务类型：
+        ```
+        builder.Services.AddSingleton<SomeService>();   // 全局服务
+        builder.Services.AddTransient<SomePage>();       // 页面，每次导航创建新实例
+        builder.Services.AddTransient<SomePageModel>();  // 页面模型（ViewModel）
+
+        ```
+    - `AddSingleton` 和 `AddTransient` 的区别：
+        - `AddSingleton<T>()`	所有地方使用同一个实例，适用于共享状态或数据库连接等长生命周期资源
+        - `AddTransient<T>()`	每次请求都会创建一个新实例，适用于短生命周期页面或不需要共享状态的逻辑类
+
+最后构建并返回 MauiApp 实例。
 
 # 账本数据
 ## Record

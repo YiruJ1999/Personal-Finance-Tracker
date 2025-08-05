@@ -7,16 +7,19 @@
         <!--Type Selection-->
         <Grid ColumnDefinitions="*,*" Margin="0,0,0,10">
             <Button Text="支出" 
+					TextColor="Black"
                     Command="{Binding SelectExpenseCommand}" 
                     BackgroundColor="{Binding IsExpenseSelected, Converter={StaticResource BoolToColorConverter}, ConverterParameter=Expense}" />
             <Button Text="收入"
+					TextColor="Black"
                     Grid.Column="1"
                     Command="{Binding SelectIncomeCommand}"
                     BackgroundColor="{Binding IsExpenseSelected, Converter={StaticResource BoolToColorConverter}, ConverterParameter=Income}" />
         </Grid>
 
         <!--Category Selection-->
-        <CollectionView ItemsSource="{Binding Categories}" 
+        <CollectionView HeightRequest="200"
+                        ItemsSource="{Binding Categories}" 
                         SelectionMode="Single"
                         SelectedItem="{Binding SelectedCategory}">
             <CollectionView.ItemsLayout>
@@ -25,7 +28,7 @@
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <VerticalStackLayout Padding="5" HorizontalOptions="Center">
-                        <Image Source="{Binding Icon}" HeightRequest="40" WidthRequest="40"/>
+                        <Image Source="{Binding Icon}" HeightRequest="40" WidthRequest="40" BackgroundColor="LightGray"/>
                         <Label Text="{Binding Name}" FontSize="12" HorizontalOptions="Center"/>
                     </VerticalStackLayout>
                 </DataTemplate>

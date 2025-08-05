@@ -2,8 +2,9 @@ namespace PersonalFinanceTracker.Pages;
 
 public partial class AddRecordPage : ContentPage
 {
-    public AddRecordPage()
+    public AddRecordPage(AddRecordPageModel pageModel)
     {
         InitializeComponent();
+        BindingContext = pageModel;
     }
 }
