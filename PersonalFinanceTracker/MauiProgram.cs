@@ -38,13 +38,19 @@ namespace PersonalFinanceTracker
             builder.Services.AddSingleton<DatabaseService>();
             builder.Services.AddSingleton<RecordRepository>();
             builder.Services.AddSingleton<SeedDataService>();
-            builder.Services.AddSingleton<MainPageModel>();
             builder.Services.AddSingleton<ModalErrorHandler>();
+
+            builder.Services.AddSingleton<MainPage>();
+            builder.Services.AddSingleton<MainPageModel>();
+
             builder.Services.AddTransient<AddRecordPage>();
             builder.Services.AddTransient<AddRecordPageModel>();
+
             builder.Services.AddSingleton<ViewRecordPageModel>();
             builder.Services.AddSingleton<ViewRecordPage>();
 
+            builder.Services.AddSingleton<PersonalInfoPage>();
+            builder.Services.AddSingleton<PersonalInfoPageModel>();
 
             return builder.Build();
         }

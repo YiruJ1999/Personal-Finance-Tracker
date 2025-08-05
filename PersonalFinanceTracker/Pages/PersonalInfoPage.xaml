@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:sfavatar="clr-namespace:Syncfusion.Maui.Core;assembly=Syncfusion.Maui.Core"
+    x:Class="PersonalFinanceTracker.Pages.PersonalInfoPage">
+
+
+    <VerticalStackLayout Padding="20" Spacing="20">
+
+        <!-- Avatar with edit button -->
+        <Grid>
+            <sfavatar:SfAvatarView
+                WidthRequest="100"
+                HeightRequest="100"
+                CornerRadius="50"
+                AvatarShape="Circle"
+                ImageSource="{Binding Avatar}"/>
+
+            <Button
+                Text="✏️"
+                BackgroundColor="Transparent"
+                WidthRequest="30"
+                HeightRequest="30"
+                HorizontalOptions="End"
+                VerticalOptions="End"
+                Clicked="OnEditAvatarClicked"
+                Margin="0,0,5,5" />
+        </Grid>
+
+        <!-- Username with edit button -->
+        <Grid>
+            <Label
+                Text="{Binding Name}"
+                FontSize="20"
+                HorizontalOptions="Center" />
+
+            <Button
+                Text="✏️"
+                BackgroundColor="Transparent"
+                WidthRequest="30"
+                HeightRequest="30"
+                HorizontalOptions="End"
+                VerticalOptions="Center"
+                Clicked="OnEditNameClicked"
+                Margin="0,0,5,0" />
+        </Grid>
+
+        <Button Text="保存信息" Clicked="OnSaveClicked" />
+    </VerticalStackLayout>
+</ContentPage>

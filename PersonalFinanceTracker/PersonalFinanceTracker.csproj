@@ -94,6 +94,9 @@
 	  <MauiXaml Update="Pages\BuggetPopup.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="Pages\PersonalInfoPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Pages\ViewRecordPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

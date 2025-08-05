@@ -62,6 +62,13 @@ namespace PersonalFinanceTracker.PageModels
         }
 
         [RelayCommand]
+        private async Task OnPersonalClicked()
+        {
+            System.Diagnostics.Debug.WriteLine("点击了个人按钮！");
+            await Shell.Current.GoToAsync("personalinfopage");
+        }
+
+        [RelayCommand]
         public async Task Appearing()
         {
             await _databaseService.InitAsync();
@@ -115,10 +122,11 @@ namespace PersonalFinanceTracker.PageModels
                     Amount = g.Sum(r => r.Amount)
                 }).ToList();
 
-            System.Diagnostics.Debug.WriteLine($"Record总数: {allRecords.Count}");
-            System.Diagnostics.Debug.WriteLine($"本月记录: {monthly.Count}");
-            System.Diagnostics.Debug.WriteLine($"今日记录: {TodayRecords?.Count}");
-            System.Diagnostics.Debug.WriteLine("=== 所有记录时间（含毫秒）===");
+            //System.Diagnostics.Debug.WriteLine($"Record总数: {allRecords.Count}");
+            //System.Diagnostics.Debug.WriteLine($"本月记录: {monthly.Count}");
+            //System.Diagnostics.Debug.WriteLine($"今日记录: {TodayRecords?.Count}");
+            //System.Diagnostics.Debug.WriteLine("=== 所有记录时间（含毫秒）===");
+
             foreach (var record in allRecords)
             {
                 System.Diagnostics.Debug.WriteLine(record.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff"));
@@ -127,6 +135,7 @@ namespace PersonalFinanceTracker.PageModels
 
 
         }
+
 
         partial void OnMonthlyBuggetChanged(double value)
         {
