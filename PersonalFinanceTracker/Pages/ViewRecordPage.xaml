@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:PersonalFinanceTracker.PageModels"
+             xmlns:models="clr-namespace:PersonalFinanceTracker.Models"
+             x:Class="PersonalFinanceTracker.Pages.ViewRecordPage"
+             x:DataType="local:ViewRecordPageModel"
+             Title="账单总览">
+
+    <VerticalStackLayout>
+        <FlexLayout
+            Direction="Row"
+            JustifyContent="SpaceBetween"
+            AlignItems="Stretch">
+            <Label Text="用途" FontSize="16" FlexLayout.Grow="1"/>
+            <Label Text="数额" FontSize="16" FlexLayout.Grow="1"/>
+            <Label Text="备注" FontSize="16"  FlexLayout.Grow="2"/>
+        </FlexLayout>
+        <ScrollView>
+            <VerticalStackLayout>
+                <CollectionView ItemsSource="{Binding Records}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:Record">
+                            <Border BackgroundColor="#F5F5F5" Stroke="LightGray" StrokeThickness="1" Padding="10" Margin="5">
+                                <FlexLayout
+                                    Direction="Row"
+                                    JustifyContent="SpaceBetween"
+                                    AlignItems="Stretch">
+                                    <Label Text="{Binding Category}" FontSize="16" FlexLayout.Grow="1" />
+                                    <Label Text="{Binding Amount, StringFormat='{}{0:C}'}" FontSize="16" FlexLayout.Grow="1" />
+                                    <Label Text="{Binding Note}" FontSize="16"  FlexLayout.Grow="2" />
+                                </FlexLayout>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                    <CollectionView.EmptyView>
+                        <Label Text="暂无记录" HorizontalOptions="Center" VerticalOptions="Center" TextColor="Gray" />
+                    </CollectionView.EmptyView>
+                </CollectionView>
+            </VerticalStackLayout>
+        </ScrollView>
+    </VerticalStackLayout>
+
+</ContentPage>

@@ -11,6 +11,7 @@ namespace PersonalFinanceTracker
         {
             InitializeComponent();
             Routing.RegisterRoute("addrecord", typeof(AddRecordPage));
+            Routing.RegisterRoute("ViewRecordPage", typeof(ViewRecordPage));
         }
 
         public static async Task DisplaySnackbarAsync(string message)

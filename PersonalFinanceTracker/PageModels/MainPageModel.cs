@@ -56,6 +56,12 @@ namespace PersonalFinanceTracker.PageModels
         }
 
         [RelayCommand]
+        private async Task ViewRecord()
+        {
+            await Shell.Current.GoToAsync("ViewRecordPage");
+        }
+
+        [RelayCommand]
         public async Task Appearing()
         {
             await _databaseService.InitAsync();

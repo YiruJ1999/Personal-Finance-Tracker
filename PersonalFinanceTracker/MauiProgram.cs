@@ -42,6 +42,8 @@ namespace PersonalFinanceTracker
             builder.Services.AddSingleton<ModalErrorHandler>();
             builder.Services.AddTransient<AddRecordPage>();
             builder.Services.AddTransient<AddRecordPageModel>();
+            builder.Services.AddSingleton<ViewRecordPageModel>();
+            builder.Services.AddSingleton<ViewRecordPage>();
 
 
             return builder.Build();

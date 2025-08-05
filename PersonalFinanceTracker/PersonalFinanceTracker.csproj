@@ -82,6 +82,9 @@
 	  <Compile Update="Pages\AddRecordPage.xaml.cs">
 	    <DependentUpon>AddRecordPage.xaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="Pages\ViewRecordPage.xaml.cs">
+	    <DependentUpon>ViewRecordPage.xaml</DependentUpon>
+	  </Compile>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -89,6 +92,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Pages\BuggetPopup.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Pages\ViewRecordPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	</ItemGroup>
