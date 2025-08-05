@@ -34,6 +34,16 @@ namespace PersonalFinanceTracker.Services
             return await Database.Table<Record>().ToListAsync();
         }
 
+        public async Task<List<Record>> GetRecordsPagedAsync(int pageNumber, int pageSize)
+        {
+            int skip = (pageNumber - 1) * pageSize;
+            return await Database.Table<Record>()
+                .OrderByDescending(r => r.Timestamp) // 按时间戳降序排序
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
         // Delete all records from the database
         public async Task DeleteAllRecordsAsync()
         {

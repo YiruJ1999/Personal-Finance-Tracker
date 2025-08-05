@@ -58,13 +58,14 @@ namespace PersonalFinanceTracker.PageModels
         [RelayCommand]
         private async Task ViewRecord()
         {
+            //System.Diagnostics.Debug.WriteLine("点击了账单按钮！");
             await Shell.Current.GoToAsync("ViewRecordPage");
         }
 
         [RelayCommand]
-        private async Task OnPersonalClicked()
+        private async Task ViewPersonal()
         {
-            System.Diagnostics.Debug.WriteLine("点击了个人按钮！");
+            System.Diagnostics.Debug.WriteLine("点击了账单按钮！");
             await Shell.Current.GoToAsync("personalinfopage");
         }
 

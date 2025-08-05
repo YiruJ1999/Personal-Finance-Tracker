@@ -15,11 +15,15 @@ public partial class ViewRecordPageModel : ObservableObject
 {
     private readonly DatabaseService _dbService;
     private readonly RecordRepository _recordRepository;
+    private int _currentPage = 1;
+    private bool _isLoading = false;
+    private int _pageSize = 15; // Default page size
 
     public ViewRecordPageModel(DatabaseService dbService, RecordRepository recordRepository)
     {
         _dbService = dbService;
         _recordRepository = recordRepository;
+        Records = new ObservableCollection<Record>();
     }
 
     [RelayCommand]
@@ -27,8 +31,22 @@ public partial class ViewRecordPageModel : ObservableObject
     {
         await _dbService.InitAsync();
 
-        await LoadFinancialData();
+        await LoadNextPage();
 
+    }
+
+    [RelayCommand]
+    public async Task LoadNextPage()
+    {
+        if (_isLoading) return;
+
+        _isLoading = true;
+        var records = await _dbService.GetRecordsPagedAsync(_currentPage++, _pageSize);
+        foreach (var record in records)
+        {
+            Records.Add(record);
+        }
+        _isLoading = false;
     }
     public async Task LoadFinancialData()
     {
@@ -45,6 +63,7 @@ public partial class ViewRecordPageModel : ObservableObject
             await AppShell.DisplaySnackbarAsync($"Error loading records: {ex.Message}");
         }
     }
+
 
     [ObservableProperty]
     private ObservableCollection<Record> records;

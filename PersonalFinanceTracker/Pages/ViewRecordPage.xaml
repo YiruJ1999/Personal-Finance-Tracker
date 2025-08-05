@@ -7,38 +7,52 @@
              x:DataType="local:ViewRecordPageModel"
              Title="账单总览">
 
-    <VerticalStackLayout>
+    <!-- 使用 Grid 实现：上表头固定 + 下区域填充滚动 -->
+    <Grid RowDefinitions="Auto,10,*" Padding="10">
+
+        <!-- 表头：固定高度 -->
         <FlexLayout
             Direction="Row"
             JustifyContent="SpaceBetween"
-            AlignItems="Stretch">
+            AlignItems="Center"
+            Grid.Row="0"
+            >
             <Label Text="用途" FontSize="16" FlexLayout.Grow="1"/>
             <Label Text="数额" FontSize="16" FlexLayout.Grow="1"/>
-            <Label Text="备注" FontSize="16"  FlexLayout.Grow="2"/>
+            <Label Text="备注" FontSize="16" FlexLayout.Grow="2"/>
         </FlexLayout>
-        <ScrollView>
-            <VerticalStackLayout>
-                <CollectionView ItemsSource="{Binding Records}">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="models:Record">
-                            <Border BackgroundColor="#F5F5F5" Stroke="LightGray" StrokeThickness="1" Padding="10" Margin="5">
-                                <FlexLayout
-                                    Direction="Row"
-                                    JustifyContent="SpaceBetween"
-                                    AlignItems="Stretch">
-                                    <Label Text="{Binding Category}" FontSize="16" FlexLayout.Grow="1" />
-                                    <Label Text="{Binding Amount, StringFormat='{}{0:C}'}" FontSize="16" FlexLayout.Grow="1" />
-                                    <Label Text="{Binding Note}" FontSize="16"  FlexLayout.Grow="2" />
-                                </FlexLayout>
-                            </Border>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                    <CollectionView.EmptyView>
-                        <Label Text="暂无记录" HorizontalOptions="Center" VerticalOptions="Center" TextColor="Gray" />
-                    </CollectionView.EmptyView>
-                </CollectionView>
-            </VerticalStackLayout>
-        </ScrollView>
-    </VerticalStackLayout>
 
+        <!-- 数据列表：自动填满剩余空间 -->
+        <CollectionView Grid.Row="2"
+                        ItemsSource="{Binding Records}"
+                        RemainingItemsThreshold="5"
+                        RemainingItemsThresholdReachedCommand="{Binding LoadNextPageCommand}"
+                        >
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Record">
+                    <Border BackgroundColor="#F5F5F5"
+                            Stroke="LightGray"
+                            StrokeThickness="1"
+                            Padding="10"
+                            Margin="5">
+                        <FlexLayout Direction="Row"
+                                    JustifyContent="SpaceBetween"
+                                    AlignItems="Center">
+                            <Label Text="{Binding Category}" FlexLayout.Grow="1" FontSize="14" />
+                            <Label Text="{Binding Amount, StringFormat='{}{0:C}'}" FlexLayout.Grow="1" FontSize="14" />
+                            <Label Text="{Binding Note}" FlexLayout.Grow="2" FontSize="14" />
+                        </FlexLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+            <CollectionView.EmptyView>
+                <Label Text="暂无记录"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"
+                       TextColor="Gray" />
+            </CollectionView.EmptyView>
+        </CollectionView>
+
+    </Grid>
 </ContentPage>
