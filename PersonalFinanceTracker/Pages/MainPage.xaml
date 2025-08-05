@@ -86,16 +86,17 @@
                     Padding="20">
             <FlexLayout 
                 Direction="Row"
-                JustifyContent="SpaceAround"
+                JustifyContent="SpaceBetween"
                 AlignItems="Center"
-                Wrap="NoWrap">
+                Wrap="NoWrap"
+                >
 
-                <Button Text="账本" FlexLayout.Grow="1" />
-                <Button Text="账单" FlexLayout.Grow="1" />
-                <Button Text="+" FlexLayout.Grow="1" />
-                <Button Text="账户" FlexLayout.Grow="1" />
-                <Button Text="个人" FlexLayout.Grow="1" />
-
+                <Button Text="账本" FlexLayout.Grow="1" Margin="3,0" />
+                <Button Text="账单" FlexLayout.Grow="1" Margin="3,0" />
+                <Button Text="+"    FlexLayout.Grow="1" Margin="3,0" Command="{Binding AddRecordCommand}" />
+                <Button Text="账户" FlexLayout.Grow="1" Margin="3,0" />
+                <Button Text="个人" FlexLayout.Grow="1" Margin="3,0" />
+                
             </FlexLayout>
 
         </Border>
