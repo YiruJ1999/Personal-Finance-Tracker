@@ -14,6 +14,11 @@ namespace PersonalFinanceTracker.Data
         {
             _database = database;
         }
+        public async Task EnsureDatabaseInitializedAsync()
+        {
+            await _database.InitAsync();
+        }
+
 
         // Get personal information, create default if none exists
         public async Task<PersonalInfo> GetPersonalInfoAsync()

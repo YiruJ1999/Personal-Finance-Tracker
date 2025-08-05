@@ -39,9 +39,12 @@ public class PersonalInfoPageModel : INotifyPropertyChanged
 
     private PersonalInfo? _loadedInfo;
 
+
+
     // load data
     public async Task LoadAsync()
     {
+        await _repository.EnsureDatabaseInitializedAsync();
         _loadedInfo = await _repository.GetPersonalInfoAsync();
         if (_loadedInfo != null)
         {
@@ -61,6 +64,7 @@ public class PersonalInfoPageModel : INotifyPropertyChanged
 
         await _repository.SaveAsync(_loadedInfo);
     }
+
 
     public event PropertyChangedEventHandler PropertyChanged;
     void OnPropertyChanged([CallerMemberName] string name = "") =>

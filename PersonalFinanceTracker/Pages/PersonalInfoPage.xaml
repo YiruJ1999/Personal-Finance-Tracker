@@ -15,7 +15,7 @@
                 HeightRequest="100"
                 CornerRadius="50"
                 AvatarShape="Circle"
-                ImageSource="{Binding Avatar}"/>
+                ImageSource="{Binding AvatarPath}"/>
 
             <Button
                 Text="✏️"
