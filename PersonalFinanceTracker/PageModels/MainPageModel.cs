@@ -17,7 +17,7 @@ namespace PersonalFinanceTracker.PageModels
             _databaseService = databaseService;
             _seedDataService = seedDataService;
 
-            MonthlyBugget = Preferences.Default.Get(nameof(MonthlyBugget), 0.0);
+
         }
 
         [ObservableProperty]
@@ -64,11 +64,13 @@ namespace PersonalFinanceTracker.PageModels
             {
                 await _seedDataService.LoadSeedDataAsync();
                 Preferences.Default.Set("is_seeded", true);
+                Preferences.Default.Set(nameof(MonthlyBugget), 0.0);
             }
 
             await LoadFinancialData();
             //await _recordRepository.DeleteAllAsync(); // ← 添加这行
             //Preferences.Default.Remove("is_seeded");  // 再次允许导入一次
+            MonthlyBugget = Preferences.Default.Get(nameof(MonthlyBugget), 0.0);
 
         }
 
