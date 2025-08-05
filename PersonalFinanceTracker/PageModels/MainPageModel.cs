@@ -16,6 +16,8 @@ namespace PersonalFinanceTracker.PageModels
             _recordRepository = recordRepository;
             _databaseService = databaseService;
             _seedDataService = seedDataService;
+
+            MonthlyBugget = Preferences.Default.Get(nameof(MonthlyBugget), 0.0);
         }
 
         [ObservableProperty]
@@ -117,6 +119,12 @@ namespace PersonalFinanceTracker.PageModels
 
 
         }
+
+        partial void OnMonthlyBuggetChanged(double value)
+        {
+            Preferences.Default.Set(nameof(MonthlyBugget), value);
+        }
+
     }
 
     public record MonthlySummaryItem(string Label, decimal Amount);
