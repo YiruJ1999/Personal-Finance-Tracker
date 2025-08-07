@@ -86,3 +86,37 @@ MauiProgram.cs
 - 金额 Amount
 - 支出类别 Category
 - 备注 Note
+
+
+# 服务注册结构
+
+应该在 MauiProgram.cs 的 builder.Services 区块中统一注册以下内容：
+
+- 🔧 基础服务层
+```
+builder.Services.AddSingleton<DatabaseService>();
+builder.Services.AddSingleton<SeedDataService>();
+builder.Services.AddSingleton<ModalErrorHandler>();
+```
+
+- 📦 Repository 层
+```
+builder.Services.AddSingleton<RecordRepository>();
+builder.Services.AddSingleton<AccountRepository>();
+// 若你将来添加更多模块，也以 Singleton 注册其 Repository
+```
+
+- 📄 页面与 ViewModel 注册（推荐对照命名：Page <-> PageModel）
+    - Main 页面：
+    ```
+    builder.Services.AddSingleton<MainPage>();
+    builder.Services.AddSingleton<MainPageModel>();
+
+    ```
+    - 添加记录页面：
+
+    ```builder.Services.AddTransient<AddRecordPage>();
+    builder.Services.AddTransient<AddRecordPageModel>();
+    AddTransient：表示每次导航都会创建新的实例（适合表单页面）```
+
+    - ...

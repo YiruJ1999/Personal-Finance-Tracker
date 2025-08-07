@@ -19,6 +19,7 @@ namespace PersonalFinanceTracker.Services
 
             await Database.CreateTableAsync<Record>();
             await Database.CreateTableAsync<PersonalInfo>();
+            await Database.CreateTableAsync<Account>();
         }
 
         // Save a record to the database
