@@ -34,5 +34,21 @@ namespace PersonalFinanceTracker.Services
         public Task<System.Collections.Generic.List<T>> QueryAsync<T>(string sql, params object[] args)
             where T : new()
             => Database.QueryAsync<T>(sql, args);
+
+
+        /// <summary>
+        /// Completely delete the local SQLite database file.
+        /// </summary>
+        public Task ClearDatabaseAsync()
+        {
+            if (File.Exists(dbPath))
+            {
+                Database = null; // release connection so SQLite file can be deleted
+                File.Delete(dbPath);
+            }
+            return Task.CompletedTask;
+        }
     }
+
+
 }

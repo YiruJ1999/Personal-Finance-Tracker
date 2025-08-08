@@ -57,6 +57,9 @@ namespace PersonalFinanceTracker
             builder.Services.AddSingleton<AccountPageModel>();
             builder.Services.AddSingleton<AccountRepository>();
 
+            builder.Services.AddSingleton<BookPage>();
+            builder.Services.AddSingleton<BookPageModel>();
+
             return builder.Build();
         }
     }

@@ -26,7 +26,7 @@ namespace PersonalFinanceTracker.Data
             string sanitized = Regex.Replace(bookName ?? string.Empty, @"[^\w]", "_");
             if (string.IsNullOrWhiteSpace(sanitized))
                 sanitized = "Default";
-            return $"Record_{sanitized}";
+            return $"book_{sanitized}";
         }
 
         /// <summary>

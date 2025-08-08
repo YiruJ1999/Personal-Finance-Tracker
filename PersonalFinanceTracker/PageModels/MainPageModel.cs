@@ -13,6 +13,7 @@ namespace PersonalFinanceTracker.PageModels
 
         // Key for persisting current book name
         private const string PrefKeyCurrentBook = "current_book";
+        private const string defaultBookName = "Default";
 
         public MainPageModel(RecordRepository recordRepository, DatabaseService databaseService, SeedDataService seedDataService)
         {
@@ -21,7 +22,7 @@ namespace PersonalFinanceTracker.PageModels
             _seedDataService = seedDataService;
 
             // Initialize CurrentBook from preferences or use a default
-            CurrentBook = Preferences.Default.Get(PrefKeyCurrentBook, "Default");
+            CurrentBook = Preferences.Default.Get(PrefKeyCurrentBook, defaultBookName);
         }
 
         // -------- Observable properties --------
@@ -79,6 +80,12 @@ namespace PersonalFinanceTracker.PageModels
         }
 
         [RelayCommand]
+        private async Task GoToBook()
+        {
+            await Shell.Current.GoToAsync("bookpage");
+        }
+
+        [RelayCommand]
         private async Task ViewAccount()
         {
             System.Diagnostics.Debug.WriteLine("点击了账户按钮！");
@@ -92,8 +99,8 @@ namespace PersonalFinanceTracker.PageModels
             await _databaseService.InitAsync();
 
             // Un-comment the next lines if you want to reset the seed state
-            Preferences.Default.Remove("is_seeded");
-            _recordRepository.DeleteAllAsync(currentBook);
+             //Preferences.Default.Remove("is_seeded");
+             //await _databaseService.ClearDatabaseAsync();
 
             // Seed once per app (optionally per book; see note below)
             if (!Preferences.Default.ContainsKey("is_seeded"))
@@ -117,7 +124,7 @@ namespace PersonalFinanceTracker.PageModels
         private async Task ChangeBook(string newBook)
         {
             // Persist and reload data for the selected book
-            CurrentBook = string.IsNullOrWhiteSpace(newBook) ? "Default" : newBook.Trim();
+            CurrentBook = string.IsNullOrWhiteSpace(newBook) ? defaultBookName : newBook.Trim();
             Preferences.Default.Set(PrefKeyCurrentBook, CurrentBook);
             await LoadFinancialData();
         }

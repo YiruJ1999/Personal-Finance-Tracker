@@ -111,7 +111,7 @@ namespace PersonalFinanceTracker.PageModels
         /// </summary>
         public async Task LoadFinancialData()
         {
-            System.Diagnostics.Debug.WriteLine("LoadFinancialData");
+            //System.Diagnostics.Debug.WriteLine("LoadFinancialData");
             try
             {
                 var list = await _recordRepository.ListAsync(CurrentBook);

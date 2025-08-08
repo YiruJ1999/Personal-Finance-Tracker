@@ -12,6 +12,11 @@
 
         <ScrollView>
             <VerticalStackLayout Spacing="20" Padding="20">
+                
+                <!-- Current Book -->
+                <Label Text="{Binding CurrentBook, StringFormat='当前账本: {0}'}" FontSize="15" FontAttributes="Bold" HorizontalOptions="Start" BackgroundColor="Azure" />
+
+
 
                 <!-- Monthly Summary -->
                 <Label Text="本月收支平衡情况" FontSize="20" FontAttributes="Bold" HorizontalOptions="Center" />
@@ -91,7 +96,7 @@
                 Wrap="NoWrap"
                 >
 
-                <Button Text="账本" FlexLayout.Grow="1" Margin="3,0" />
+                <Button Text="账本" FlexLayout.Grow="1" Margin="3,0"  Command ="{Binding GoToBookCommand}" />
                 <Button Text="账单" FlexLayout.Grow="1" Margin="3,0" Command ="{Binding ViewRecordCommand}" />
                 <Button Text="+"    FlexLayout.Grow="1" Margin="3,0" Command ="{Binding AddRecordCommand}" />
                 <Button Text="账户" FlexLayout.Grow="1" Margin="3,0" Command="{Binding ViewAccountCommand}"/>

@@ -14,6 +14,7 @@ namespace PersonalFinanceTracker
             Routing.RegisterRoute("ViewRecordPage", typeof(ViewRecordPage));
             Routing.RegisterRoute("personalinfopage", typeof(PersonalInfoPage));
             Routing.RegisterRoute("ViewAccountPage", typeof(AccountPage));
+            Routing.RegisterRoute("bookpage", typeof(BookPage));
         }
 
         public static async Task DisplaySnackbarAsync(string message)
