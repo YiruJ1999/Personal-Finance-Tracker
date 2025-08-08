@@ -14,8 +14,9 @@ namespace PersonalFinanceTracker.PageModels;
 public partial class AddRecordPageModel : ObservableObject
 {
     private readonly DatabaseService _dbService;
+    private readonly RecordRepository _recordRepository;
 
-    public AddRecordPageModel(DatabaseService dbService)
+    public AddRecordPageModel(DatabaseService dbService, RecordRepository recordRepository)
     {
         _dbService = dbService;
 
@@ -23,6 +24,7 @@ public partial class AddRecordPageModel : ObservableObject
         IsExpenseSelected = true;
         Categories = new ObservableCollection<CategoryModel>(CategoryData.GetExpenseCategories());
         SelectedDate = DateTime.Now;
+        _recordRepository = recordRepository;
     }
 
     // income or expense
@@ -82,7 +84,7 @@ public partial class AddRecordPageModel : ObservableObject
                 Type = IsExpenseSelected ? "支出" : "收入"
             };
 
-            await _dbService.SaveRecordAsync(record);
+            await _recordRepository.SaveAsync(record);
 
             // reset fields after saving
             WeakReferenceMessenger.Default.Send(new RecordSavedMessage());

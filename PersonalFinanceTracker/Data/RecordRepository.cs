@@ -1,4 +1,5 @@
-﻿using PersonalFinanceTracker.Models;
+﻿//using CloudKit;
+using PersonalFinanceTracker.Models;
 using PersonalFinanceTracker.Services;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -40,6 +41,16 @@ namespace PersonalFinanceTracker.Data
         public Task DeleteAllAsync()
         {
             return _database.Database.DeleteAllAsync<Record>();
+        }
+
+        public async Task<List<Record>> GetRecordsPagedAsync(int pageNumber, int pageSize)
+        {
+            int skip = (pageNumber - 1) * pageSize;
+            return await _database.Database.Table<Record>()
+                .OrderByDescending(r => r.Timestamp) // 按时间戳降序排序
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
         }
 
     }

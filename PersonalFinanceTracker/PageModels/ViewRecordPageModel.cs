@@ -18,6 +18,8 @@ public partial class ViewRecordPageModel : ObservableObject
     private int _currentPage = 1;
     private bool _isLoading = false;
     private int _pageSize = 15; // Default page size
+    [ObservableProperty]
+    private ObservableCollection<Record> records;
 
     public ViewRecordPageModel(DatabaseService dbService, RecordRepository recordRepository)
     {
@@ -41,7 +43,7 @@ public partial class ViewRecordPageModel : ObservableObject
         if (_isLoading) return;
 
         _isLoading = true;
-        var records = await _dbService.GetRecordsPagedAsync(_currentPage++, _pageSize);
+        var records = await _recordRepository.GetRecordsPagedAsync(_currentPage++, _pageSize);
         foreach (var record in records)
         {
             Records.Add(record);
@@ -65,8 +67,7 @@ public partial class ViewRecordPageModel : ObservableObject
     }
 
 
-    [ObservableProperty]
-    private ObservableCollection<Record> records;
+
 
     
 
