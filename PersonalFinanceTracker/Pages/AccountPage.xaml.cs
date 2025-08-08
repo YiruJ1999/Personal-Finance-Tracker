@@ -1,3 +1,4 @@
+using PersonalFinanceTracker.PageModels;
 namespace PersonalFinanceTracker.Pages;
 
 public partial class AccountPage : ContentPage
