@@ -86,18 +86,19 @@ public partial class AccountRepository
         }
 
         // Recompute balance for each account from Records (Income - Expense)
-        
+
+        // AccountRepository.SyncAccountsFromRecordsAsync()
         var sql = @"
             SELECT Account as Account,
                    SUM(CASE 
-                         WHEN Type IN ('Income','收入') THEN Amount 
-                         ELSE -Amount 
+                         WHEN Type IN ('Income','收入','OpeningBalance','Adjustment-Increase') THEN Amount
+                         ELSE -Amount
                        END) as Balance
             FROM Records
             WHERE Account IS NOT NULL AND Account <> ''
             GROUP BY Account";
-
         var aggregates = await _database.Database.QueryAsync<AccountBalanceDto>(sql);
+
 
         foreach (var agg in aggregates)
         {
@@ -129,32 +130,38 @@ public partial class AccountRepository
     }
 
     // 4) Update one account's balance (manual adjustment)
-    //    Strongly recommend also inserting an 'Adjustment' record to keep history
-    public async Task UpdateAccountBalanceAsync(string accountName, decimal newBalance, bool alsoWriteAdjustmentRecord = true)
+    public async Task UpdateAccountBalanceAsync(string accountName, decimal newBalance)
     {
         await _database.InitAsync();
-        var acc = await _database.Database.Table<Account>().Where(a => a.Name == accountName).FirstOrDefaultAsync();
-        if (acc == null) return;
 
-        var delta = newBalance - acc.Balance;
-        acc.Balance = newBalance;
-        await _database.Database.UpdateAsync(acc);
+        var sqlCurrent = @"
+        SELECT 
+            SUM(CASE 
+                  WHEN Type IN ('Income','收入','OpeningBalance','Adjustment-Increase') THEN Amount
+                  ELSE -Amount
+                END)
+        FROM Records
+        WHERE Account = ?";
+        var current = await _database.Database.ExecuteScalarAsync<decimal?>(sqlCurrent, accountName) ?? 0m;
+        // calculate the difference
+        var delta = newBalance - current;
+        if (delta == 0m)
+            return;
 
-        if (alsoWriteAdjustmentRecord && delta != 0m)
+        var adj = new Record
         {
-            // Write an adjustment record so trends remain auditable
-            var adj = new Record
-            {
-                Account = accountName,
-                Type = delta >= 0 ? "Adjustment-Increase" : "Adjustment-Decrease",
-                Amount = Math.Abs(delta),
-                Category = "Adjustment",
-                Note = "Manual balance adjustment",
-                Timestamp = DateTime.UtcNow
-            };
-            await _database.Database.InsertAsync(adj);
-        }
+            Account = accountName,
+            Type = delta >= 0 ? "Adjustment-Increase" : "Adjustment-Decrease",
+            Amount = Math.Abs(delta),
+            Category = "Adjustment",
+            Note = "Manual balance adjustment",
+            Timestamp = DateTime.UtcNow
+        };
+        await _database.Database.InsertAsync(adj);
+
+        await SyncAccountsFromRecordsAsync();
     }
+
 
     // 5) Add a new account
     public async Task AddAccountAsync(string accountName, decimal openingBalance = 0m)
@@ -206,34 +213,37 @@ public partial class AccountRepository
     }
 
     // 7) Last 4 months total assets trend (month-end snapshot)
-    //    If you don't have opening balances, this approximates by cumulative net deltas from 0.
+
     public async Task<Dictionary<string, decimal>> GetLast4MonthsTotalAssetsAsync()
     {
         await _database.InitAsync();
 
-        // Get year-month strings for last 4 months including current
+        // Build the last 4 months (ascending)
         var months = Enumerable.Range(0, 4)
             .Select(i => DateTime.UtcNow.AddMonths(-i))
-            .OrderBy(d => d) // ascending by time
+            .OrderBy(d => d)
             .Select(d => d.ToString("yyyy-MM"))
             .ToList();
 
-        // Monthly net deltas (Income - Expense) per month
-        var sql = @"
-            SELECT strftime('%Y-%m', Timestamp) AS MonthKey,
-                   SUM(CASE WHEN Type IN ('Income','收入','OpeningBalance','Adjustment-Increase')
-                            THEN Amount
-                            ELSE -Amount
-                       END) AS NetDelta
-            FROM Records
-            GROUP BY strftime('%Y-%m', Timestamp)
-        ";
-        var monthly = await _database.Database.QueryAsync<MonthlyTotalDto>(sql);
-        var monthlyDict = monthly.ToDictionary(m => m.MonthKey, m => m.NetDelta);
+        // Pull all records and group in C# to avoid SQLite strftime quirks
+        var all = await _database.Database.Table<Record>().ToListAsync();
 
-        // If you maintain Account.Balance as of 'now', you can backfill by subtracting future months' deltas, 
-        // but simplest is to use cumulative sum from 0 or from sum(Account.Balance) minus all deltas.
-        // Here we do cumulative from 0 for the 4 months window (simple and self-contained).
+        // Month key: yyyy-MM; Net delta: + for income/opening/adjust+, - for expense/adjust-
+        var monthlyDict = all
+            .GroupBy(r => r.Timestamp.ToString("yyyy-MM"))
+            .ToDictionary(
+                g => g.Key,
+                g => g.Sum(r =>
+                    (r.Type == "Income" ||
+                     r.Type == "收入" ||
+                     r.Type == "OpeningBalance" ||
+                     r.Type == "Adjustment-Increase")
+                    ? r.Amount
+                    : -r.Amount
+                )
+            );
+
+        // Build cumulative series across the 4 months window
         var trend = new Dictionary<string, decimal>();
         decimal cumulative = 0m;
         foreach (var m in months)
@@ -243,6 +253,10 @@ public partial class AccountRepository
 
             trend[m] = cumulative;
         }
+
         return trend;
     }
+
+
+
 }

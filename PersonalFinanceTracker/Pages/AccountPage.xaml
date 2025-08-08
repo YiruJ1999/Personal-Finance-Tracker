@@ -4,6 +4,7 @@
     x:Class="PersonalFinanceTracker.Pages.AccountPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:PersonalFinanceTracker.Pages"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:chart="clr-namespace:Syncfusion.Maui.Charts;assembly=Syncfusion.Maui.Charts"
     Title="Accounts">
@@ -23,17 +24,17 @@
             <Frame Padding="16" HasShadow="True" CornerRadius="12">
                 <VerticalStackLayout Spacing="4">
                     <Label Text="总资产" FontAttributes="Bold" FontSize="16"/>
-                    <Label Text="{Binding totalAssets, StringFormat='{}{0:C}'}"
+                    <Label Text="{Binding TotalAssets, StringFormat='{}{0:C}'}"
                            FontSize="24" FontAttributes="Bold"/>
                 </VerticalStackLayout>
             </Frame>
-
+            <Label Text="{Binding Last4MonthsTrend.Count, StringFormat='点数: {0}'}" />
             <!-- Last 4 months trend line chart -->
             <Frame Padding="16" HasShadow="True" CornerRadius="12">
                 <VerticalStackLayout Spacing="12">
                     <Label Text="过去4个月的总资产趋势"
                            FontAttributes="Bold" FontSize="16"/>
-                    <chart:SfCartesianChart>
+                    <chart:SfCartesianChart x:Name="AssetsTrendChart">
                         <!-- Category axis for month keys (e.g., 2025-06) -->
                         <chart:SfCartesianChart.XAxes>
                             <chart:CategoryAxis ShowMajorGridLines="False" />
@@ -46,7 +47,7 @@
 
                         <!-- Bind to Dictionary<string, decimal> (Key -> X, Value -> Y) -->
                         <chart:LineSeries
-                            ItemsSource="{Binding last4MonthsTrend}"
+                            ItemsSource="{Binding Last4MonthsTrend}"
                             XBindingPath="Key"
                             YBindingPath="Value"
                             ShowMarkers="True"
@@ -61,13 +62,13 @@
                     <Grid Padding="16" ColumnDefinitions="*,Auto" VerticalOptions="Center">
                         <Label Text="Accounts" FontAttributes="Bold" FontSize="16" />
                         <Button Grid.Column="1" Text="Reload"
-                                Command="{Binding LoadAsyncCommand}" />
+                                Command="{Binding LoadCommand}" />
                     </Grid>
 
                     <CollectionView
                         ItemsSource="{Binding Accounts}"
                         SelectionMode="Single"
-                        SelectedItem="{Binding selectedAccount, Mode=TwoWay}">
+                        SelectedItem="{Binding SelectedAccount, Mode=TwoWay}">
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
                                 <Frame Margin="12,6" Padding="12" CornerRadius="10" HasShadow="False">
@@ -99,27 +100,27 @@
             <!-- Edit selected account balance -->
             <Frame Padding="16" HasShadow="True" CornerRadius="12">
                 <VerticalStackLayout Spacing="12">
-                    <Label Text="Edit Selected Account Balance"
+                    <Label Text="编辑选中账户余额"
                            FontAttributes="Bold" FontSize="16"/>
 
                     <!-- Selected summary -->
                     <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="6">
-                        <Label Grid.Row="0" Grid.Column="0" Text="Selected:" FontAttributes="Bold"/>
-                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding selectedAccount.Name}" />
+                        <Label Grid.Row="0" Grid.Column="0" Text="已选账户：" FontAttributes="Bold"/>
+                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding SelectedAccount.Name}" />
 
-                        <Label Grid.Row="1" Grid.Column="0" Text="Current:" FontAttributes="Bold"/>
+                        <Label Grid.Row="1" Grid.Column="0" Text="账户余额：" FontAttributes="Bold"/>
                         <Label Grid.Row="1" Grid.Column="1"
-                               Text="{Binding selectedAccount.Balance, StringFormat='{}{0:C}'}" />
+                               Text="{Binding SelectedAccount.Balance, StringFormat='{}{0:C}'}" />
                     </Grid>
 
                     <!-- New balance input -->
                     <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
                         <Entry WidthRequest="180" Keyboard="Numeric"
-                               Placeholder="New balance"
+                               Placeholder="请输入新的余额"
                                Text="{Binding EditedBalance, Mode=TwoWay}" />
-                        <Button Text="Update"
-                                Command="{Binding UpdateBalanceAsyncCommand}"
-                                IsEnabled="{Binding selectedAccount, Converter={StaticResource IsNotNullConverter}}" />
+                        <Button Text="更新"
+                                Command="{Binding UpdateBalanceCommand}"
+                                IsEnabled="{Binding SelectedAccount, Converter={StaticResource IsNotNullConverter}}" />
                     </HorizontalStackLayout>
                 </VerticalStackLayout>
             </Frame>
@@ -138,13 +139,13 @@
                                Placeholder="Opening balance"
                                Text="{Binding NewAccountOpeningBalance, Mode=TwoWay}" />
                         <Button Grid.Column="2" Text="Add"
-                                Command="{Binding AddAccountAsyncCommand}" />
+                                Command="{Binding AddAccountCommand}" />
                     </Grid>
 
                     <!-- Delete selected account -->
                     <Button Text="Delete Selected"
-                            Command="{Binding DeleteAccountAsyncCommand}"
-                            IsEnabled="{Binding selectedAccount, Converter={StaticResource IsNotNullConverter}}" />
+                            Command="{Binding DeleteAccountCommand}"
+                            IsEnabled="{Binding SelectedAccount, Converter={StaticResource IsNotNullConverter}}" />
                 </VerticalStackLayout>
             </Frame>
 

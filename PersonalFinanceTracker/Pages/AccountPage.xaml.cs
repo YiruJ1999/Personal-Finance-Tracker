@@ -16,5 +16,6 @@ public partial class AccountPage : ContentPage
     {
         base.OnAppearing();
         await pageModel.LoadAsync();
+
     }
 }
