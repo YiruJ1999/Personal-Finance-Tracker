@@ -1,6 +1,6 @@
-﻿using PersonalFinanceTracker.Models;
-using SQLite;
+﻿using SQLite;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace PersonalFinanceTracker.Services
 {
@@ -17,10 +17,22 @@ namespace PersonalFinanceTracker.Services
 
             Database = new SQLiteAsyncConnection(dbPath);
 
-            await Database.CreateTableAsync<Record>();
-            await Database.CreateTableAsync<PersonalInfo>();
-            await Database.CreateTableAsync<Account>();
+            // Keep only cross-cutting init here if really needed (e.g., app-wide metadata tables).
+            // Do NOT put Record-specific logic here.
+            await Database.CreateTableAsync<Models.Record>();
+            await Database.CreateTableAsync<Models.PersonalInfo>();
+            await Database.CreateTableAsync<Models.Account>();
         }
 
+        // Optional convenience wrappers (keep them generic).
+        public Task<int> ExecuteAsync(string sql, params object[] args)
+            => Database.ExecuteAsync(sql, args);
+
+        public Task<T> ExecuteScalarAsync<T>(string sql, params object[] args)
+            => Database.ExecuteScalarAsync<T>(sql, args);
+
+        public Task<System.Collections.Generic.List<T>> QueryAsync<T>(string sql, params object[] args)
+            where T : new()
+            => Database.QueryAsync<T>(sql, args);
     }
 }

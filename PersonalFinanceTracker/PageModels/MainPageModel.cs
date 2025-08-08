@@ -11,14 +11,23 @@ namespace PersonalFinanceTracker.PageModels
         private readonly DatabaseService _databaseService;
         private readonly SeedDataService _seedDataService;
 
+        // Key for persisting current book name
+        private const string PrefKeyCurrentBook = "current_book";
+
         public MainPageModel(RecordRepository recordRepository, DatabaseService databaseService, SeedDataService seedDataService)
         {
             _recordRepository = recordRepository;
             _databaseService = databaseService;
             _seedDataService = seedDataService;
 
-
+            // Initialize CurrentBook from preferences or use a default
+            CurrentBook = Preferences.Default.Get(PrefKeyCurrentBook, "Default");
         }
+
+        // -------- Observable properties --------
+
+        [ObservableProperty]
+        private string currentBook;  // The active book name used by repositories
 
         [ObservableProperty]
         private List<Record> todayRecords;
@@ -34,6 +43,8 @@ namespace PersonalFinanceTracker.PageModels
 
         [ObservableProperty]
         private bool isRefreshing;
+
+        // -------- Commands --------
 
         [RelayCommand]
         private async Task Refresh()
@@ -58,14 +69,12 @@ namespace PersonalFinanceTracker.PageModels
         [RelayCommand]
         private async Task ViewRecord()
         {
-            //System.Diagnostics.Debug.WriteLine("点击了账单按钮！");
             await Shell.Current.GoToAsync("ViewRecordPage");
         }
 
         [RelayCommand]
         private async Task ViewPersonal()
         {
-            //System.Diagnostics.Debug.WriteLine("点击了按钮！");
             await Shell.Current.GoToAsync("personalinfopage");
         }
 
@@ -79,25 +88,46 @@ namespace PersonalFinanceTracker.PageModels
         [RelayCommand]
         public async Task Appearing()
         {
+            // Initialize DB connection (generic; no Record-specific logic here)
             await _databaseService.InitAsync();
 
+            // Un-comment the next lines if you want to reset the seed state
+            Preferences.Default.Remove("is_seeded");
+            _recordRepository.DeleteAllAsync(currentBook);
+
+            // Seed once per app (optionally per book; see note below)
             if (!Preferences.Default.ContainsKey("is_seeded"))
             {
+                // If your SeedDataService should seed per book, prefer:
+                // await _seedDataService.LoadSeedDataAsync(CurrentBook);
                 await _seedDataService.LoadSeedDataAsync();
+
                 Preferences.Default.Set("is_seeded", true);
                 Preferences.Default.Set(nameof(MonthlyBugget), 0.0);
             }
 
+            // Load page data using the active book
             await LoadFinancialData();
-            //await _recordRepository.DeleteAllAsync(); // ← 添加这行
-            //Preferences.Default.Remove("is_seeded");  // 再次允许导入一次
-            MonthlyBugget = Preferences.Default.Get(nameof(MonthlyBugget), 0.0);
 
+            MonthlyBugget = Preferences.Default.Get(nameof(MonthlyBugget), 0.0);
         }
+
+        // Switch current book at runtime (bind this to a Picker if needed)
+        [RelayCommand]
+        private async Task ChangeBook(string newBook)
+        {
+            // Persist and reload data for the selected book
+            CurrentBook = string.IsNullOrWhiteSpace(newBook) ? "Default" : newBook.Trim();
+            Preferences.Default.Set(PrefKeyCurrentBook, CurrentBook);
+            await LoadFinancialData();
+        }
+
+        // -------- Data loading --------
 
         public async Task LoadFinancialData()
         {
-            var allRecords = await _recordRepository.ListAsync();
+            // IMPORTANT: repository calls now require the book name
+            var allRecords = await _recordRepository.ListAsync(CurrentBook);
 
             var today = DateTime.Today;
             TodayRecords = allRecords
@@ -112,7 +142,6 @@ namespace PersonalFinanceTracker.PageModels
 
             var income = monthly.Where(r => r.Type == "收入").Sum(r => r.Amount);
             var expense = monthly.Where(r => r.Type == "支出").Sum(r => r.Amount);
-
 
             MonthlySummaryData = new List<MonthlySummaryItem>
             {
@@ -130,26 +159,18 @@ namespace PersonalFinanceTracker.PageModels
                     Amount = g.Sum(r => r.Amount)
                 }).ToList();
 
-            //System.Diagnostics.Debug.WriteLine($"Record总数: {allRecords.Count}");
-            //System.Diagnostics.Debug.WriteLine($"本月记录: {monthly.Count}");
-            //System.Diagnostics.Debug.WriteLine($"今日记录: {TodayRecords?.Count}");
-            //System.Diagnostics.Debug.WriteLine("=== 所有记录时间（含毫秒）===");
-
             foreach (var record in allRecords)
             {
                 System.Diagnostics.Debug.WriteLine(record.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff"));
             }
             System.Diagnostics.Debug.WriteLine("系统 DateTime.Today 是：" + DateTime.Today.ToString("yyyy-MM-dd"));
-
-
         }
 
-
+        // Persist MonthlyBugget whenever changed
         partial void OnMonthlyBuggetChanged(double value)
         {
             Preferences.Default.Set(nameof(MonthlyBugget), value);
         }
-
     }
 
     public record MonthlySummaryItem(string Label, decimal Amount);
