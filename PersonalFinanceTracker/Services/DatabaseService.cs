@@ -1,6 +1,6 @@
-﻿using PersonalFinanceTracker.Models;
-using SQLite;
+﻿using SQLite;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace PersonalFinanceTracker.Services
 {
@@ -17,48 +17,22 @@ namespace PersonalFinanceTracker.Services
 
             Database = new SQLiteAsyncConnection(dbPath);
 
-            await Database.CreateTableAsync<Record>();
-            await Database.CreateTableAsync<PersonalInfo>();
-            await Database.CreateTableAsync<Account>();
+            // Keep only cross-cutting init here if really needed (e.g., app-wide metadata tables).
+            // Do NOT put Record-specific logic here.
+            await Database.CreateTableAsync<Models.Record>();
+            await Database.CreateTableAsync<Models.PersonalInfo>();
+            await Database.CreateTableAsync<Models.Account>();
         }
 
-        // Save a record to the database
-        public async Task SaveRecordAsync(Record record)
-        {
-            await InitAsync(); // 确保数据库已初始化
-            await Database.InsertAsync(record);
-        }
+        // Optional convenience wrappers (keep them generic).
+        public Task<int> ExecuteAsync(string sql, params object[] args)
+            => Database.ExecuteAsync(sql, args);
 
-        // Get all records from the database
-        public async Task<List<Record>> GetAllRecordsAsync()
-        {
-            await InitAsync();
-            return await Database.Table<Record>().ToListAsync();
-        }
+        public Task<T> ExecuteScalarAsync<T>(string sql, params object[] args)
+            => Database.ExecuteScalarAsync<T>(sql, args);
 
-        public async Task<List<Record>> GetRecordsPagedAsync(int pageNumber, int pageSize)
-        {
-            int skip = (pageNumber - 1) * pageSize;
-            return await Database.Table<Record>()
-                .OrderByDescending(r => r.Timestamp) // 按时间戳降序排序
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-        }
-
-        // Delete all records from the database
-        public async Task DeleteAllRecordsAsync()
-        {
-            await InitAsync();
-            await Database.DeleteAllAsync<Record>();
-        }
-
-        // Delete a record
-        public async Task DeleteRecordAsync(Record record)
-        {
-            await InitAsync();
-            await Database.DeleteAsync(record);
-        }
-
+        public Task<System.Collections.Generic.List<T>> QueryAsync<T>(string sql, params object[] args)
+            where T : new()
+            => Database.QueryAsync<T>(sql, args);
     }
 }
