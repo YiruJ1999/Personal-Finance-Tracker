@@ -46,19 +46,19 @@ namespace PersonalFinanceTracker
             builder.Services.AddTransient<AddRecordPage>();
             builder.Services.AddTransient<AddRecordPageModel>();
 
-            builder.Services.AddSingleton<ViewRecordPageModel>();
-            builder.Services.AddSingleton<ViewRecordPage>();
+            builder.Services.AddTransient<ViewRecordPageModel>();
+            builder.Services.AddTransient<ViewRecordPage>();
 
-            builder.Services.AddSingleton<PersonalInfoPage>();
-            builder.Services.AddSingleton<PersonalInfoPageModel>();
+            builder.Services.AddTransient<PersonalInfoPage>();
+            builder.Services.AddTransient<PersonalInfoPageModel>();
             builder.Services.AddSingleton<PersonalInfoRepository>();
 
-            builder.Services.AddSingleton<AccountPage>();
-            builder.Services.AddSingleton<AccountPageModel>();
+            builder.Services.AddTransient<AccountPage>();
+            builder.Services.AddTransient<AccountPageModel>();
             builder.Services.AddSingleton<AccountRepository>();
 
-            builder.Services.AddSingleton<BookPage>();
-            builder.Services.AddSingleton<BookPageModel>();
+            builder.Services.AddTransient<BookPage>();
+            builder.Services.AddTransient<BookPageModel>();
 
             return builder.Build();
         }
