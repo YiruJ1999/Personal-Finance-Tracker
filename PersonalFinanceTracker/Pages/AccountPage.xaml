@@ -7,7 +7,8 @@
     xmlns:local="clr-namespace:PersonalFinanceTracker.Pages"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:chart="clr-namespace:Syncfusion.Maui.Charts;assembly=Syncfusion.Maui.Charts"
-    Title="Accounts">
+    Title="Accounts"
+    x:Name="AccountPageRoot">
 
     <!-- Page-level resources: register converters -->
     <ContentPage.Resources>
@@ -60,96 +61,45 @@
             <Frame Padding="0" HasShadow="True" CornerRadius="12">
                 <VerticalStackLayout>
                     <Grid Padding="16" ColumnDefinitions="*,Auto" VerticalOptions="Center">
-                        <Label Text="Accounts" FontAttributes="Bold" FontSize="16" />
-                        <Button Grid.Column="1" Text="Reload"
+                        <Label Text="所有账户" FontAttributes="Bold" FontSize="16" />
+                        <Button Grid.Column="1" Text="刷新"
                                 Command="{Binding LoadCommand}" />
+                        <Button Grid.Column="2" Text="添加"
+                                Command="{Binding ShowAddAccountPopupCommand}" />
                     </Grid>
 
-                    <CollectionView
-                        ItemsSource="{Binding Accounts}"
-                        SelectionMode="Single"
-                        SelectedItem="{Binding SelectedAccount, Mode=TwoWay}">
+                    <CollectionView ItemsSource="{Binding Accounts}">
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
-                                <Frame Margin="12,6" Padding="12" CornerRadius="10" HasShadow="False">
-                                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
-                                        <!-- Account name -->
-                                        <Label Grid.Row="0" Grid.Column="0"
-                                               Text="{Binding Name}"
-                                               FontAttributes="Bold" FontSize="16"/>
-                                        <!-- Current balance -->
-                                        <Label Grid.Row="0" Grid.Column="1"
-                                               Text="{Binding Balance, StringFormat='{}{0:C}'}"
-                                               FontAttributes="Bold" FontSize="16"/>
+                                <SwipeView>
+                                    <SwipeView.RightItems>
+                                        <SwipeItems Mode="Reveal">
+                                            <!-- Swipe to delete opens Delete popup -->
+                                            <SwipeItem Text="删除" BackgroundColor="IndianRed"
+                                               Command="{Binding BindingContext.ShowDeleteAccountPopupCommand, Source={x:Reference Name=AccountPageRoot}}"
+                                               CommandParameter="{Binding Name}" />
+                                        </SwipeItems>
+                                    </SwipeView.RightItems>
 
-                                        <!-- Account type and created time -->
-                                        <HorizontalStackLayout Grid.Row="1" Grid.ColumnSpan="2" Spacing="12">
-                                            <Label Text="{Binding Type, StringFormat='Type: {0}'}"
-                                                   FontSize="12" />
-                                            <Label Text="{Binding CreatedAt, StringFormat='Created: {0:yyyy-MM-dd}'}"
-                                                   FontSize="12" />
-                                        </HorizontalStackLayout>
+                                    <Grid Padding="12" ColumnDefinitions="*,Auto">
+                                        <Label Text="{Binding Name}" FontAttributes="Bold" />
+                                        <Label Grid.Column="1"
+                                           Text="{Binding Balance, StringFormat='{0:C}'}"
+                                           HorizontalTextAlignment="End" />
+
+                                        <!-- Tap to navigate into detail -->
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Command="{Binding BindingContext.OpenAccountDetailCommand, Source={x:Reference Name=AccountPageRoot}}"
+                                                CommandParameter="{Binding Name}" />
+                                        </Grid.GestureRecognizers>
                                     </Grid>
-                                </Frame>
+                                </SwipeView>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
                 </VerticalStackLayout>
             </Frame>
-
-            <!-- Edit selected account balance -->
-            <Frame Padding="16" HasShadow="True" CornerRadius="12">
-                <VerticalStackLayout Spacing="12">
-                    <Label Text="编辑选中账户余额"
-                           FontAttributes="Bold" FontSize="16"/>
-
-                    <!-- Selected summary -->
-                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="6">
-                        <Label Grid.Row="0" Grid.Column="0" Text="已选账户：" FontAttributes="Bold"/>
-                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding SelectedAccount.Name}" />
-
-                        <Label Grid.Row="1" Grid.Column="0" Text="账户余额：" FontAttributes="Bold"/>
-                        <Label Grid.Row="1" Grid.Column="1"
-                               Text="{Binding SelectedAccount.Balance, StringFormat='{}{0:C}'}" />
-                    </Grid>
-
-                    <!-- New balance input -->
-                    <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
-                        <Entry WidthRequest="180" Keyboard="Numeric"
-                               Placeholder="请输入新的余额"
-                               Text="{Binding EditedBalance, Mode=TwoWay}" />
-                        <Button Text="更新"
-                                Command="{Binding UpdateBalanceCommand}"
-                                IsEnabled="{Binding SelectedAccount, Converter={StaticResource IsNotNullConverter}}" />
-                    </HorizontalStackLayout>
-                </VerticalStackLayout>
-            </Frame>
-
-            <!-- Add / Delete account -->
-            <Frame Padding="16" HasShadow="True" CornerRadius="12">
-                <VerticalStackLayout Spacing="12">
-                    <Label Text="Add / Delete Account"
-                           FontAttributes="Bold" FontSize="16"/>
-
-                    <!-- Add account row -->
-                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
-                        <Entry Placeholder="Account name"
-                               Text="{Binding NewAccountName, Mode=TwoWay}" />
-                        <Entry Grid.Column="1" WidthRequest="140" Keyboard="Numeric"
-                               Placeholder="Opening balance"
-                               Text="{Binding NewAccountOpeningBalance, Mode=TwoWay}" />
-                        <Button Grid.Column="2" Text="Add"
-                                Command="{Binding AddAccountCommand}" />
-                    </Grid>
-
-                    <!-- Delete selected account -->
-                    <Button Text="Delete Selected"
-                            Command="{Binding DeleteAccountCommand}"
-                            IsEnabled="{Binding SelectedAccount, Converter={StaticResource IsNotNullConverter}}" />
-                </VerticalStackLayout>
-            </Frame>
-
-            <BoxView HeightRequest="12" Opacity="0"/>
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

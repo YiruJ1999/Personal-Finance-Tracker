@@ -60,7 +60,9 @@ namespace PersonalFinanceTracker
             builder.Services.AddTransient<BookPage>();
             builder.Services.AddTransient<BookPageModel>();
 
-            return builder.Build();
+            var app = builder.Build();
+            App.Services = app.Services;
+            return app;
         }
     }
 }

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="PersonalFinanceTracker.Pages.AccountDetailPage"
+             Title="{Binding AccountName}">
+    <Grid RowDefinitions="Auto,Auto,*" Padding="16" ColumnDefinitions="*,Auto">
+        <!-- Total amount -->
+        <Label Grid.Row="0" Grid.Column="0"
+               Text="{Binding TotalAmount, StringFormat='总金额：{0:C}'}"
+               FontSize="20" FontAttributes="Bold" />
+
+        <!-- Edit account button -->
+        <Button Grid.Row="0" Grid.Column="1" Text="编辑此账户"
+                Command="{Binding EditAccountCommand}" />
+
+        <!-- Month picker row -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Padding="0,8,0,8">
+            <Label Grid.Column="0" Text="明细（按月份）" FontAttributes="Bold" />
+            <!-- Month selector on the right -->
+            <Picker Grid.Column="1" WidthRequest="170"
+                    Title="选择月份"
+                    ItemsSource="{Binding AvailableMonths}"
+                    ItemDisplayBinding="{Binding Display}"
+                    SelectedItem="{Binding SelectedMonth}" />
+        </Grid>
+
+        <!-- Monthly records list -->
+        <CollectionView Grid.Row="2" ItemsSource="{Binding MonthlyRecords}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="8" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                        <Label Grid.Row="0" Grid.Column="0"
+                               Text="{Binding Category}" FontAttributes="Bold"/>
+                        <Label Grid.Row="0" Grid.Column="1"
+                               Text="{Binding Amount, StringFormat='{0:C}'}"
+                               HorizontalTextAlignment="End" />
+                        <Label Grid.Row="1" Grid.ColumnSpan="2"
+                               Text="{Binding Note}" FontSize="12" TextColor="Gray"/>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

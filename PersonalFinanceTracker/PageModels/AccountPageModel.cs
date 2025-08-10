@@ -6,7 +6,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using PersonalFinanceTracker.Data;
 using System.Linq;
-
+using System;                    
+using Microsoft.Maui.Controls;   
 
 namespace PersonalFinanceTracker.PageModels;
 
@@ -39,7 +40,6 @@ public partial class AccountPageModel : ObservableObject
     }
 
     // Load data for the page: sync accounts from records, list accounts, total assets and trend.
-
     [RelayCommand]
     public async Task LoadAsync()
     {
@@ -59,7 +59,7 @@ public partial class AccountPageModel : ObservableObject
         // 4) Last 4 months total assets trend
         var trendData = await _accountRepository.GetLast4MonthsTotalAssetsAsync();
 
-
+        // Fallback demo data if repository returns nothing
         if (trendData == null || trendData.Count == 0)
         {
             trendData = new Dictionary<string, decimal>
@@ -72,19 +72,16 @@ public partial class AccountPageModel : ObservableObject
         }
 
         Last4MonthsTrend = trendData
-        .OrderBy(kv => kv.Key) 
-        .Select(kv => new ChartPoint { Key = kv.Key, Value = (double)kv.Value })
-        .ToList();
+            .OrderBy(kv => kv.Key) // ascending by YYYY-MM
+            .Select(kv => new ChartPoint { Key = kv.Key, Value = (double)kv.Value })
+            .ToList();
 
         System.Diagnostics.Debug.WriteLine($"Trend Count = {Last4MonthsTrend.Count}");
         foreach (var p in Last4MonthsTrend)
             System.Diagnostics.Debug.WriteLine($"{p.Key} -> {p.Value}");
-
     }
 
-
     // Add a new account using bound properties NewAccountName/NewAccountOpeningBalance.
-
     [RelayCommand]
     private async Task AddAccountAsync()
     {
@@ -110,9 +107,7 @@ public partial class AccountPageModel : ObservableObject
         await LoadAsync();
     }
 
-
     // Update balance for the selected account using EditedBalance.
-
     [RelayCommand]
     private async Task UpdateBalanceAsync()
     {
@@ -127,5 +122,72 @@ public partial class AccountPageModel : ObservableObject
     partial void OnSelectedAccountChanged(Account? value)
     {
         EditedBalance = value?.Balance ?? 0m;
+    }
+
+
+    // Open account detail page from a list item tap.
+    [RelayCommand]
+    private async Task OpenAccountDetailAsync(string accountName)
+    {
+        // Prefer Shell navigation with query parameter "name"
+        if (Shell.Current is not null)
+        {
+            var route = $"accountDetail?name={Uri.EscapeDataString(accountName)}";
+            await Shell.Current.GoToAsync(route);
+            return;
+        }
+
+        // Fallback if Shell is not used
+        await Application.Current.MainPage.DisplayAlert("提示", "请先在应用中注册账户详情页的导航路由。", "好的");
+    }
+
+    // Show an "Add Account" popup (name + optional opening balance).
+    [RelayCommand]
+    private async Task ShowAddAccountPopupAsync()
+    {
+        // Ask for account name
+        var name = await Application.Current.MainPage.DisplayPromptAsync(
+            "添加账户", "请输入账户名称：", "保存", "取消", placeholder: "例如：现金/银行卡");
+
+        if (string.IsNullOrWhiteSpace(name))
+            return;
+
+        // Ask for opening balance (optional)
+        var openingText = await Application.Current.MainPage.DisplayPromptAsync(
+            "期初余额", "可选：输入期初余额（留空则为 0）", "确定", "跳过", keyboard: Keyboard.Numeric);
+
+        decimal opening = 0m;
+        if (!string.IsNullOrWhiteSpace(openingText) && decimal.TryParse(openingText, out var val))
+            opening = val;
+
+        await _accountRepository.AddAccountAsync(name.Trim(), opening);
+
+        // Reload list and totals
+        await LoadAsync();
+    }
+
+    // Show a delete confirmation popup with an extra option to also delete all records.
+    [RelayCommand]
+    private async Task ShowDeleteAccountPopupAsync(string accountName)
+    {
+        // First confirmation
+        var confirm = await Application.Current.MainPage.DisplayAlert(
+            "删除账户", $"确定要删除账户“{accountName}”？", "删除", "取消");
+
+        if (!confirm) return;
+
+        // Ask whether to also delete records
+        var choice = await Application.Current.MainPage.DisplayActionSheet(
+            "是否同时删除该账户的所有明细记录？", "取消", null,
+            "仅删除账户（保留明细）",
+            "删除账户并删除全部明细");
+
+        if (choice is null || choice == "取消") return;
+
+        bool alsoDelete = choice == "删除账户并删除全部明细";
+        await _accountRepository.DeleteAccountAsync(accountName, alsoDelete);
+
+        // Reload after deletion
+        await LoadAsync();
     }
 }
