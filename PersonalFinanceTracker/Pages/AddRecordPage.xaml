@@ -45,6 +45,12 @@
         <Entry Placeholder="€ 0.00" 
                Keyboard="Numeric" 
                Text="{Binding Amount}" />
+
+        <!-- Account picker -->
+        <Picker Title="选择账户"
+            ItemsSource="{Binding Accounts}"
+            ItemDisplayBinding="{Binding Name}"
+            SelectedItem="{Binding SelectedAccount}" />
         
         <!--Choose Date-->
         <DatePicker Date="{Binding SelectedDate}" />
