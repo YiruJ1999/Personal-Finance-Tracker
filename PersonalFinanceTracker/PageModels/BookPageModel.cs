@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Maui.Storage;
@@ -7,17 +8,23 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using PersonalFinanceTracker.Pages;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace PersonalFinanceTracker.PageModels
 {
     public partial class BookPageModel : ObservableObject
     {
         private readonly DatabaseService _db;
+        private readonly IServiceProvider _sp;
+        private readonly RecordRepository _recordRepository;
 
-        public BookPageModel(DatabaseService db)
+        public BookPageModel(DatabaseService db, IServiceProvider sp, RecordRepository recordRepository)
         {
             _db = db;
+            _sp = sp;
             Books = new ObservableCollection<BookSummary>();
+            _recordRepository = recordRepository;
         }
 
         [ObservableProperty]
@@ -28,6 +35,30 @@ namespace PersonalFinanceTracker.PageModels
         {
             await _db.InitAsync();
             await LoadAllBooksAsync();
+        }
+
+        [RelayCommand]
+        private async Task OnAddBookClicked()
+        {
+            System.Diagnostics.Debug.WriteLine("AddBookClickedCommand");
+            // Resolve popup via DI so its ViewModel is injected properly
+            var popup = _sp.GetRequiredService<CreateNewBookPopup>();
+
+            // In ViewModel we don't have `this`; use Shell.Current to show the popup
+            var result = await Shell.Current.ShowPopupAsync(popup);
+
+            // If your CreateNewBookPopup returns the new book name (recommended)
+            if (result is string newBookName && !string.IsNullOrWhiteSpace(newBookName))
+            {
+                // Create new book
+                await _recordRepository.CreateNewTable(newBookName);
+                Preferences.Default.Set("current_book", newBookName);
+                
+                await LoadAllBooksAsync();
+                await AppShell.DisplayToastAsync($"已创建账本：{newBookName}");
+                return;
+            }
+
         }
 
         /// <summary>

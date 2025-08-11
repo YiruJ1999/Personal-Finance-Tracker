@@ -1,3 +1,5 @@
+using CommunityToolkit.Maui.Views;
+
 namespace PersonalFinanceTracker.Pages;
 
 public partial class BookPage : ContentPage
@@ -17,4 +19,6 @@ public partial class BookPage : ContentPage
             await vm.Appearing();
         }
     }
+
+
 }

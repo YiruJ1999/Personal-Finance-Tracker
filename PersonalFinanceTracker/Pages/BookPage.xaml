@@ -1,86 +1,107 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:PersonalFinanceTracker.PageModels"
              x:Class="PersonalFinanceTracker.Pages.BookPage"
+             x:DataType="local:BookPageModel"
              Title="账本列表">
 
-    <CollectionView ItemsSource="{Binding Books}"
-                    Margin="20"
-                    VerticalOptions="FillAndExpand"
-                    SelectionMode="None">
+    <Grid RowDefinitions="*,Auto">
+        <CollectionView ItemsSource="{Binding Books}"
+                        Margin="20"
+                        VerticalOptions="FillAndExpand"
+                        SelectionMode="None"
+                        Grid.Row="0">
 
-        <CollectionView.ItemTemplate>
-            <DataTemplate>
-                <Border StrokeShape="RoundRectangle 10"
-                        BackgroundColor="#DDAAFF"
-                        StrokeThickness="0"
-                        Padding="15"
-                        Margin="0,0,0,20">
+            <CollectionView.ItemTemplate>
+                <!-- Important: item scope uses BookSummary, not BookPageModel -->
+                <DataTemplate x:DataType="local:BookSummary">
+                    <Border StrokeShape="RoundRectangle 10"
+                            BackgroundColor="#DDAAFF"
+                            StrokeThickness="0"
+                            Padding="15"
+                            Margin="0,0,0,20">
 
-                    <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="10" ColumnSpacing="20">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-
-                        <!-- Book name -->
-                        <Label Grid.Column="0"
-                               Text="{Binding BookName}"
-                               FontSize="20"
-                               FontAttributes="Bold"
-                               VerticalOptions="Center"
-                               HorizontalOptions="Start" />
-
-                        <!-- Last modified -->
-                        <Label Grid.Column="1"
-                               Text="{Binding LastModified, StringFormat='最近修改时间: {0:yyyy-MM-dd HH:mm}'}"
-                               FontSize="14"
-                               HorizontalOptions="End"
-                               VerticalOptions="Center" />
-
-                        <!-- Header row -->
-                        <Grid Grid.Row="1" Grid.ColumnSpan="2"
-                              ColumnSpacing="20"
-                              Margin="0,10,0,0">
+                        <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="10" ColumnSpacing="20">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
-                            <Label Grid.Column="0" Text="收入" HorizontalOptions="Center" />
-                            <Label Grid.Column="1" Text="支出" HorizontalOptions="Center" />
-                            <Label Grid.Column="2" Text="结余" HorizontalOptions="Center" />
-                            <Label Grid.Column="3" Text="预算" HorizontalOptions="Center" />
-                        </Grid>
 
-                        <!-- Data row -->
-                        <Grid Grid.Row="2" Grid.ColumnSpan="2"
-                              ColumnSpacing="20"
-                              Margin="0,5,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
+                            <!-- Book name -->
                             <Label Grid.Column="0"
-                                   Text="{Binding IncomeAmount, StringFormat='{0:C}'}"
-                                   HorizontalOptions="Center" />
-                            <Label Grid.Column="1"
-                                   Text="{Binding ExpenseAmount, StringFormat='{0:C}'}"
-                                   HorizontalOptions="Center" />
-                            <Label Grid.Column="2"
-                                   Text="{Binding BalanceAmount, StringFormat='{0:C}'}"
-                                   HorizontalOptions="Center" />
-                            <Label Grid.Column="3"
-                                   Text="{Binding BudgetAmount, StringFormat='{0:C}'}"
-                                   HorizontalOptions="Center" />
-                        </Grid>
+                                   Text="{Binding BookName}"
+                                   FontSize="20"
+                                   FontAttributes="Bold"
+                                   VerticalOptions="Center"
+                                   HorizontalOptions="Start" />
 
-                    </Grid>
-                </Border>
-            </DataTemplate>
-        </CollectionView.ItemTemplate>
-    </CollectionView>
+                            <!-- Last modified (DateTime? is OK; null shows empty) -->
+                            <Label Grid.Column="1"
+                                   Text="{Binding LastModified, StringFormat='最近修改时间: {0:yyyy-MM-dd HH:mm}'}"
+                                   FontSize="14"
+                                   HorizontalOptions="End"
+                                   VerticalOptions="Center" />
+
+                            <!-- Header row -->
+                            <Grid Grid.Row="1" Grid.ColumnSpan="2"
+                                  ColumnSpacing="20"
+                                  Margin="0,10,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Label Grid.Column="0" Text="收入" HorizontalOptions="Center" />
+                                <Label Grid.Column="1" Text="支出" HorizontalOptions="Center" />
+                                <Label Grid.Column="2" Text="结余" HorizontalOptions="Center" />
+                                <Label Grid.Column="3" Text="预算" HorizontalOptions="Center" />
+                            </Grid>
+
+                            <!-- Data row -->
+                            <Grid Grid.Row="2" Grid.ColumnSpan="2"
+                                  ColumnSpacing="20"
+                                  Margin="0,5,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Currency formatting uses current culture -->
+                                <Label Grid.Column="0"
+                                       Text="{Binding IncomeAmount, StringFormat='{}{0:C}'}"
+                                       HorizontalOptions="Center" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding ExpenseAmount, StringFormat='{}{0:C}'}"
+                                       HorizontalOptions="Center" />
+                                <Label Grid.Column="2"
+                                       Text="{Binding BalanceAmount, StringFormat='{}{0:C}'}"
+                                       HorizontalOptions="Center" />
+                                <Label Grid.Column="3"
+                                       Text="{Binding BudgetAmount, StringFormat='{}{0:C}'}"
+                                       HorizontalOptions="Center" />
+                            </Grid>
+
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+            <!-- If you later add EmptyView/Header/Footer, either give them a proper DataType
+                 or opt out with x:DataType="{x:Null}" to silence diagnostics. -->
+        </CollectionView>
+
+        <Button Text="新建账本"
+                Command="{Binding AddBookClickedCommand}"
+                BackgroundColor="HotPink"
+                TextColor="White"
+                HorizontalOptions="Center"
+                VerticalOptions="End"
+                Margin="20"
+                HeightRequest="50"
+                Grid.Row="1" />
+    </Grid>
 </ContentPage>

@@ -60,9 +60,16 @@ namespace PersonalFinanceTracker
             builder.Services.AddTransient<BookPage>();
             builder.Services.AddTransient<BookPageModel>();
 
+<<<<<<< Updated upstream
             var app = builder.Build();
             App.Services = app.Services;
             return app;
+=======
+            //builder.Services.AddTransient<PersonalFinanceTracker.PageModels.CreateNewBookPopupModel>();
+            builder.Services.AddTransient<PersonalFinanceTracker.Pages.CreateNewBookPopup>();
+
+            return builder.Build();
+>>>>>>> Stashed changes
         }
     }
 }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System;
+//using Intents;
 
 namespace PersonalFinanceTracker.Data
 {
@@ -27,6 +28,11 @@ namespace PersonalFinanceTracker.Data
             if (string.IsNullOrWhiteSpace(sanitized))
                 sanitized = "Default";
             return $"book_{sanitized}";
+        }
+
+        public async Task CreateNewTable(string bookName)
+        {
+            await EnsureTableAsync(bookName);
         }
 
         /// <summary>
