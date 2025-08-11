@@ -21,8 +21,6 @@ namespace PersonalFinanceTracker.PageModels
             _databaseService = databaseService;
             _seedDataService = seedDataService;
 
-            // Initialize CurrentBook from preferences or use a default
-            CurrentBook = Preferences.Default.Get(PrefKeyCurrentBook, defaultBookName);
         }
 
         // -------- Observable properties --------
@@ -95,6 +93,7 @@ namespace PersonalFinanceTracker.PageModels
         [RelayCommand]
         public async Task Appearing()
         {
+            System.Diagnostics.Debug.WriteLine("MainPageModel Appearing");
             // Initialize DB connection (generic; no Record-specific logic here)
             await _databaseService.InitAsync();
 
@@ -117,6 +116,7 @@ namespace PersonalFinanceTracker.PageModels
             await LoadFinancialData();
 
             MonthlyBugget = Preferences.Default.Get(nameof(MonthlyBugget), 0.0);
+            CurrentBook = Preferences.Default.Get(PrefKeyCurrentBook, defaultBookName);
         }
 
         // Switch current book at runtime (bind this to a Picker if needed)

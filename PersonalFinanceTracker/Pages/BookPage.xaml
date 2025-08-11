@@ -10,7 +10,8 @@
         <CollectionView ItemsSource="{Binding Books}"
                         Margin="20"
                         VerticalOptions="FillAndExpand"
-                        SelectionMode="None"
+                        SelectedItem="{Binding SelectedBook, Mode=TwoWay}"
+                        SelectionMode="Single"
                         Grid.Row="0">
 
             <CollectionView.ItemTemplate>
@@ -21,6 +22,25 @@
                             StrokeThickness="0"
                             Padding="15"
                             Margin="0,0,0,20">
+
+                        <!-- Selected visual states -->
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup Name="CommonStates">
+                                <VisualState Name="Normal">
+                                    <VisualState.Setters>
+                                        <Setter Property="BackgroundColor" Value="#DDAAFF" />
+                                        <Setter Property="StrokeThickness" Value="0" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState Name="Selected">
+                                    <VisualState.Setters>
+                                        <Setter Property="BackgroundColor" Value="#C6B3FF" />
+                                        <Setter Property="Stroke" Value="#7A49FF" />
+                                        <Setter Property="StrokeThickness" Value="2" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
 
                         <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="10" ColumnSpacing="20">
                             <Grid.ColumnDefinitions>

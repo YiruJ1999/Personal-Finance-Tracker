@@ -30,24 +30,34 @@ namespace PersonalFinanceTracker.PageModels
         [ObservableProperty]
         private ObservableCollection<BookSummary> books;
 
+        [ObservableProperty]
+        private BookSummary? selectedBook;
+
+        partial void OnSelectedBookChanged(BookSummary? value)
+        {
+            if (value is null) return;
+
+            // persist the current book name
+            Preferences.Default.Set("current_book", value.BookName);
+        }
+
         [RelayCommand]
         public async Task Appearing()
         {
             await _db.InitAsync();
             await LoadAllBooksAsync();
+            HighlightSelectedBook();
         }
 
         [RelayCommand]
         private async Task OnAddBookClicked()
         {
             System.Diagnostics.Debug.WriteLine("AddBookClickedCommand");
-            // Resolve popup via DI so its ViewModel is injected properly
-            var popup = _sp.GetRequiredService<CreateNewBookPopup>();
 
-            // In ViewModel we don't have `this`; use Shell.Current to show the popup
+            var popup = _sp.GetRequiredService<CreateNewBookPopup>();
             var result = await Shell.Current.ShowPopupAsync(popup);
 
-            // If your CreateNewBookPopup returns the new book name (recommended)
+            // If CreateNewBookPopup returns the new book name (recommended)
             if (result is string newBookName && !string.IsNullOrWhiteSpace(newBookName))
             {
                 // Create new book
@@ -59,7 +69,12 @@ namespace PersonalFinanceTracker.PageModels
                 return;
             }
 
+            HighlightSelectedBook();
+
         }
+
+
+
 
         /// <summary>
         /// Load all tables starting with 'book_' and compute aggregates for each.
@@ -118,6 +133,20 @@ namespace PersonalFinanceTracker.PageModels
             }
         }
 
+        private void HighlightSelectedBook()
+        {
+            System.Diagnostics.Debug.WriteLine("HighlightSelectedBook()");
+            foreach (var book in Books)
+            {
+                if (book.BookName == Preferences.Default.Get("current_book", ""))
+                {
+                    SelectedBook = book;
+                }
+                
+            }
+
+        }
+
         // POCOs for raw SQL mapping
         private sealed class SqliteNameRow
         {
@@ -131,6 +160,7 @@ namespace PersonalFinanceTracker.PageModels
             public decimal ExpenseAmount { get; set; }
             public string LastModified { get; set; } // read as string; we parse to DateTime?
         }
+    
     }
 
     public class BookSummary
