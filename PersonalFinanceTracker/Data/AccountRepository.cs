@@ -223,18 +223,21 @@ namespace PersonalFinanceTracker.Data
         // Implementation: for each month end, aggregate all records up to that date across all books.
         public async Task<Dictionary<string, decimal>> GetLast4MonthsTotalAssetsAsync()
         {
-            // Build cutoff dates: last 4 month ends (ascending)
+            // 1) Build the 4 month-ends, ascending.
             var today = DateTime.Today;
             var eomList = new List<DateTime>();
             for (int i = 3; i >= 0; i--)
             {
-                var dt = new DateTime(today.Year, today.Month, 1).AddMonths(-i + 1).AddDays(-1);
-                // Example: if today is Aug 10, months are May, Jun, Jul, Aug (use month end)
-                var end = new DateTime(dt.Year, dt.Month, DateTime.DaysInMonth(dt.Year, dt.Month), 23, 59, 59, DateTimeKind.Local);
-                eomList.Add(end);
+                var firstDayThisMonth = new DateTime(today.Year, today.Month, 1);
+                var dt = firstDayThisMonth.AddMonths(-i + 1).AddDays(-1); // last day of target month
+                var eom = new DateTime(dt.Year, dt.Month, DateTime.DaysInMonth(dt.Year, dt.Month), 23, 59, 59, DateTimeKind.Local);
+                eomList.Add(eom);
             }
 
-            // Scan all books once
+            // 2) Current total assets from Account table (includes opening balances etc.)
+            var totalNow = await GetTotalAssetsAsync();
+
+            // 3) Load ALL records across books once.
             var tables = await GetBookTableNamesAsync();
             var allRecords = new List<Record>();
             foreach (var t in tables)
@@ -244,28 +247,31 @@ namespace PersonalFinanceTracker.Data
                 allRecords.AddRange(rows);
             }
 
-            // Normalize timestamps (assume local if Unspecified)
+            // Normalize timestamps to Local.
             foreach (var r in allRecords)
             {
                 if (r.Timestamp.Kind == DateTimeKind.Unspecified)
                     r.Timestamp = DateTime.SpecifyKind(r.Timestamp, DateTimeKind.Local);
             }
 
-            // Cumulate up to each month end
+            // Helper to map record type to sign.
+            decimal Sign(Record r) => r.Type == "收入" ? 1m : (r.Type == "支出" ? -1m : 0m);
+
+            // 4) Reconstruct end-of-month total assets:
+            //    totalAtEom = totalNow - sum(net flows AFTER that EOM)
             var result = new Dictionary<string, decimal>();
             foreach (var eom in eomList)
             {
-                decimal total = 0m;
-                foreach (var r in allRecords.Where(x => x.Timestamp <= eom))
-                {
-                    var sign = r.Type == "收入" ? 1m :
-                               r.Type == "支出" ? -1m : 0m;
-                    total += sign * r.Amount;
-                }
-                result[eom.ToString("yyyy-MM")] = total;
+                var deltaAfter = allRecords
+                    .Where(x => x.Timestamp > eom)
+                    .Sum(x => Sign(x) * x.Amount);
+
+                var totalAtEom = totalNow - deltaAfter;
+                result[eom.ToString("yyyy-MM")] = totalAtEom;
             }
 
             return result;
         }
+
     }
 }
