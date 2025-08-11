@@ -7,7 +7,7 @@
     xmlns:local="clr-namespace:PersonalFinanceTracker.Pages"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:chart="clr-namespace:Syncfusion.Maui.Charts;assembly=Syncfusion.Maui.Charts"
-    Title="Accounts"
+    Title="资产账户"
     x:Name="AccountPageRoot">
 
     <!-- Page-level resources: register converters -->
@@ -26,7 +26,7 @@
                 <VerticalStackLayout Spacing="4">
                     <Label Text="总资产" FontAttributes="Bold" FontSize="16"/>
                     <Label Text="{Binding TotalAssets, StringFormat='{}{0:C}'}"
-                           FontSize="24" FontAttributes="Bold"/>
+                           FontSize="16" FontAttributes="Bold"/>
                 </VerticalStackLayout>
             </Frame>
             <Label Text="{Binding Last4MonthsTrend.Count, StringFormat='点数: {0}'}" />
@@ -60,12 +60,33 @@
             <!-- Accounts list -->
             <Frame Padding="0" HasShadow="True" CornerRadius="12">
                 <VerticalStackLayout>
-                    <Grid Padding="16" ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                    <Grid Padding="16" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12" VerticalOptions="Center">
                         <Label Text="所有账户" FontAttributes="Bold" FontSize="16" />
-                        <Button Grid.Column="1" Text="刷新"
-                                Command="{Binding LoadCommand}" />
-                        <Button Grid.Column="2" Text="添加"
-                                Command="{Binding ShowAddAccountPopupCommand}" />
+                        <ImageButton Grid.Column="1"
+                                     Source="refresh.png"
+                                     WidthRequest="32"
+                                     HeightRequest="32"
+                                     BackgroundColor="Transparent"
+                                     Padding="0"
+                                     Command="{Binding LoadCommand}">   
+                            
+                            <ImageButton.SemanticProperties.Description>
+                                Refresh accounts list
+                            </ImageButton.SemanticProperties.Description>
+                        </ImageButton>
+
+                        <!-- Add image button -->
+                        <ImageButton Grid.Column="2"
+                                     Source="add.png"
+                                     WidthRequest="32"
+                                     HeightRequest="32"
+                                     BackgroundColor="Transparent"
+                                     Padding="0"
+                                     Command="{Binding ShowAddAccountPopupCommand}">    
+                            <ImageButton.SemanticProperties.Description>
+                                Add new account
+                            </ImageButton.SemanticProperties.Description>
+                        </ImageButton>
                     </Grid>
 
                     <CollectionView ItemsSource="{Binding Accounts}">
@@ -82,10 +103,11 @@
                                     </SwipeView.RightItems>
 
                                     <Grid Padding="12" ColumnDefinitions="*,Auto">
-                                        <Label Text="{Binding Name}" FontAttributes="Bold" />
+                                        <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="14" />
                                         <Label Grid.Column="1"
                                            Text="{Binding Balance, StringFormat='{0:C}'}"
-                                           HorizontalTextAlignment="End" />
+                                           HorizontalTextAlignment="End" 
+                                           FontSize="14"/>
 
                                         <!-- Tap to navigate into detail -->
                                         <Grid.GestureRecognizers>

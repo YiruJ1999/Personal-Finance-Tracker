@@ -96,7 +96,7 @@ public partial class AccountDetailPageModel : ObservableObject
         var end = start.AddMonths(1).AddSeconds(-1);
 
         // Query records for this account and month
-        var all = await _recordRepo.ListAsync("default"); // TODO: replace with current book if needed
+        var all = await _recordRepo.ListAsync("Default"); // TODO: replace with current book if needed
         var monthRecords = all
             .Where(r => r.Account == AccountName && r.Timestamp >= start && r.Timestamp <= end)
             .OrderByDescending(r => r.Timestamp);
