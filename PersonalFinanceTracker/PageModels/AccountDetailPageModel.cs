@@ -8,8 +8,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace PersonalFinanceTracker.PageModels;
-
-// NOTE: All comments are in English as requested.
 public partial class AccountDetailPageModel : ObservableObject
 {
     private readonly AccountRepository _accountRepo;
@@ -90,19 +88,16 @@ public partial class AccountDetailPageModel : ObservableObject
     private async Task LoadMonthlyRecordsAsync()
     {
         MonthlyRecords.Clear();
+        if (SelectedMonth is null) return;
 
-        // Compute time range of the selected month
         var start = new DateTime(SelectedMonth.Year, SelectedMonth.Month, 1);
-        var end = start.AddMonths(1).AddSeconds(-1);
+        var end = start.AddMonths(1).AddTicks(-1); // inclusive month end
 
-        // Query records for this account and month
-        var all = await _recordRepo.ListAsync("Default"); // TODO: replace with current book if needed
-        var monthRecords = all
-            .Where(r => r.Account == AccountName && r.Timestamp >= start && r.Timestamp <= end)
-            .OrderByDescending(r => r.Timestamp);
+        var records = await _accountRepo.ListRecordsForAccountAcrossBooksAsync(AccountName, start, end);
 
-        foreach (var r in monthRecords)
+        foreach (var r in records)
             MonthlyRecords.Add(r);
+
     }
 
     private async Task EditAccountAsync()

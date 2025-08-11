@@ -28,6 +28,7 @@
         <CollectionView Grid.Row="2" ItemsSource="{Binding MonthlyRecords}">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
+                    
                     <Grid Padding="8" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
                         <Label Grid.Row="0" Grid.Column="0"
                                Text="{Binding Category}" FontAttributes="Bold"/>

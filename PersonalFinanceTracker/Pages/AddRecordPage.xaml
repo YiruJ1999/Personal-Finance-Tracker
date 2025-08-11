@@ -50,7 +50,7 @@
         <Picker Title="选择账户"
             ItemsSource="{Binding Accounts}"
             ItemDisplayBinding="{Binding Name}"
-            SelectedItem="{Binding SelectedAccount}" />
+            SelectedItem="{Binding SelectedAccount, Mode=TwoWay}" />
         
         <!--Choose Date-->
         <DatePicker Date="{Binding SelectedDate}" />

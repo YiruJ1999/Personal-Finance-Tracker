@@ -50,7 +50,8 @@ namespace PersonalFinanceTracker.Data
                     Amount REAL NOT NULL,
                     Category TEXT,
                     Note TEXT,
-                    Timestamp TEXT NOT NULL
+                    Timestamp TEXT NOT NULL,
+                    Account TEXT NOT NULL
                 );";
             await _database.ExecuteAsync(sql);
         }
@@ -59,19 +60,23 @@ namespace PersonalFinanceTracker.Data
         {
             string table = GetRecordTableName(bookName);
             await EnsureTableAsync(bookName);
+            await EnsureAccountColumnAsync(table); 
 
-            string sql = $@"SELECT ID, Type, Amount, Category, Note, Timestamp
-                            FROM ""{table}""
-                            ORDER BY Timestamp DESC;";
+            string sql = $@"
+                SELECT ID, Type, Amount, Category, Note, Timestamp, Account
+                FROM ""{table}""
+                ORDER BY Timestamp DESC;";
             return await _database.QueryAsync<Record>(sql);
         }
+
 
         public async Task<Record> GetByIdAsync(string bookName, int id)
         {
             string table = GetRecordTableName(bookName);
             await EnsureTableAsync(bookName);
+            await EnsureAccountColumnAsync(table);
 
-            string sql = $@"SELECT ID, Type, Amount, Category, Note, Timestamp
+            string sql = $@"SELECT ID, Type, Amount, Category, Note, Timestamp, Account
                             FROM ""{table}""
                             WHERE ID = ?;";
             // QueryAsync returns a list; here we just take first or default.
@@ -81,14 +86,19 @@ namespace PersonalFinanceTracker.Data
 
         public async Task SaveAsync(string bookName, Record record)
         {
+
+            record.Account = string.IsNullOrWhiteSpace(record.Account) ? "现金" : record.Account.Trim();
+
             string table = GetRecordTableName(bookName);
             await EnsureTableAsync(bookName);
-
+            await EnsureAccountColumnAsync(table);   
             if (record.ID == 0)
             {
+                // 1) INSERT must include Account column
                 string insertSql = $@"
-                    INSERT INTO ""{table}"" (Type, Amount, Category, Note, Timestamp)
-                    VALUES (?, ?, ?, ?, ?);";
+            INSERT INTO ""{table}""
+                (Type, Amount, Category, Note, Timestamp, Account)
+            VALUES (?, ?, ?, ?, ?, ?);";
 
                 await _database.ExecuteAsync(
                     insertSql,
@@ -96,20 +106,22 @@ namespace PersonalFinanceTracker.Data
                     record.Amount,
                     record.Category,
                     record.Note,
-                    // If your model uses DateTime, consider record.Timestamp.ToString("o")
-                    record.Timestamp
+                    record.Timestamp,   
+                    record.Account      
                 );
 
-                // Set generated ID back to model (optional)
+                // 2) Set generated ID back to model (optional)
                 var id = await _database.ExecuteScalarAsync<long>("SELECT last_insert_rowid();");
                 record.ID = (int)id;
             }
             else
             {
+                // 3) UPDATE must set Account too
                 string updateSql = $@"
                     UPDATE ""{table}""
-                    SET Type = ?, Amount = ?, Category = ?, Note = ?, Timestamp = ?
+                    SET Type = ?, Amount = ?, Category = ?, Note = ?, Timestamp = ?, Account = ?
                     WHERE ID = ?;";
+
                 await _database.ExecuteAsync(
                     updateSql,
                     record.Type,
@@ -117,6 +129,7 @@ namespace PersonalFinanceTracker.Data
                     record.Category,
                     record.Note,
                     record.Timestamp,
+                    record.Account,  
                     record.ID
                 );
             }
@@ -126,6 +139,7 @@ namespace PersonalFinanceTracker.Data
         {
             string table = GetRecordTableName(bookName);
             await EnsureTableAsync(bookName);
+            await EnsureAccountColumnAsync(table); 
 
             string sql = $@"DELETE FROM ""{table}"" WHERE ID = ?;";
             await _database.ExecuteAsync(sql, record.ID);
@@ -135,6 +149,7 @@ namespace PersonalFinanceTracker.Data
         {
             string table = GetRecordTableName(bookName);
             await EnsureTableAsync(bookName);
+            await EnsureAccountColumnAsync(table); 
 
             string sql = $@"DELETE FROM ""{table}"";";
             await _database.ExecuteAsync(sql);
@@ -144,15 +159,38 @@ namespace PersonalFinanceTracker.Data
         {
             string table = GetRecordTableName(bookName);
             await EnsureTableAsync(bookName);
+            await EnsureAccountColumnAsync(table);
 
             int skip = Math.Max(0, (pageNumber - 1) * pageSize);
 
             string sql = $@"
-                SELECT ID, Type, Amount, Category, Note, Timestamp
+                SELECT ID, Type, Amount, Category, Note, Timestamp, Account
                 FROM ""{table}""
                 ORDER BY Timestamp DESC
                 LIMIT ? OFFSET ?;";
             return await _database.QueryAsync<Record>(sql, pageSize, skip);
+        }
+
+        private class TableInfoRow
+        {
+            public int cid { get; set; }   // column id
+            public string name { get; set; }   // column name
+            public string type { get; set; }   // column type
+        }
+        private async Task EnsureAccountColumnAsync(string table)
+        {
+            // Query current schema
+            var info = await _database.QueryAsync<TableInfoRow>($@"PRAGMA table_info(""{table}"");");
+
+            bool hasAccount = info.Any(c => string.Equals(c.name, "Account", StringComparison.OrdinalIgnoreCase));
+            if (!hasAccount)
+            {
+                // Add the missing column
+                await _database.ExecuteAsync($@"ALTER TABLE ""{table}"" ADD COLUMN Account TEXT;");
+
+                // Backfill existing rows to avoid NULL accounts breaking your aggregation logic
+                await _database.ExecuteAsync($@"UPDATE ""{table}"" SET Account='现金' WHERE Account IS NULL OR TRIM(Account)='';");
+            }
         }
     }
 }

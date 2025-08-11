@@ -273,5 +273,42 @@ namespace PersonalFinanceTracker.Data
             return result;
         }
 
+        public async Task<List<Record>> ListRecordsForAccountAcrossBooksAsync(
+            string accountNameRaw, DateTime monthStart, DateTime monthEndInclusive)
+        {
+            string Normalize(string? name)
+            {
+                var n = name?.Trim();
+                return string.IsNullOrWhiteSpace(n) ? "现金" : n;
+            }
+
+            var target = Normalize(accountNameRaw);
+
+            var results = new List<Record>();
+            var tables = await GetBookTableNamesAsync(); // e.g., ["book_default", "book_xxx"]
+
+            foreach (var t in tables)
+            {
+                var tn = SanitizeTableName(t);
+                var rows = await _db.QueryAsync<Record>($"SELECT * FROM {tn}");
+                results.AddRange(rows);
+            }
+
+            // Normalize timestamps and account names, then filter in-memory
+            foreach (var r in results)
+            {
+                if (r.Timestamp.Kind == DateTimeKind.Unspecified)
+                    r.Timestamp = DateTime.SpecifyKind(r.Timestamp, DateTimeKind.Local);
+                else if (r.Timestamp.Kind == DateTimeKind.Utc)
+                    r.Timestamp = r.Timestamp.ToLocalTime();
+            }
+
+            return results
+                .Where(r => Normalize(r.Account).Equals(target, StringComparison.OrdinalIgnoreCase)
+                         && r.Timestamp >= monthStart && r.Timestamp <= monthEndInclusive)
+                .OrderByDescending(r => r.Timestamp)
+                .ToList();
+        }
+
     }
 }

@@ -76,9 +76,6 @@ public partial class AccountPageModel : ObservableObject
             .Select(kv => new ChartPoint { Key = kv.Key, Value = (double)kv.Value })
             .ToList();
 
-        System.Diagnostics.Debug.WriteLine($"Trend Count = {Last4MonthsTrend.Count}");
-        foreach (var p in Last4MonthsTrend)
-            System.Diagnostics.Debug.WriteLine($"{p.Key} -> {p.Value}");
     }
 
     // Add a new account using bound properties NewAccountName/NewAccountOpeningBalance.

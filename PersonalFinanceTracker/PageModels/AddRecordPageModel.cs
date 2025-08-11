@@ -115,7 +115,7 @@ public partial class AddRecordPageModel : ObservableObject
         var ts = SelectedDate == default ? DateTime.Now : DateTime.SpecifyKind(SelectedDate, DateTimeKind.Local);
 
         // 5) Account: ensure at least one exists, and fallback to "现金"
-        await EnsureDefaultAccountsAndReloadAsync();
+ 
         if (SelectedAccount == null && Accounts?.Count > 0)
             SelectedAccount = Accounts[0];
         var finalAccountName = SelectedAccount?.Name ?? "现金";
@@ -131,7 +131,7 @@ public partial class AddRecordPageModel : ObservableObject
             Note = finalNote,
             Timestamp = ts,
             Type = finalType,
-            Account = finalAccountName   // <-- important: persist the selected account
+            Account = finalAccountName   
         };
 
         // write to the current book/table via your repository
@@ -148,17 +148,28 @@ public partial class AddRecordPageModel : ObservableObject
         IsExpenseSelected = true;
         Categories = new ObservableCollection<CategoryModel>(CategoryData.GetExpenseCategories());
         SelectedDate = DateTime.Now;
+
+        System.Diagnostics.Debug.WriteLine($"[BeforeSave] SelectedAccount={SelectedAccount?.Name}");
+        System.Diagnostics.Debug.WriteLine($"[Save] Account to write = {finalAccountName}");
     }
 
     // ----- helpers -----
-    private async Task LoadAccountsAsync()
+    private async Task LoadAccountsAsync(string? preserveSelectionByName = null)
     {
         await _accountRepository.EnsureDatabaseInitializedAsync();
-        var list = await _accountRepository.GetAccountsWithBalancesAsync();
+
+        var list = await _accountRepository.ListAsync();
         Accounts = new ObservableCollection<Account>(list);
 
-        // pick first by default
-        if (Accounts?.Count > 0 && SelectedAccount == null)
+        var target = preserveSelectionByName ?? SelectedAccount?.Name;
+
+        // Restore selection by name (case-insensitive)
+        if (!string.IsNullOrWhiteSpace(target))
+            SelectedAccount = Accounts.FirstOrDefault(
+                a => string.Equals(a.Name?.Trim(), target.Trim(), StringComparison.OrdinalIgnoreCase));
+
+        // If still null, select first
+        if (SelectedAccount == null && Accounts.Count > 0)
             SelectedAccount = Accounts[0];
     }
 
@@ -173,6 +184,6 @@ public partial class AddRecordPageModel : ObservableObject
             await _accountRepository.AddAccountAsync("储蓄卡");
             await _accountRepository.AddAccountAsync("信用卡");
         }
-        await LoadAccountsAsync();
+        await LoadAccountsAsync(SelectedAccount?.Name);
     }
 }
