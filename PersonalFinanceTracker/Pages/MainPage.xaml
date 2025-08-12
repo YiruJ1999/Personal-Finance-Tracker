@@ -34,7 +34,7 @@
                     <Label Text="{Binding MonthlySummaryData[2].Amount, StringFormat='{}{0:C}'}" Grid.Row="1" Grid.Column="2" HorizontalOptions="Center" />
                     <Label Text="{Binding MonthlyBugget               , StringFormat='{}{0:C}'}" Grid.Row="1" Grid.Column="3" HorizontalOptions="Center" >
                         <Label.GestureRecognizers>
-                            <TapGestureRecognizer Tapped="BuggetTapped"/>
+                            <TapGestureRecognizer Command="{Binding BuggetTappedCommand}"/>
                         </Label.GestureRecognizers>
                     </Label>
                 </Grid>

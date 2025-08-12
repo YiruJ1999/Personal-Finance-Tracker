@@ -52,7 +52,7 @@ namespace PersonalFinanceTracker.PageModels
         [RelayCommand]
         private async Task OnAddBookClicked()
         {
-            System.Diagnostics.Debug.WriteLine("AddBookClickedCommand");
+            //System.Diagnostics.Debug.WriteLine("AddBookClickedCommand");
 
             var popup = _sp.GetRequiredService<CreateNewBookPopup>();
             var result = await Shell.Current.ShowPopupAsync(popup);
@@ -114,9 +114,9 @@ namespace PersonalFinanceTracker.PageModels
                 }
 
                 // Budget: try per-book key first, fallback to global MonthlyBugget
-                var perBookBudgetKey = $"budget_{bookName}";
+                var perBookBudgetKey = $"monthlybugget_{bookName}";
                 var budget = (decimal)Preferences.Default.Get(perBookBudgetKey,
-                                Preferences.Default.Get("MonthlyBugget", 0.0));
+                                0);
 
                 Books.Add(new BookSummary
                 {

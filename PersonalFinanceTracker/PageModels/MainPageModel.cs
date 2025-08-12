@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PersonalFinanceTracker.Models;
@@ -10,17 +11,18 @@ namespace PersonalFinanceTracker.PageModels
         private readonly RecordRepository _recordRepository;
         private readonly DatabaseService _databaseService;
         private readonly SeedDataService _seedDataService;
+        private readonly IServiceProvider _sp;
 
         // Key for persisting current book name
         private const string PrefKeyCurrentBook = "current_book";
         private const string defaultBookName = "Default";
 
-        public MainPageModel(RecordRepository recordRepository, DatabaseService databaseService, SeedDataService seedDataService)
+        public MainPageModel(RecordRepository recordRepository, DatabaseService databaseService, SeedDataService seedDataService, IServiceProvider sp)
         {
             _recordRepository = recordRepository;
             _databaseService = databaseService;
             _seedDataService = seedDataService;
-
+            _sp = sp;
         }
 
         // -------- Observable properties --------
@@ -109,13 +111,17 @@ namespace PersonalFinanceTracker.PageModels
                 await _seedDataService.LoadSeedDataAsync();
 
                 Preferences.Default.Set("is_seeded", true);
-                Preferences.Default.Set(nameof(MonthlyBugget), 0.0);
+                Preferences.Default.Set(
+                    $"monthlybugget_{Preferences.Default.Get(PrefKeyCurrentBook, defaultBookName)}"
+                    , 0.0);
             }
 
             // Load page data using the active book
             await LoadFinancialData();
 
-            MonthlyBugget = Preferences.Default.Get(nameof(MonthlyBugget), 0.0);
+            MonthlyBugget = Preferences.Default.Get(
+                $"monthlybugget_{Preferences.Default.Get(PrefKeyCurrentBook, defaultBookName)}"
+                , 0.0);
             CurrentBook = Preferences.Default.Get(PrefKeyCurrentBook, defaultBookName);
         }
 
@@ -176,7 +182,22 @@ namespace PersonalFinanceTracker.PageModels
         // Persist MonthlyBugget whenever changed
         partial void OnMonthlyBuggetChanged(double value)
         {
-            Preferences.Default.Set(nameof(MonthlyBugget), value);
+            Preferences.Default.Set(
+                $"monthlybugget_{Preferences.Default.Get(PrefKeyCurrentBook,defaultBookName)}"
+                , value);
+        }
+
+        [RelayCommand]
+        private async Task BuggetTapped()
+        {
+
+            var popup = _sp.GetRequiredService<BuggetPopup>();
+            var result = await Shell.Current.ShowPopupAsync(popup);
+
+            if (result is string amountStr && decimal.TryParse(amountStr, out var amount))
+            {
+                MonthlyBugget = (double)amount;
+            }
         }
     }
 

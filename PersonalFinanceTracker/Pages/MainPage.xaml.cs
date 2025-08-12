@@ -27,23 +27,7 @@ namespace PersonalFinanceTracker.Pages
             }
         }
 
-        private async void BuggetTapped(object sender, TappedEventArgs e)
-        {
-            
-            var popup = new BuggetPopup();
-            var result = await this.ShowPopupAsync(popup);
-            System.Diagnostics.Debug.WriteLine(result);
 
-            if (result is string amountStr && decimal.TryParse(amountStr, out var amount))
-            {
-                System.Diagnostics.Debug.WriteLine(BindingContext);
-                if (BindingContext is MainPageModel model)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Setting MonthlyBudget to: {amount}");
-                    model.MonthlyBugget = (double) amount;
-                }
-            }
-        }
 
     }
 }
