@@ -454,4 +454,41 @@
         <Setter Property="WaveColor" Value="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}" />
     </Style>
 
+    <Style x:Key="GhostHoverButton" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="BorderWidth" Value="0" />
+        <Setter Property="Shadow">
+            <Setter.Value>
+                <Shadow Opacity="0" />
+            </Setter.Value>
+        </Setter>
+        <Setter Property="VisualStateManager.VisualStateGroups">
+            <Setter.Value>
+                <VisualStateGroupList>
+                    <VisualStateGroup Name="CommonStates">
+                        <VisualState Name="Normal" />
+                        <VisualState Name="PointerOver">
+                            <VisualState.Setters>
+                                <Setter Property="Shadow">
+                                    <Setter.Value>
+                                        <Shadow Brush="#66000000" Offset="0,4" Radius="8" Opacity="0.6" />
+                                    </Setter.Value>
+                                </Setter>
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState Name="Pressed">
+                            <VisualState.Setters>
+                                <Setter Property="Shadow">
+                                    <Setter.Value>
+                                        <Shadow Brush="#80000000" Offset="0,6" Radius="10" Opacity="0.75" />
+                                    </Setter.Value>
+                                </Setter>
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
 </ResourceDictionary>
