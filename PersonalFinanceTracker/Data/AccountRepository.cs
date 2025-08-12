@@ -18,11 +18,7 @@ namespace PersonalFinanceTracker.Data
             _db = database.Database;
         }
 
-        // ---------------------------
-        // Basic table init & helpers
-        // ---------------------------
 
-        // Ensure Account table exists.
         public async Task EnsureDatabaseInitializedAsync()
         {
             if (_db == null)
@@ -36,6 +32,15 @@ namespace PersonalFinanceTracker.Data
             await EnsureDatabaseInitializedAsync();
             return await _db.Table<Account>().ToListAsync();
         }
+
+        // Normalize account name: trim, empty → "默认"
+        private static string NormalizeAccountName(string? name)
+        {
+            var n = name?.Trim();
+            // 空或空白账户名 → “默认”
+            return string.IsNullOrWhiteSpace(n) ? "默认" : n;
+        }
+
 
 
         // Add an account with zero balance if not exists.
@@ -56,9 +61,7 @@ namespace PersonalFinanceTracker.Data
             }
         }
 
-        // Overload: add an account with an opening balance (NO record written).
-        // NOTE: Because you use multi-ledger, we set balance directly here.
-        // If you prefer "record-driven opening balance", change signature to include a 'book' and insert a Record there.
+        // Overload: add an account with an opening balance.
         public async Task AddAccountAsync(string name, decimal openingBalance)
         {
             await EnsureDatabaseInitializedAsync();
@@ -154,7 +157,7 @@ namespace PersonalFinanceTracker.Data
 
                 foreach (var r in rows)
                 {
-                    var key = string.IsNullOrWhiteSpace(r.Account) ? "现金" : r.Account.Trim();
+                    var key = NormalizeAccountName(r.Account);
                     var sign = r.Type == "收入" ? 1m :
                                r.Type == "支出" ? -1m : 0m; // extend for OpeningBalance/Adjustment if you have
                     var delta = sign * r.Amount;
@@ -178,7 +181,10 @@ namespace PersonalFinanceTracker.Data
 
             foreach (var (name, balance) in pairs)
             {
-                var existing = await _db.Table<Account>().Where(a => a.Name == name).FirstOrDefaultAsync();
+                var normalized = NormalizeAccountName(name);
+                var existing = await _db.Table<Account>()
+                    .Where(a => a.Name.ToLower() == normalized.ToLower())
+                    .FirstOrDefaultAsync();
                 if (existing == null)
                 {
                     await _db.InsertAsync(new Account { Name = name, Balance = balance, CreatedAt = DateTime.UtcNow });
@@ -276,13 +282,7 @@ namespace PersonalFinanceTracker.Data
         public async Task<List<Record>> ListRecordsForAccountAcrossBooksAsync(
             string accountNameRaw, DateTime monthStart, DateTime monthEndInclusive)
         {
-            string Normalize(string? name)
-            {
-                var n = name?.Trim();
-                return string.IsNullOrWhiteSpace(n) ? "现金" : n;
-            }
-
-            var target = Normalize(accountNameRaw);
+            var target = NormalizeAccountName(accountNameRaw);
 
             var results = new List<Record>();
             var tables = await GetBookTableNamesAsync(); // e.g., ["book_default", "book_xxx"]
@@ -304,7 +304,7 @@ namespace PersonalFinanceTracker.Data
             }
 
             return results
-                .Where(r => Normalize(r.Account).Equals(target, StringComparison.OrdinalIgnoreCase)
+                .Where(r => NormalizeAccountName(r.Account).Equals(target, StringComparison.OrdinalIgnoreCase)
                          && r.Timestamp >= monthStart && r.Timestamp <= monthEndInclusive)
                 .OrderByDescending(r => r.Timestamp)
                 .ToList();

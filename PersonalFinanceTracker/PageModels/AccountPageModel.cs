@@ -6,185 +6,238 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using PersonalFinanceTracker.Data;
 using System.Linq;
-using System;                    
-using Microsoft.Maui.Controls;   
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Storage;
 
-namespace PersonalFinanceTracker.PageModels;
-
-public class ChartPoint
+namespace PersonalFinanceTracker.PageModels
 {
-    public string Key { get; set; } = string.Empty;
-    public double Value { get; set; }
-}
-
-public partial class AccountPageModel : ObservableObject
-{
-    private readonly DatabaseService _dbService;
-    private readonly AccountRepository _accountRepository;
-
-    // Observable properties
-    [ObservableProperty] private decimal totalAssets;
-    [ObservableProperty] private List<ChartPoint> last4MonthsTrend = new();
-    [ObservableProperty] private string newAccountName = string.Empty;
-    [ObservableProperty] private decimal newAccountOpeningBalance;
-    [ObservableProperty] private Account? selectedAccount;
-    [ObservableProperty] private decimal editedBalance;
-
-    // Collection for the accounts list
-    public ObservableCollection<Account> Accounts { get; } = new();
-
-    public AccountPageModel(DatabaseService dbService, AccountRepository accountRepository)
+    // DTO for chart points ("YYYY-MM", value)
+    public class ChartPoint
     {
-        _dbService = dbService;
-        _accountRepository = accountRepository;
+        public string Key { get; set; } = string.Empty;
+        public double Value { get; set; }
     }
 
-    // Load data for the page: sync accounts from records, list accounts, total assets and trend.
-    [RelayCommand]
-    public async Task LoadAsync()
+    public partial class AccountPageModel : ObservableObject
     {
-        await _dbService.InitAsync();
+        private readonly DatabaseService _dbService;
+        private readonly AccountRepository _accountRepository;
+        private readonly RecordRepository _recordRepository; 
 
-        // 1) Sync Accounts table from Records, and recompute balances
-        await _accountRepository.SyncAccountsFromRecordsAsync();
+        // Observable properties for UI
+        [ObservableProperty] private decimal totalAssets;
+        [ObservableProperty] private List<ChartPoint> last4MonthsTrend = new();
+        [ObservableProperty] private string newAccountName = string.Empty;
+        [ObservableProperty] private decimal newAccountOpeningBalance;
+        [ObservableProperty] private Account? selectedAccount;
+        [ObservableProperty] private decimal editedBalance;
 
-        // 2) List accounts with balances
-        Accounts.Clear();
-        var list = await _accountRepository.GetAccountsWithBalancesAsync();
-        foreach (var a in list) Accounts.Add(a);
+        // Collection bound to the accounts list
+        public ObservableCollection<Account> Accounts { get; } = new();
 
-        // 3) Total assets
-        TotalAssets = await _accountRepository.GetTotalAssetsAsync();
+        // Preference key used across pages to locate current ledger (book)
+        private const string PrefKeyCurrentBook = "current_book";
 
-        // 4) Last 4 months total assets trend
-        var trendData = await _accountRepository.GetLast4MonthsTotalAssetsAsync();
-
-        // Fallback demo data if repository returns nothing
-        if (trendData == null || trendData.Count == 0)
+        public AccountPageModel(
+            DatabaseService dbService,
+            AccountRepository accountRepository,
+            RecordRepository recordRepository) 
         {
-            trendData = new Dictionary<string, decimal>
+            _dbService = dbService ?? throw new ArgumentNullException(nameof(dbService));
+            _accountRepository = accountRepository ?? throw new ArgumentNullException(nameof(accountRepository));
+            _recordRepository = recordRepository ?? throw new ArgumentNullException(nameof(recordRepository));
+        }
+
+        // Load page data: sync from records, then list accounts, totals and last-4-months trend.
+        [RelayCommand]
+        public async Task LoadAsync()
+        {
+            await _dbService.InitAsync();
+
+            // 1) Sync Account table by aggregating all records (records are the source of truth)
+            await _accountRepository.SyncAccountsFromRecordsAsync();
+
+            // 2) Load accounts for the list
+            Accounts.Clear();
+            var list = await _accountRepository.GetAccountsWithBalancesAsync();
+            foreach (var a in list) Accounts.Add(a);
+
+            // 3) Total assets (sum of Account table)
+            TotalAssets = await _accountRepository.GetTotalAssetsAsync();
+
+            // 4) Last 4 months trend (YYYY-MM -> total)
+            var trendData = await _accountRepository.GetLast4MonthsTotalAssetsAsync();
+            if (trendData == null || trendData.Count == 0)
             {
-                ["2025-05"] = 1000,
-                ["2025-06"] = 2000,
-                ["2025-07"] = 1800,
-                ["2025-08"] = 2300,
-            };
+                trendData = new Dictionary<string, decimal>
+                {
+                    ["2025-05"] = 1000,
+                    ["2025-06"] = 2000,
+                    ["2025-07"] = 1800,
+                    ["2025-08"] = 2300,
+                };
+            }
+
+            Last4MonthsTrend = trendData
+                .OrderBy(kv => kv.Key)
+                .Select(kv => new ChartPoint { Key = kv.Key, Value = (double)kv.Value })
+                .ToList();
+
+            if (SelectedAccount is not null)
+                EditedBalance = SelectedAccount.Balance;
         }
 
-        Last4MonthsTrend = trendData
-            .OrderBy(kv => kv.Key) // ascending by YYYY-MM
-            .Select(kv => new ChartPoint { Key = kv.Key, Value = (double)kv.Value })
-            .ToList();
-
-    }
-
-    // Add a new account using bound properties NewAccountName/NewAccountOpeningBalance.
-    [RelayCommand]
-    private async Task AddAccountAsync()
-    {
-        if (string.IsNullOrWhiteSpace(NewAccountName))
-            return;
-
-        await _accountRepository.AddAccountAsync(NewAccountName, NewAccountOpeningBalance);
-        await LoadAsync();
-
-        // Reset input fields
-        NewAccountName = string.Empty;
-        NewAccountOpeningBalance = 0m;
-    }
-
-    // Delete currently selected account.
-    [RelayCommand]
-    private async Task DeleteAccountAsync()
-    {
-        if (SelectedAccount is null)
-            return;
-
-        await _accountRepository.DeleteAccountAsync(SelectedAccount.Name, alsoDeleteRecords: false);
-        await LoadAsync();
-    }
-
-    // Update balance for the selected account using EditedBalance.
-    [RelayCommand]
-    private async Task UpdateBalanceAsync()
-    {
-        if (SelectedAccount is null)
-            return;
-
-        await _accountRepository.UpdateAccountBalanceAsync(SelectedAccount.Name, EditedBalance);
-        await LoadAsync();
-    }
-
-    // When SelectedAccount changes, prefill EditedBalance so user can update directly
-    partial void OnSelectedAccountChanged(Account? value)
-    {
-        EditedBalance = value?.Balance ?? 0m;
-    }
-
-
-    // Open account detail page from a list item tap.
-    [RelayCommand]
-    private async Task OpenAccountDetailAsync(string accountName)
-    {
-        // Prefer Shell navigation with query parameter "name"
-        if (Shell.Current is not null)
+        // Add a new account using bound fields NewAccountName / NewAccountOpeningBalance.
+        [RelayCommand]
+        private async Task AddAccountAsync()
         {
-            var route = $"accountDetail?name={Uri.EscapeDataString(accountName)}";
-            await Shell.Current.GoToAsync(route);
-            return;
+            if (string.IsNullOrWhiteSpace(NewAccountName))
+                return;
+
+            await _accountRepository.AddAccountAsync(NewAccountName.Trim(), NewAccountOpeningBalance);
+            await LoadAsync();
+
+            // Reset inputs
+            NewAccountName = string.Empty;
+            NewAccountOpeningBalance = 0m;
         }
 
-        // Fallback if Shell is not used
-        await Application.Current.MainPage.DisplayAlert("提示", "请先在应用中注册账户详情页的导航路由。", "好的");
-    }
+        // Delete the currently selected account (keeps records).
+        [RelayCommand]
+        private async Task DeleteAccountAsync()
+        {
+            if (SelectedAccount is null)
+                return;
 
-    // Show an "Add Account" popup (name + optional opening balance).
-    [RelayCommand]
-    private async Task ShowAddAccountPopupAsync()
-    {
-        // Ask for account name
-        var name = await Application.Current.MainPage.DisplayPromptAsync(
-            "添加账户", "请输入账户名称：", "保存", "取消", placeholder: "例如：现金/银行卡");
+            await _accountRepository.DeleteAccountAsync(SelectedAccount.Name, alsoDeleteRecords: false);
+            await LoadAsync();
+        }
 
-        if (string.IsNullOrWhiteSpace(name))
-            return;
+        // Update balance by writing an adjustment record.
+        [RelayCommand]
+        private async Task UpdateBalanceAsync()
+        {
+            if (SelectedAccount is null)
+                return;
 
-        // Ask for opening balance (optional)
-        var openingText = await Application.Current.MainPage.DisplayPromptAsync(
-            "期初余额", "可选：输入期初余额（留空则为 0）", "确定", "跳过", keyboard: Keyboard.Numeric);
+            await _dbService.InitAsync();
 
-        decimal opening = 0m;
-        if (!string.IsNullOrWhiteSpace(openingText) && decimal.TryParse(openingText, out var val))
-            opening = val;
+            var current = SelectedAccount.Balance;
+            var target = EditedBalance;
+            var delta = target - current;
 
-        await _accountRepository.AddAccountAsync(name.Trim(), opening);
+            if (delta == 0m)
+            {
+                await LoadAsync();
+                return;
+            }
 
-        // Reload list and totals
-        await LoadAsync();
-    }
+            var type = delta > 0 ? "收入" : "支出";
+            var amount = Math.Abs(delta);
+            var book = GetCurrentBook();
 
-    // Show a delete confirmation popup with an extra option to also delete all records.
-    [RelayCommand]
-    private async Task ShowDeleteAccountPopupAsync(string accountName)
-    {
-        // First confirmation
-        var confirm = await Application.Current.MainPage.DisplayAlert(
-            "删除账户", $"确定要删除账户“{accountName}”？", "删除", "取消");
+            var record = new Record
+            {
+                Type = type,
+                Amount = amount,
+                Category = "余额调整",
+                Note = "账户详情页手动调整",
+                Timestamp = DateTime.Now,
+                Account = SelectedAccount.Name // normalization handled in repository
+            };
 
-        if (!confirm) return;
+            await _recordRepository.SaveAsync(book, record);
+            await LoadAsync();
+        }
 
-        // Ask whether to also delete records
-        var choice = await Application.Current.MainPage.DisplayActionSheet(
-            "是否同时删除该账户的所有明细记录？", "取消", null,
-            "仅删除账户（保留明细）",
-            "删除账户并删除全部明细");
 
-        if (choice is null || choice == "取消") return;
+        // Keep EditedBalance in sync with the selected account.
+        partial void OnSelectedAccountChanged(Account? value)
+        {
+            EditedBalance = value?.Balance ?? 0m;
+        }
 
-        bool alsoDelete = choice == "删除账户并删除全部明细";
-        await _accountRepository.DeleteAccountAsync(accountName, alsoDelete);
+        // Navigate to account detail page (parameter is account name from item bindings).
+        [RelayCommand]
+        private async Task OpenAccountDetailAsync(string accountName)
+        {
+            if (string.IsNullOrWhiteSpace(accountName))
+                return;
 
-        // Reload after deletion
-        await LoadAsync();
+            var selected = Accounts.FirstOrDefault(a =>
+                a.Name.Equals(accountName, StringComparison.OrdinalIgnoreCase));
+            SelectedAccount = selected;
+            EditedBalance = selected?.Balance ?? 0m;
+
+            if (Shell.Current is not null)
+            {
+                var route = $"accountDetail?name={Uri.EscapeDataString(accountName)}";
+                await Shell.Current.GoToAsync(route);
+                return;
+            }
+
+            await Application.Current.MainPage.DisplayAlert("提示", "请先在应用中注册账户详情页的导航路由。", "好的");
+        }
+
+
+        // Show Add Account popup (name + optional opening balance).
+        [RelayCommand]
+        private async Task ShowAddAccountPopupAsync()
+        {
+            var name = await Application.Current.MainPage.DisplayPromptAsync(
+                "添加账户", "请输入账户名称：", "保存", "取消", placeholder: "例如：现金/银行卡");
+            if (string.IsNullOrWhiteSpace(name)) return;
+
+            var openingText = await Application.Current.MainPage.DisplayPromptAsync(
+                "期初余额", "可选：输入期初余额（留空则为 0）", "确定", "跳过", keyboard: Keyboard.Numeric);
+
+            decimal opening = 0m;
+            if (!string.IsNullOrWhiteSpace(openingText) && decimal.TryParse(openingText, out var val))
+                opening = val;
+
+            await _accountRepository.AddAccountAsync(name.Trim(), opening);
+            await LoadAsync();
+        }
+
+        // Show delete confirmation with an option to also delete all related records.
+        [RelayCommand]
+        private async Task ShowDeleteAccountPopupAsync(string accountName)
+        {
+            if (string.IsNullOrWhiteSpace(accountName))
+                return;
+
+            var confirm = await Application.Current.MainPage.DisplayAlert(
+                "删除账户", $"确定要删除账户“{accountName}”？", "删除", "取消");
+            if (!confirm) return;
+
+            var choice = await Application.Current.MainPage.DisplayActionSheet(
+                "是否同时删除该账户的所有明细记录？", "取消", null,
+                "仅删除账户（保留明细）",
+                "删除账户并删除全部明细");
+
+            if (choice is null || choice == "取消") return;
+
+            bool alsoDelete = choice == "删除账户并删除全部明细";
+            await _accountRepository.DeleteAccountAsync(accountName, alsoDelete);
+            await LoadAsync();
+        }
+
+        // -----------------------
+        // Helpers
+        // -----------------------
+        private static string GetCurrentBook()
+        {
+            try
+            {
+                var name = Preferences.Default.Get(PrefKeyCurrentBook, string.Empty);
+                return string.IsNullOrWhiteSpace(name) ? "Default" : name.Trim();
+            }
+            catch
+            {
+                var name = Preferences.Get(PrefKeyCurrentBook, string.Empty);
+                return string.IsNullOrWhiteSpace(name) ? "Default" : name.Trim();
+            }
+        }
     }
 }

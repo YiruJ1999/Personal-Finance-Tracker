@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System;
-//using Intents;
+using System.Linq; // for .Any()
 
 namespace PersonalFinanceTracker.Data
 {
@@ -17,17 +17,19 @@ namespace PersonalFinanceTracker.Data
             _database = database;
         }
 
-        /// <summary>
-        /// Build a safe physical table name for a given book.
-        /// Only letters, digits and underscore are kept to avoid SQL injection on identifiers.
-        /// Final form: Record_{Sanitized}
-        /// </summary>
         private static string GetRecordTableName(string bookName)
         {
             string sanitized = Regex.Replace(bookName ?? string.Empty, @"[^\w]", "_");
             if (string.IsNullOrWhiteSpace(sanitized))
-                sanitized = "Default";
+                sanitized = "Default"; // keep a single canonical default
             return $"book_{sanitized}";
+        }
+
+        // Normalize account name: replace full-width spaces, trim, and fallback to "默认".
+        private static string NormalizeAccountName(string? name)
+        {
+            var n = (name ?? string.Empty).Replace('\u3000', ' ').Trim();
+            return string.IsNullOrWhiteSpace(n) ? "默认" : n;
         }
 
         public async Task CreateNewTable(string bookName)
@@ -35,10 +37,8 @@ namespace PersonalFinanceTracker.Data
             await EnsureTableAsync(bookName);
         }
 
-        /// <summary>
-        /// Ensure the per-book Record table exists.
-        /// IMPORTANT: Align columns with your Record model.
-        /// </summary>
+
+        // Ensure the per-book Record table exists.
         private async Task EnsureTableAsync(string bookName)
         {
             string table = GetRecordTableName(bookName);
@@ -60,7 +60,7 @@ namespace PersonalFinanceTracker.Data
         {
             string table = GetRecordTableName(bookName);
             await EnsureTableAsync(bookName);
-            await EnsureAccountColumnAsync(table); 
+            await EnsureAccountColumnAsync(table); // normalize legacy data if needed
 
             string sql = $@"
                 SELECT ID, Type, Amount, Category, Note, Timestamp, Account
@@ -69,8 +69,7 @@ namespace PersonalFinanceTracker.Data
             return await _database.QueryAsync<Record>(sql);
         }
 
-
-        public async Task<Record> GetByIdAsync(string bookName, int id)
+        public async Task<Record?> GetByIdAsync(string bookName, int id)
         {
             string table = GetRecordTableName(bookName);
             await EnsureTableAsync(bookName);
@@ -79,26 +78,30 @@ namespace PersonalFinanceTracker.Data
             string sql = $@"SELECT ID, Type, Amount, Category, Note, Timestamp, Account
                             FROM ""{table}""
                             WHERE ID = ?;";
-            // QueryAsync returns a list; here we just take first or default.
             var list = await _database.QueryAsync<Record>(sql, id);
             return list.Count > 0 ? list[0] : null;
         }
 
         public async Task SaveAsync(string bookName, Record record)
         {
+            // Always normalize the account name before persisting
+            record.Account = NormalizeAccountName(record.Account);
 
-            record.Account = string.IsNullOrWhiteSpace(record.Account) ? "现金" : record.Account.Trim();
+            // (Optional) Ensure Timestamp is local-kind if unspecified
+            if (record.Timestamp.Kind == DateTimeKind.Unspecified)
+                record.Timestamp = DateTime.SpecifyKind(record.Timestamp, DateTimeKind.Local);
 
             string table = GetRecordTableName(bookName);
             await EnsureTableAsync(bookName);
-            await EnsureAccountColumnAsync(table);   
+            await EnsureAccountColumnAsync(table);
+
             if (record.ID == 0)
             {
-                // 1) INSERT must include Account column
+                // INSERT
                 string insertSql = $@"
-            INSERT INTO ""{table}""
-                (Type, Amount, Category, Note, Timestamp, Account)
-            VALUES (?, ?, ?, ?, ?, ?);";
+                    INSERT INTO ""{table}""
+                        (Type, Amount, Category, Note, Timestamp, Account)
+                    VALUES (?, ?, ?, ?, ?, ?);";
 
                 await _database.ExecuteAsync(
                     insertSql,
@@ -106,17 +109,17 @@ namespace PersonalFinanceTracker.Data
                     record.Amount,
                     record.Category,
                     record.Note,
-                    record.Timestamp,   
-                    record.Account      
+                    record.Timestamp,
+                    record.Account
                 );
 
-                // 2) Set generated ID back to model (optional)
+                // Set generated ID back to model
                 var id = await _database.ExecuteScalarAsync<long>("SELECT last_insert_rowid();");
                 record.ID = (int)id;
             }
             else
             {
-                // 3) UPDATE must set Account too
+                // UPDATE
                 string updateSql = $@"
                     UPDATE ""{table}""
                     SET Type = ?, Amount = ?, Category = ?, Note = ?, Timestamp = ?, Account = ?
@@ -129,7 +132,7 @@ namespace PersonalFinanceTracker.Data
                     record.Category,
                     record.Note,
                     record.Timestamp,
-                    record.Account,  
+                    record.Account,
                     record.ID
                 );
             }
@@ -139,7 +142,7 @@ namespace PersonalFinanceTracker.Data
         {
             string table = GetRecordTableName(bookName);
             await EnsureTableAsync(bookName);
-            await EnsureAccountColumnAsync(table); 
+            await EnsureAccountColumnAsync(table);
 
             string sql = $@"DELETE FROM ""{table}"" WHERE ID = ?;";
             await _database.ExecuteAsync(sql, record.ID);
@@ -149,7 +152,7 @@ namespace PersonalFinanceTracker.Data
         {
             string table = GetRecordTableName(bookName);
             await EnsureTableAsync(bookName);
-            await EnsureAccountColumnAsync(table); 
+            await EnsureAccountColumnAsync(table);
 
             string sql = $@"DELETE FROM ""{table}"";";
             await _database.ExecuteAsync(sql);
@@ -180,24 +183,35 @@ namespace PersonalFinanceTracker.Data
 
         private class TableInfoRow
         {
-            public int cid { get; set; }   // column id
-            public string name { get; set; }   // column name
-            public string type { get; set; }   // column type
+            public int cid { get; set; }     // column id
+            public string name { get; set; } // column name
+            public string type { get; set; } // column type
         }
+
+        // Ensure "Account" column exists; additionally sanitize legacy data:
         private async Task EnsureAccountColumnAsync(string table)
         {
-            // Query current schema
             var info = await _database.QueryAsync<TableInfoRow>($@"PRAGMA table_info(""{table}"");");
-
             bool hasAccount = info.Any(c => string.Equals(c.name, "Account", StringComparison.OrdinalIgnoreCase));
+
             if (!hasAccount)
             {
-                // Add the missing column
                 await _database.ExecuteAsync($@"ALTER TABLE ""{table}"" ADD COLUMN Account TEXT;");
-
-                // Backfill existing rows to avoid NULL accounts breaking your aggregation logic
-                await _database.ExecuteAsync($@"UPDATE ""{table}"" SET Account='现金' WHERE Account IS NULL OR TRIM(Account)='';");
             }
+
+            // Normalize existing rows regardless of whether the column was newly added:
+            // 1) Replace full-width spaces and trim
+            await _database.ExecuteAsync($@"
+                UPDATE ""{table}""
+                   SET Account = TRIM(REPLACE(IFNULL(Account, ''), '　', ' '))
+            ");
+
+            // 2) Backfill blanks as "默认"
+            await _database.ExecuteAsync($@"
+                UPDATE ""{table}""
+                   SET Account = '默认'
+                 WHERE Account IS NULL OR TRIM(Account) = ''
+            ");
         }
     }
 }
