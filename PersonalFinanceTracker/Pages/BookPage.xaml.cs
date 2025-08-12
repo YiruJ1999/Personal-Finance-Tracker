@@ -6,8 +6,9 @@ public partial class BookPage : ContentPage
 {
 	public BookPage(BookPageModel vm)
 	{
+        BindingContext = vm;
 		InitializeComponent();
-		BindingContext = vm;
+		
     }
 
     protected override async void OnAppearing()

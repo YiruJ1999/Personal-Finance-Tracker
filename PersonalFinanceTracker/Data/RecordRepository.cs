@@ -155,6 +155,13 @@ namespace PersonalFinanceTracker.Data
             await _database.ExecuteAsync(sql);
         }
 
+        public async Task DropBookAsync(string bookName)
+        {
+            string table = GetRecordTableName(bookName);
+            string sql = $@"DROP TABLE IF EXISTS ""{table}""";
+            await _database.ExecuteAsync(sql);
+        }
+
         public async Task<List<Record>> GetRecordsPagedAsync(string bookName, int pageNumber, int pageSize)
         {
             string table = GetRecordTableName(bookName);

@@ -73,9 +73,6 @@ namespace PersonalFinanceTracker.PageModels
 
         }
 
-
-
-
         /// <summary>
         /// Load all tables starting with 'book_' and compute aggregates for each.
         /// </summary>
@@ -130,6 +127,50 @@ namespace PersonalFinanceTracker.PageModels
                     LastModified = last,
                     BudgetAmount = budget
                 });
+            }
+        }
+
+        // Delete current book table
+        [RelayCommand]
+        private async Task DropBook(BookSummary? item)
+        {
+            await AppShell.DisplayToastAsync("DropBook fired");
+
+            if (item is null || string.IsNullOrWhiteSpace(item.BookName))
+                return;
+
+            var name = item.BookName;
+
+            bool ok = await Application.Current.MainPage.DisplayAlert(
+                "删除账本",
+                $"确定删除“{name}”吗？该账本的所有记录将被永久移除！",
+                "删除", "取消");
+
+            if (!ok) return;
+
+            try
+            {
+                await _recordRepository.DropBookAsync(name);
+
+                // Remove per-book settings if any (budget example)
+                // Preferences.Default.Remove($"budget_{name}");
+
+                // Refresh list
+                await LoadAllBooksAsync();
+
+                // If deleted was the current book, pick another or clear
+                var current = Preferences.Default.Get("current_book", string.Empty);
+                if (string.Equals(current, name, StringComparison.OrdinalIgnoreCase))
+                {
+                    SelectedBook = Books.FirstOrDefault();
+                    Preferences.Default.Set("current_book", SelectedBook?.BookName ?? string.Empty);
+                }
+
+                await AppShell.DisplayToastAsync($"已删除账本：{name}");
+            }
+            catch (Exception ex)
+            {
+                await AppShell.DisplaySnackbarAsync($"删除失败：{ex.Message}");
             }
         }
 
