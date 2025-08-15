@@ -52,6 +52,12 @@ namespace PersonalFinanceTracker.PageModels
         [ObservableProperty] private string note;        // optional
         [ObservableProperty] private DateTime selectedDate;
 
+        public bool IsIncomeSelected => !IsExpenseSelected;
+        partial void OnIsExpenseSelectedChanged(bool value)
+        {
+            OnPropertyChanged(nameof(IsIncomeSelected));
+        }
+
         // accounts
         [ObservableProperty] private ObservableCollection<Account> accounts;
         [ObservableProperty] private Account selectedAccount;

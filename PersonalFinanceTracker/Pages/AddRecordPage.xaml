@@ -6,16 +6,54 @@
     <VerticalStackLayout Padding="20" Spacing="10">
         <!--Type Selection-->
         <Grid ColumnDefinitions="*,*" Margin="0,0,0,10">
-            <Button Text="支出" 
-					TextColor="Black"
-                    Command="{Binding SelectExpenseCommand}" 
-                    BackgroundColor="{Binding IsExpenseSelected, Converter={StaticResource BoolToColorConverter}, ConverterParameter=Expense}" />
-            <Button Text="收入"
-					TextColor="Black"
-                    Grid.Column="1"
-                    Command="{Binding SelectIncomeCommand}"
-                    BackgroundColor="{Binding IsExpenseSelected, Converter={StaticResource BoolToColorConverter}, ConverterParameter=Income}" />
+            <!-- Expense button -->
+            <Button
+                Text="支出"
+                TextColor="Black"
+                Command="{Binding SelectExpenseCommand}">
+                <!-- default = transparent -->
+                <Button.Background>
+                    <SolidColorBrush Color="Transparent" />
+                </Button.Background>
+                <Button.Triggers>
+                    <!-- when IsExpenseSelected == true -> grey -->
+                    <DataTrigger TargetType="Button"
+                                 Binding="{Binding IsExpenseSelected}"
+                                 Value="True">
+                        <Setter Property="Background">
+                            <Setter.Value>
+                                <SolidColorBrush Color="#BDBDBD" />
+                            </Setter.Value>
+                        </Setter>
+                    </DataTrigger>
+                </Button.Triggers>
+            </Button>
+
+            <!-- Income button -->
+            <Button
+                Grid.Column="1"
+                Text="收入"
+                TextColor="Black"
+                Command="{Binding SelectIncomeCommand}">
+                <!-- default = transparent -->
+                <Button.Background>
+                    <SolidColorBrush Color="Transparent" />
+                </Button.Background>
+                <Button.Triggers>
+                    <!-- when IsExpenseSelected == false -> grey -->
+                    <DataTrigger TargetType="Button"
+                                 Binding="{Binding IsExpenseSelected}"
+                                 Value="False">
+                        <Setter Property="Background">
+                            <Setter.Value>
+                                <SolidColorBrush Color="#BDBDBD" />
+                            </Setter.Value>
+                        </Setter>
+                    </DataTrigger>
+                </Button.Triggers>
+            </Button>
         </Grid>
+
 
         <!--Category Selection-->
         <CollectionView HeightRequest="200"
