@@ -26,5 +26,6 @@ namespace PersonalFinanceTracker.Models
 
         // Timestamp of the record
         public DateTime Timestamp { get; set; }
+
     }
 }

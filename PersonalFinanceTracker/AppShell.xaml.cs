@@ -35,6 +35,8 @@ namespace PersonalFinanceTracker
             await snackbar.Show(new CancellationTokenSource().Token);
         }
 
+
+
         public static async Task DisplayToastAsync(string message)
         {
             if (OperatingSystem.IsWindows())

@@ -13,7 +13,9 @@ namespace PersonalFinanceTracker.Models
         public string Name { get; set; } = string.Empty;
 
         // Account avatar
-        public string AvatarPath { get; set; } = string.Empty; 
+        public string AvatarPath { get; set; } = string.Empty;
+
+        public string CurrencyCode { get; set; } = "EUR";  // default to EUR
 
     }
 
