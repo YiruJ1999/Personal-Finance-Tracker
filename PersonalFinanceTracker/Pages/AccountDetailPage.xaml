@@ -35,9 +35,14 @@
                     <Grid Padding="8" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
                         <Label Grid.Row="0" Grid.Column="0"
                                Text="{Binding Category}" FontAttributes="Bold" FontSize="16"/>
-                        <Label Grid.Row="0" Grid.Column="1"
-                               Text="{Binding Amount, StringFormat='{0:C}'}" FontSize="16"
-                               HorizontalTextAlignment="End" />
+                        <Label Grid.Column="1" HorizontalTextAlignment="End">
+                            <Label.Text>
+                                <MultiBinding Converter="{StaticResource AmountWithSignConverter}">
+                                    <Binding Path="Amount" />
+                                    <Binding Path="Type" />
+                                </MultiBinding>
+                            </Label.Text>
+                        </Label>
                         <Label Grid.Row="1" Grid.ColumnSpan="2"
                                Text="{Binding Note}" FontSize="12" TextColor="Gray"/>
                     </Grid>
