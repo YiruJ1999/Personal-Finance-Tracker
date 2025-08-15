@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System;
+using System.Threading.Tasks;
 
 namespace PersonalFinanceTracker.PageModels
 {
@@ -18,33 +19,32 @@ namespace PersonalFinanceTracker.PageModels
         private readonly DatabaseService _dbService;
         private readonly RecordRepository _recordRepository;
         private readonly AccountRepository _accountRepository;
+        private readonly BookRepository _bookRepository;
 
-        // The same key used elsewhere to persist the active book
-        private const string PrefKeyCurrentBook = "current_book";
+        private const string PrefKeyCurrentBookId = "current_book_id"; // new Id-based
+        private const string PrefKeyCurrentBook = "current_book";    // legacy (for migration)
 
         public AddRecordPageModel(
             DatabaseService dbService,
             RecordRepository recordRepository,
-            AccountRepository accountRepository)
+            AccountRepository accountRepository,
+            BookRepository bookRepository)
         {
             _dbService = dbService;
             _recordRepository = recordRepository;
             _accountRepository = accountRepository;
+            _bookRepository = bookRepository;
 
             // default to expense
             IsExpenseSelected = true;
             Categories = new ObservableCollection<CategoryModel>(CategoryData.GetExpenseCategories());
             SelectedDate = DateTime.Now;
 
-            // init current book (keep canonical "Default" to match book_Default)
-            CurrentBook = Preferences.Default.Get(PrefKeyCurrentBook, "Default");
-
             // fire-and-forget load accounts
             _ = LoadAccountsAsync();
         }
 
         // ----- state -----
-        [ObservableProperty] private string currentBook;
         [ObservableProperty] private bool isExpenseSelected;
         [ObservableProperty] private ObservableCollection<CategoryModel> categories;
         [ObservableProperty] private CategoryModel selectedCategory;
@@ -66,7 +66,6 @@ namespace PersonalFinanceTracker.PageModels
         public async Task Appearing()
         {
             await _dbService.InitAsync();
-            CurrentBook = Preferences.Default.Get(PrefKeyCurrentBook, "Default");
             await EnsureDefaultAccountsAndReloadAsync();
         }
 
@@ -99,7 +98,7 @@ namespace PersonalFinanceTracker.PageModels
 
             // Select the account we just added
             SelectedAccount = Accounts.FirstOrDefault(a =>
-                a.Name.Equals(finalName, StringComparison.OrdinalIgnoreCase));
+                string.Equals(a.Name?.Trim(), finalName, StringComparison.OrdinalIgnoreCase));
         }
 
         // ----- save -----
@@ -125,15 +124,21 @@ namespace PersonalFinanceTracker.PageModels
                 ? DateTime.Now
                 : DateTime.SpecifyKind(SelectedDate, DateTimeKind.Local);
 
-            // 5) Account: ensure at least one exists, and fallback to "默认"
+            // 5) Account: ensure at least one exists
             if (SelectedAccount == null && Accounts?.Count > 0)
                 SelectedAccount = Accounts[0];
-            var finalAccountName = SelectedAccount?.Name ?? "默认";
+            if (SelectedAccount == null)
+            {
+                await Shell.Current.DisplayAlert("提示", "请先创建一个账户。", "好的");
+                return;
+            }
 
-            // 6) Type: default to "支出" when not set
+            // 6) BookId: resolve (migrate legacy name if needed)
+            var bookId = await GetOrCreateCurrentBookIdAsync();
+
             var finalType = IsExpenseSelected ? "支出" : "收入";
 
-            // Build record (Record has string Account property)
+            // Build record (Id-based; Account name optional for display)
             var record = new Record
             {
                 Amount = amt,
@@ -141,11 +146,11 @@ namespace PersonalFinanceTracker.PageModels
                 Note = finalNote,
                 Timestamp = ts,
                 Type = finalType,
-                Account = finalAccountName  // normalized again in repository
+                AccountId = SelectedAccount.Id,
+                Account = SelectedAccount.Name // optional display; repository will also derive
             };
 
-            // Write to the current book/table via repository
-            await _recordRepository.SaveAsync(CurrentBook, record);
+            await _recordRepository.SaveAsync(bookId, record);
 
             // Notify and navigate back
             WeakReferenceMessenger.Default.Send(new RecordSavedMessage());
@@ -158,9 +163,6 @@ namespace PersonalFinanceTracker.PageModels
             IsExpenseSelected = true;
             Categories = new ObservableCollection<CategoryModel>(CategoryData.GetExpenseCategories());
             SelectedDate = DateTime.Now;
-
-            System.Diagnostics.Debug.WriteLine($"[BeforeSave] SelectedAccount={SelectedAccount?.Name}");
-            System.Diagnostics.Debug.WriteLine($"[Save] Account to write = {finalAccountName}");
         }
 
         // ----- helpers -----
@@ -173,7 +175,7 @@ namespace PersonalFinanceTracker.PageModels
 
             var target = preserveSelectionByName ?? SelectedAccount?.Name;
 
-            // Restore selection by name (case-insensitive, trimmed)
+            // Restore selection by name (display only)
             if (!string.IsNullOrWhiteSpace(target))
                 SelectedAccount = Accounts.FirstOrDefault(a =>
                     string.Equals(a.Name?.Trim(), target.Trim(), StringComparison.OrdinalIgnoreCase));
@@ -197,6 +199,20 @@ namespace PersonalFinanceTracker.PageModels
             }
 
             await LoadAccountsAsync(SelectedAccount?.Name);
+        }
+
+        private async Task<int> GetOrCreateCurrentBookIdAsync()
+        {
+            if (Preferences.Default.ContainsKey(PrefKeyCurrentBookId))
+            {
+                var id = Preferences.Default.Get(PrefKeyCurrentBookId, 0);
+                if (id > 0) return id;
+            }
+
+            var legacyName = Preferences.Default.Get(PrefKeyCurrentBook, "默认");
+            var book = await _bookRepository.EnsureBookAsync(string.IsNullOrWhiteSpace(legacyName) ? "默认" : legacyName.Trim());
+            Preferences.Default.Set(PrefKeyCurrentBookId, book.Id);
+            return book.Id;
         }
     }
 }

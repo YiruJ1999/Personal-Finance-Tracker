@@ -48,7 +48,31 @@ namespace PersonalFinanceTracker.Services
             }
             return Task.CompletedTask;
         }
+        public Task<int> InsertAsync<T>(T obj) where T : new()
+            => Database.InsertAsync(obj);
+
+        public Task<int> UpdateAsync<T>(T obj) where T : new()
+            => Database.UpdateAsync(obj);
+
+        public Task<int> DeleteAsync<T>(T obj) where T : new()
+            => Database.DeleteAsync(obj);
+
+        public Task<T> FindAsync<T>(object pk) where T : new()
+            => Database.FindAsync<T>(pk);
+
+        // Some sqlite-net versions don't have QueryScalarsAsync; if you used it elsewhere,
+        // you can emulate it like this:
+        public async Task<List<T>> QueryScalarsAsync<T>(string sql, params object[] args)
+        {
+            // comment: wrap scalar into a DTO to map
+            var rows = await Database.QueryAsync<_ScalarRow<T>>(sql, args);
+            return rows.Select(r => r.Value).ToList();
+        }
+
+    class _ScalarRow<TScalar> { public TScalar Value { get; set; } = default!; }
     }
 
-
 }
+
+
+

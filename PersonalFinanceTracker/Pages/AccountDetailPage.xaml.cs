@@ -1,41 +1,51 @@
 using Microsoft.Maui.Controls;
-using Microsoft.Extensions.DependencyInjection;                 
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
-using PersonalFinanceTracker.Services;
-using PersonalFinanceTracker.Data;
 using PersonalFinanceTracker.PageModels;
 
-namespace PersonalFinanceTracker.Pages;
-
-public partial class AccountDetailPage : ContentPage, IQueryAttributable
+namespace PersonalFinanceTracker.Pages
 {
-    // Parameterless ctor so Shell can instantiate the page
-    public AccountDetailPage()
+    // This page is created by Shell, then we pull the VM from DI and bind it.
+    // We accept a query parameter "id" (int) and pass it to the VM.
+    public partial class AccountDetailPage : ContentPage, IQueryAttributable
     {
-        InitializeComponent();
-    }
+        private readonly AccountDetailPageModel _vm;
 
-    // Receive query parameters from Shell (e.g., "?name=xxx")
-    public void ApplyQueryAttributes(IDictionary<string, object> query)
-    {
-        var name = query.TryGetValue("name", out var raw)
-            ? Uri.UnescapeDataString(raw?.ToString() ?? string.Empty)
-            : string.Empty;
+        public AccountDetailPage()
+        {
+            InitializeComponent();
 
-        // Resolve services from the global ServiceProvider
-        var sp = App.Services;
-        var db = sp.GetRequiredService<DatabaseService>();
-        var accountRepo = sp.GetRequiredService<AccountRepository>();
+            // Resolve the ViewModel from the global ServiceProvider (registered in MauiProgram)
+            var sp = App.Services;
+            _vm = sp.GetRequiredService<AccountDetailPageModel>();
+            BindingContext = _vm;
+        }
 
-        // Prefer resolving; if not registered, fallback to 'new RecordRepository(db)'
-        var recordRepo = sp.GetService<RecordRepository>() ?? new RecordRepository(db);
+        /// <summary>
+        /// Shell passes query parameters here after page construction.
+        /// Expect "?id=123". We parse it and set VM.AccountId.
+        /// </summary>
+        public void ApplyQueryAttributes(IDictionary<string, object> query)
+        {
+            int id = 0;
 
-        // Create the ViewModel and bind it
-        var vm = new AccountDetailPageModel(name, accountRepo, recordRepo);
-        BindingContext = vm;
+            if (query.TryGetValue("id", out var raw))
+            {
+                // Accept either int or string form
+                if (raw is int i) id = i;
+                else if (raw is string s && int.TryParse(Uri.UnescapeDataString(s), out var parsed))
+                    id = parsed;
+            }
 
-        // Load the page data
-        _ = vm.InitAsync();
+            if (id <= 0)
+            {
+                // Non-blocking snackbar; do not throw here
+                _ = AppShell.DisplaySnackbarAsync("无效的账户 id。");
+                return;
+            }
+
+            _ = _vm.InitAsync();
+        }
     }
 }

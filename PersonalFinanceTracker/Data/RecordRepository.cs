@@ -1,217 +1,183 @@
 ﻿using PersonalFinanceTracker.Models;
 using PersonalFinanceTracker.Services;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System;
-using System.Linq; // for .Any()
+using System.Linq;
 
 namespace PersonalFinanceTracker.Data
 {
     public class RecordRepository
     {
         private readonly DatabaseService _database;
+        private readonly BookRepository _books;
 
-        public RecordRepository(DatabaseService database)
+        public RecordRepository(DatabaseService database, BookRepository books)
         {
             _database = database;
+            _books = books;
         }
 
-        private static string GetRecordTableName(string bookName)
+        // Quote helper
+        private static string Q(string ident) => BookRepository.QuoteIdent(ident);
+
+        /// <summary>
+        /// Ensure the physical book table exists for a given bookId (idempotent).
+        /// </summary>
+        public async Task EnsureTableAsync(int bookId)
         {
-            string sanitized = Regex.Replace(bookName ?? string.Empty, @"[^\w]", "_");
-            if (string.IsNullOrWhiteSpace(sanitized))
-                sanitized = "Default"; // keep a single canonical default
-            return $"book_{sanitized}";
+            var table = await _books.GetTableNameByIdAsync(bookId);
+            await _books.EnsureBookTableSchemaAsync(table);
         }
 
-        // Normalize account name: replace full-width spaces, trim, and fallback to "默认".
-        private static string NormalizeAccountName(string? name)
+        /// <summary>
+        /// Migration helper: backfill AccountId using Account.Name for rows where AccountId is null/0.
+        /// Will create missing accounts if needed.
+        /// </summary>
+        private sealed class AccountNameRow
         {
-            var n = (name ?? string.Empty).Replace('\u3000', ' ').Trim();
-            return string.IsNullOrWhiteSpace(n) ? "默认" : n;
+            // Property name MUST match the SQL column alias
+            public string Account { get; set; } = string.Empty;
         }
 
-        public async Task CreateNewTable(string bookName)
+        private async Task BackfillAccountIdsAsync(string table)
         {
-            await EnsureTableAsync(bookName);
+            var q = Q(table); // your QuoteIdent helper
+
+            // 1) Resolve existing names → Ids (use a DTO instead of a 1-tuple)
+            var missing = await _database.QueryAsync<AccountNameRow>(
+                $@"SELECT DISTINCT Account AS Account
+             FROM {q}
+            WHERE (AccountId IS NULL OR AccountId = 0)
+              AND Account IS NOT NULL
+              AND TRIM(Account) <> '';");
+
+            if (missing.Count == 0) return;
+
+            foreach (var row in missing)
+            {
+                var name = (row.Account ?? string.Empty).Trim();
+                if (string.IsNullOrEmpty(name)) continue;
+
+                // 2) Ensure the account exists (case-insensitive lookup)
+                var accounts = await _database.QueryAsync<Account>(
+                    @"SELECT * FROM Account WHERE Name = ? COLLATE NOCASE LIMIT 1;",
+                    name);
+
+                var acc = accounts.FirstOrDefault();
+                if (acc == null)
+                {
+                    acc = new Account { Name = name, Balance = 0m, CreatedAt = DateTime.UtcNow };
+                    await _database.InsertAsync(acc); // auto-increments Id
+                }
+
+                // 3) Backfill AccountId for rows matching this name
+                await _database.ExecuteAsync(
+                    $@"UPDATE {q}
+                  SET AccountId = ?
+                WHERE (AccountId IS NULL OR AccountId = 0)
+                  AND Account = ? COLLATE NOCASE;",
+                    acc.Id, name);
+            }
         }
-
-
-        // Ensure the per-book Record table exists.
-        private async Task EnsureTableAsync(string bookName)
+        public async Task<List<Record>> ListAsync(int bookId)
         {
-            string table = GetRecordTableName(bookName);
+            var table = await _books.GetTableNameByIdAsync(bookId);
+            await _books.EnsureBookTableSchemaAsync(table);
+            await BackfillAccountIdsAsync(table);
 
-            string sql = $@"
-                CREATE TABLE IF NOT EXISTS ""{table}"" (
-                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    Type TEXT,
-                    Amount REAL NOT NULL,
-                    Category TEXT,
-                    Note TEXT,
-                    Timestamp TEXT NOT NULL,
-                    Account TEXT NOT NULL
-                );";
-            await _database.ExecuteAsync(sql);
-        }
-
-        public async Task<List<Record>> ListAsync(string bookName)
-        {
-            string table = GetRecordTableName(bookName);
-            await EnsureTableAsync(bookName);
-            await EnsureAccountColumnAsync(table); // normalize legacy data if needed
-
-            string sql = $@"
-                SELECT Id, Type, Amount, Category, Note, Timestamp, Account
-                FROM ""{table}""
+            var sql = $@"
+                SELECT Id, Type, Amount, Category, Note, Timestamp, Account, AccountId
+                FROM {Q(table)}
                 ORDER BY Timestamp DESC;";
             return await _database.QueryAsync<Record>(sql);
         }
 
-        public async Task<Record?> GetByIdAsync(string bookName, int id)
+        public async Task<Record?> GetByIdAsync(int bookId, int id)
         {
-            string table = GetRecordTableName(bookName);
-            await EnsureTableAsync(bookName);
-            await EnsureAccountColumnAsync(table);
+            var table = await _books.GetTableNameByIdAsync(bookId);
+            await _books.EnsureBookTableSchemaAsync(table);
+            await BackfillAccountIdsAsync(table);
 
-            string sql = $@"SELECT Id, Type, Amount, Category, Note, Timestamp, Account
-                            FROM ""{table}""
-                            WHERE Id = ?;";
-            var list = await _database.QueryAsync<Record>(sql, id);
-            return list.Count > 0 ? list[0] : null;
+            var list = await _database.QueryAsync<Record>(
+                $@"SELECT Id, Type, Amount, Category, Note, Timestamp, Account, AccountId
+                   FROM {Q(table)} WHERE Id = ?;", id);
+            return list.FirstOrDefault();
         }
 
-        public async Task SaveAsync(string bookName, Record record)
+        public async Task SaveAsync(int bookId, Record record)
         {
-            // Always normalize the account name before persisting
-            record.Account = NormalizeAccountName(record.Account);
+            // Require AccountId
+            if (record.AccountId <= 0)
+                throw new InvalidOperationException("Record.AccountId must be set to a valid Account Id.");
 
-            // (Optional) Ensure Timestamp is local-kind if unspecified
+            var table = await _books.GetTableNameByIdAsync(bookId);
+            await _books.EnsureBookTableSchemaAsync(table);
+
+            // Derive Account name for display (optional but nice to have)
+            var accRow = await _database.FindAsync<Account>(record.AccountId);
+            var displayName = accRow?.Name ?? (record.Account ?? "默认");
+
             if (record.Timestamp.Kind == DateTimeKind.Unspecified)
                 record.Timestamp = DateTime.SpecifyKind(record.Timestamp, DateTimeKind.Local);
 
-            string table = GetRecordTableName(bookName);
-            await EnsureTableAsync(bookName);
-            await EnsureAccountColumnAsync(table);
-
             if (record.Id == 0)
             {
-                // INSERT
                 string insertSql = $@"
-                    INSERT INTO ""{table}""
-                        (Type, Amount, Category, Note, Timestamp, Account)
-                    VALUES (?, ?, ?, ?, ?, ?);";
+                    INSERT INTO {Q(table)}
+                        (Type, Amount, Category, Note, Timestamp, Account, AccountId)
+                    VALUES (?, ?, ?, ?, ?, ?, ?);";
+                await _database.ExecuteAsync(insertSql,
+                    record.Type, record.Amount, record.Category, record.Note, record.Timestamp, displayName, record.AccountId);
 
-                await _database.ExecuteAsync(
-                    insertSql,
-                    record.Type,
-                    record.Amount,
-                    record.Category,
-                    record.Note,
-                    record.Timestamp,
-                    record.Account
-                );
-
-                // Set generated Id back to model
                 var id = await _database.ExecuteScalarAsync<long>("SELECT last_insert_rowid();");
                 record.Id = (int)id;
             }
             else
             {
-                // UPDATE
                 string updateSql = $@"
-                    UPDATE ""{table}""
-                    SET Type = ?, Amount = ?, Category = ?, Note = ?, Timestamp = ?, Account = ?
-                    WHERE Id = ?;";
-
-                await _database.ExecuteAsync(
-                    updateSql,
-                    record.Type,
-                    record.Amount,
-                    record.Category,
-                    record.Note,
-                    record.Timestamp,
-                    record.Account,
-                    record.Id
-                );
+                    UPDATE {Q(table)}
+                       SET Type = ?, Amount = ?, Category = ?, Note = ?, Timestamp = ?, Account = ?, AccountId = ?
+                     WHERE Id = ?;";
+                await _database.ExecuteAsync(updateSql,
+                    record.Type, record.Amount, record.Category, record.Note, record.Timestamp, displayName, record.AccountId, record.Id);
             }
         }
 
-        public async Task DeleteAsync(string bookName, Record record)
+        public async Task DeleteAsync(int bookId, Record record)
         {
-            string table = GetRecordTableName(bookName);
-            await EnsureTableAsync(bookName);
-            await EnsureAccountColumnAsync(table);
-
-            string sql = $@"DELETE FROM ""{table}"" WHERE Id = ?;";
-            await _database.ExecuteAsync(sql, record.Id);
+            var table = await _books.GetTableNameByIdAsync(bookId);
+            await _books.EnsureBookTableSchemaAsync(table);
+            await _database.ExecuteAsync($@"DELETE FROM {Q(table)} WHERE Id = ?;", record.Id);
         }
 
-        public async Task DeleteAllAsync(string bookName)
+        public async Task DeleteAllAsync(int bookId)
         {
-            string table = GetRecordTableName(bookName);
-            await EnsureTableAsync(bookName);
-            await EnsureAccountColumnAsync(table);
-
-            string sql = $@"DELETE FROM ""{table}"";";
-            await _database.ExecuteAsync(sql);
+            var table = await _books.GetTableNameByIdAsync(bookId);
+            await _books.EnsureBookTableSchemaAsync(table);
+            await _database.ExecuteAsync($@"DELETE FROM {Q(table)};");
         }
 
-        public async Task DropBookAsync(string bookName)
+        public async Task DropBookTableAsync(int bookId)
         {
-            string table = GetRecordTableName(bookName);
-            string sql = $@"DROP TABLE IF EXISTS ""{table}""";
-            await _database.ExecuteAsync(sql);
+            var table = await _books.GetTableNameByIdAsync(bookId);
+            await _database.ExecuteAsync($@"DROP TABLE IF EXISTS {Q(table)};");
         }
 
-        public async Task<List<Record>> GetRecordsPagedAsync(string bookName, int pageNumber, int pageSize)
+        public async Task<List<Record>> GetRecordsPagedAsync(int bookId, int pageNumber, int pageSize)
         {
-            string table = GetRecordTableName(bookName);
-            await EnsureTableAsync(bookName);
-            await EnsureAccountColumnAsync(table);
+            var table = await _books.GetTableNameByIdAsync(bookId);
+            await _books.EnsureBookTableSchemaAsync(table);
+            await BackfillAccountIdsAsync(table);
 
             int skip = Math.Max(0, (pageNumber - 1) * pageSize);
 
-            string sql = $@"
-                SELECT Id, Type, Amount, Category, Note, Timestamp, Account
-                FROM ""{table}""
+            var sql = $@"
+                SELECT Id, Type, Amount, Category, Note, Timestamp, Account, AccountId
+                FROM {Q(table)}
                 ORDER BY Timestamp DESC
                 LIMIT ? OFFSET ?;";
             return await _database.QueryAsync<Record>(sql, pageSize, skip);
-        }
-
-        private class TableInfoRow
-        {
-            public int cid { get; set; }     // column id
-            public string name { get; set; } // column name
-            public string type { get; set; } // column type
-        }
-
-        // Ensure "Account" column exists; additionally sanitize legacy data:
-        private async Task EnsureAccountColumnAsync(string table)
-        {
-            var info = await _database.QueryAsync<TableInfoRow>($@"PRAGMA table_info(""{table}"");");
-            bool hasAccount = info.Any(c => string.Equals(c.name, "Account", StringComparison.OrdinalIgnoreCase));
-
-            if (!hasAccount)
-            {
-                await _database.ExecuteAsync($@"ALTER TABLE ""{table}"" ADD COLUMN Account TEXT;");
-            }
-
-            // Normalize existing rows regardless of whether the column was newly added:
-            // 1) Replace full-width spaces and trim
-            await _database.ExecuteAsync($@"
-                UPDATE ""{table}""
-                   SET Account = TRIM(REPLACE(IFNULL(Account, ''), '　', ' '))
-            ");
-
-            // 2) Backfill blanks as "默认"
-            await _database.ExecuteAsync($@"
-                UPDATE ""{table}""
-                   SET Account = '默认'
-                 WHERE Account IS NULL OR TRIM(Account) = ''
-            ");
         }
     }
 }

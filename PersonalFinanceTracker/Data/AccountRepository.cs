@@ -1,190 +1,141 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using SQLite;
-using PersonalFinanceTracker.Models;    
-using PersonalFinanceTracker.Services;  
+using PersonalFinanceTracker.Models;
+using PersonalFinanceTracker.Services;
 
 namespace PersonalFinanceTracker.Data
 {
     public class AccountRepository
     {
         private readonly SQLiteAsyncConnection _db;
+        private readonly BookRepository _books;
 
-        public AccountRepository(DatabaseService database)
+        public AccountRepository(DatabaseService database, BookRepository books)
         {
             _db = database.Database;
+            _books = books;
         }
-
 
         public async Task EnsureDatabaseInitializedAsync()
         {
-            if (_db == null)
-                throw new InvalidOperationException("Database connection is null.");
+            if (_db == null) throw new InvalidOperationException("Database connection is null.");
             await _db.CreateTableAsync<Account>();
         }
 
-        // List all accounts (raw table).
         public async Task<List<Account>> ListAsync()
         {
             await EnsureDatabaseInitializedAsync();
-            return await _db.Table<Account>().ToListAsync();
+            return await _db.Table<Account>().OrderBy(a => a.Name).ToListAsync();
         }
 
-        // Normalize account name: trim, empty → "默认"
-        private static string NormalizeAccountName(string? name)
-        {
-            var n = name?.Trim();
-            // 空或空白账户名 → “默认”
-            return string.IsNullOrWhiteSpace(n) ? "默认" : n;
-        }
-
-
-
-        // Add an account with zero balance if not exists.
-        public async Task AddAccountAsync(string name)
+        // ---------- Basic operations by Id ----------
+        public async Task DeleteAccountAsync(int accountId, bool alsoDeleteRecords)
         {
             await EnsureDatabaseInitializedAsync();
-            if (string.IsNullOrWhiteSpace(name)) return;
 
-            var exists = await _db.Table<Account>().Where(a => a.Name == name).FirstOrDefaultAsync();
-            if (exists == null)
-            {
-                await _db.InsertAsync(new Account
-                {
-                    Name = name.Trim(),
-                    Balance = 0m,
-                    CreatedAt = DateTime.UtcNow
-                });
-            }
-        }
-
-        // Overload: add an account with an opening balance.
-        public async Task AddAccountAsync(string name, decimal openingBalance)
-        {
-            await EnsureDatabaseInitializedAsync();
-            if (string.IsNullOrWhiteSpace(name)) return;
-
-            var trimmed = name.Trim();
-            var exists = await _db.Table<Account>().Where(a => a.Name == trimmed).FirstOrDefaultAsync();
-            if (exists == null)
-            {
-                await _db.InsertAsync(new Account
-                {
-                    Name = trimmed,
-                    Balance = openingBalance,
-                    CreatedAt = DateTime.UtcNow
-                });
-            }
-            else
-            {
-                exists.Balance = openingBalance;
-                await _db.UpdateAsync(exists);
-            }
-        }
-
-        // Delete an account. If alsoDeleteRecords == true, remove all records in all book_* tables for this account.
-        public async Task DeleteAccountAsync(string name, bool alsoDeleteRecords)
-        {
-            await EnsureDatabaseInitializedAsync();
-            if (string.IsNullOrWhiteSpace(name)) return;
-
-            var acc = await _db.Table<Account>().Where(a => a.Name == name).FirstOrDefaultAsync();
-            if (acc != null)
-                await _db.DeleteAsync(acc);
+            await _db.ExecuteAsync(@"DELETE FROM Account WHERE Id = ?;", accountId);
 
             if (alsoDeleteRecords)
             {
-                var tables = await GetBookTableNamesAsync();
-                foreach (var t in tables)
+                var books = await _books.ListBooksAsync();
+                foreach (var b in books)
                 {
-                    
-                    // Raw SQL delete by account name
-                    await _db.ExecuteAsync($"DELETE FROM {t} WHERE Account = ?", name);
+                    await _db.ExecuteAsync($@"DELETE FROM {BookRepository.QuoteIdent(b.TableName)} WHERE AccountId = ?;", accountId);
                 }
             }
         }
 
-        // Directly set account balance (NO record written).
-        // For record-driven adjustments, write a Record (Adjustment) in a specific book instead.
-        public async Task UpdateAccountBalanceAsync(string name, decimal newBalance)
+        public async Task UpdateAccountBalanceAsync(int accountId, decimal newBalance)
         {
             await EnsureDatabaseInitializedAsync();
-            var acc = await _db.Table<Account>().Where(a => a.Name == name).FirstOrDefaultAsync();
+            var acc = await _db.FindAsync<Account>(accountId);
             if (acc == null) return;
 
             acc.Balance = newBalance;
             await _db.UpdateAsync(acc);
         }
 
-        // ---------------------------
-        // Multi-ledger aggregation
-        // ---------------------------
-
-        // Get all ledger table names: book_*
-        public async Task<List<string>> GetBookTableNamesAsync()
-        {
-            var rows = await _db.QueryScalarsAsync<string>(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'book_%';");
-            return rows?.ToList() ?? new List<string>();
-        }
-
-
+        // ---------- Aggregation (by AccountId) ----------
 
         /// <summary>
-        /// Aggregate account balances scanning one or all book tables.
-        /// Income => +Amount; Expense => -Amount; (extend types as needed)
+        /// Sum per AccountId across one specific book.
         /// </summary>
-        public async Task<List<(string Account, decimal Balance)>> GetAccountsWithBalancesFromBooksAsync(string? book = null)
+        private async Task<Dictionary<int, decimal>> SumByAccountIdForBookAsync(string tableName)
         {
-            var result = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
+            var q = BookRepository.QuoteIdent(tableName);
+            var rows = await _db.QueryAsync<(int AccountId, string Type, decimal Amount)>($@"
+                SELECT IFNULL(AccountId, 0) as AccountId, IFNULL(Type, '') as Type, IFNULL(Amount, 0) as Amount
+                FROM {q};");
 
-            List<string> tables;
-            if (!string.IsNullOrWhiteSpace(book))
-                tables = new List<string> { $"book_{book}" };
-            else
-                tables = await GetBookTableNamesAsync();
-
-            foreach (var t in tables)
+            var map = new Dictionary<int, decimal>();
+            foreach (var r in rows)
             {
+                if (r.AccountId <= 0) continue; // skip rows not linked to an account
+                var sign = r.Type == "收入" ? 1m : (r.Type == "支出" ? -1m : 0m);
+                var delta = sign * r.Amount;
+                if (!map.ContainsKey(r.AccountId)) map[r.AccountId] = 0m;
+                map[r.AccountId] += delta;
+            }
+            return map;
+        }
 
-                var rows = await _db.QueryAsync<Record>($"SELECT * FROM {t}");
+        /// <summary>
+        /// Aggregate balances per AccountId across all or one book.
+        /// </summary>
+        public async Task<List<(int AccountId, decimal Balance)>> GetAccountsWithBalancesFromBooksAsync(int? bookId = null)
+        {
+            var result = new Dictionary<int, decimal>();
 
-                foreach (var r in rows)
+            var books = (bookId.HasValue)
+                ? new List<Book> { await _books.GetBookByIdAsync(bookId.Value) ?? throw new InvalidOperationException("Book not found.") }
+                : await _books.ListBooksAsync();
+
+            if (books.Count == 0)
+            {
+                // Self-heal: if Books empty, try import existing tables
+                await _books.ImportExistingPhysicalBooksIfAnyAsync();
+                books = await _books.ListBooksAsync();
+            }
+
+            foreach (var b in books)
+            {
+                var perBook = await SumByAccountIdForBookAsync(b.TableName);
+                foreach (var kv in perBook)
                 {
-                    var key = NormalizeAccountName(r.Account);
-                    var sign = r.Type == "收入" ? 1m :
-                               r.Type == "支出" ? -1m : 0m; // extend for OpeningBalance/Adjustment if you have
-                    var delta = sign * r.Amount;
-
-                    if (!result.ContainsKey(key))
-                        result[key] = 0m;
-
-                    result[key] += delta;
+                    if (!result.ContainsKey(kv.Key)) result[kv.Key] = 0m;
+                    result[kv.Key] += kv.Value;
                 }
             }
 
             return result.Select(kv => (kv.Key, kv.Value)).ToList();
         }
 
-        // Upsert Account table from aggregated balances (all books or a single book).
-        public async Task SyncAccountsFromBooksAsync(string? book = null)
+        /// <summary>
+        /// Upsert Account table's Balance by AccountId using aggregated values.
+        /// Note: Account rows must exist (migration guarantees creation).
+        /// </summary>
+        public async Task SyncAccountsFromBooksAsync(int? bookId = null)
         {
             await EnsureDatabaseInitializedAsync();
 
-            var pairs = await GetAccountsWithBalancesFromBooksAsync(book);
+            var pairs = await GetAccountsWithBalancesFromBooksAsync(bookId);
 
-            foreach (var (name, balance) in pairs)
+            foreach (var (accountId, balance) in pairs)
             {
-                var normalized = NormalizeAccountName(name);
-                var existing = await _db.Table<Account>()
-                    .Where(a => a.Name.ToLower() == normalized.ToLower())
-                    .FirstOrDefaultAsync();
+                var existing = await _db.FindAsync<Account>(accountId);
                 if (existing == null)
                 {
-                    await _db.InsertAsync(new Account { Name = name, Balance = balance, CreatedAt = DateTime.UtcNow });
+                    // Safety: create a placeholder if somehow missing
+                    await _db.InsertAsync(new Account
+                    {
+                        Id = accountId,
+                        Name = $"Account_{accountId}",
+                        Balance = balance,
+                        CreatedAt = DateTime.UtcNow
+                    });
                 }
                 else
                 {
@@ -194,25 +145,13 @@ namespace PersonalFinanceTracker.Data
             }
         }
 
-        // ---------------------------
-        // Compatibility shims for AccountPageModel
-        // ---------------------------
+        // ---------- UI helpers ----------
 
-        // Compatibility: previously "from Records". In multi-ledger we scan all book_* tables.
-        public async Task SyncAccountsFromRecordsAsync()
-        {
-            await SyncAccountsFromBooksAsync(null);
-        }
-
-
-        // Return accounts with balances for UI. Here we simply read Account table after last sync.
         public async Task<List<Account>> GetAccountsWithBalancesAsync()
         {
             await EnsureDatabaseInitializedAsync();
             return await _db.Table<Account>().OrderBy(a => a.Name).ToListAsync();
         }
-        
-        // Sum of all account balances (after sync).
 
         public async Task<decimal> GetTotalAssetsAsync()
         {
@@ -221,90 +160,121 @@ namespace PersonalFinanceTracker.Data
             return list.Sum(a => a.Balance);
         }
 
-
-        // Last 4 months end-of-month total assets trend (YYYY-MM -> total).
-        // Implementation: for each month end, aggregate all records up to that date across all books.
         public async Task<Dictionary<string, decimal>> GetLast4MonthsTotalAssetsAsync()
         {
-            // 1) Build the 4 month-ends, ascending.
+            // Build last-3 to current month EOM (ascending)
             var today = DateTime.Today;
             var eomList = new List<DateTime>();
             for (int i = 3; i >= 0; i--)
             {
-                var firstDayThisMonth = new DateTime(today.Year, today.Month, 1);
-                var dt = firstDayThisMonth.AddMonths(-i + 1).AddDays(-1); // last day of target month
-                var eom = new DateTime(dt.Year, dt.Month, DateTime.DaysInMonth(dt.Year, dt.Month), 23, 59, 59, DateTimeKind.Local);
+                var target = new DateTime(today.Year, today.Month, 1).AddMonths(-i);
+                var eom = new DateTime(target.Year, target.Month,
+                    DateTime.DaysInMonth(target.Year, target.Month), 23, 59, 59, DateTimeKind.Local);
                 eomList.Add(eom);
             }
 
-            // 2) Current total assets from Account table (includes opening balances etc.)
             var totalNow = await GetTotalAssetsAsync();
 
-            // 3) Load ALL records across books once.
-            var tables = await GetBookTableNamesAsync();
-            var allRecords = new List<Record>();
-            foreach (var t in tables)
+            var books = await _books.ListBooksAsync();
+            if (books.Count == 0)
             {
-
-                var rows = await _db.QueryAsync<Record>($"SELECT * FROM {t}");
-                allRecords.AddRange(rows);
+                await _books.ImportExistingPhysicalBooksIfAnyAsync();
+                books = await _books.ListBooksAsync();
             }
 
-            // Normalize timestamps to Local.
-            foreach (var r in allRecords)
+            var all = new List<(DateTime ts, string type, decimal amount)>();
+            foreach (var b in books)
             {
-                if (r.Timestamp.Kind == DateTimeKind.Unspecified)
-                    r.Timestamp = DateTime.SpecifyKind(r.Timestamp, DateTimeKind.Local);
+                var rows = await _db.QueryAsync<(string Timestamp, string Type, decimal Amount)>(
+                    $@"SELECT Timestamp, IFNULL(Type,''), IFNULL(Amount,0) FROM {BookRepository.QuoteIdent(b.TableName)};");
+                foreach (var r in rows)
+                {
+                    DateTime t;
+                    if (!DateTime.TryParse(r.Timestamp, out t)) continue;
+                    all.Add((t, r.Type, r.Amount));
+                }
             }
 
-            // Helper to map record type to sign.
-            decimal Sign(Record r) => r.Type == "收入" ? 1m : (r.Type == "支出" ? -1m : 0m);
+            decimal Sign(string t) => t == "收入" ? 1m : (t == "支出" ? -1m : 0m);
 
-            // 4) Reconstruct end-of-month total assets:
-            //    totalAtEom = totalNow - sum(net flows AFTER that EOM)
             var result = new Dictionary<string, decimal>();
             foreach (var eom in eomList)
             {
-                var deltaAfter = allRecords
-                    .Where(x => x.Timestamp > eom)
-                    .Sum(x => Sign(x) * x.Amount);
-
-                var totalAtEom = totalNow - deltaAfter;
-                result[eom.ToString("yyyy-MM")] = totalAtEom;
+                var deltaAfter = all.Where(x => x.ts > eom).Sum(x => Sign(x.type) * x.amount);
+                result[eom.ToString("yyyy-MM")] = totalNow - deltaAfter;
             }
-
             return result;
         }
 
         public async Task<List<Record>> ListRecordsForAccountAcrossBooksAsync(
-            string accountNameRaw, DateTime monthStart, DateTime monthEndInclusive)
+            int accountId, DateTime monthStart, DateTime monthEndInclusive)
         {
-            var target = NormalizeAccountName(accountNameRaw);
+            var books = await _books.ListBooksAsync();
+            if (books.Count == 0)
+            {
+                await _books.ImportExistingPhysicalBooksIfAnyAsync();
+                books = await _books.ListBooksAsync();
+            }
 
             var results = new List<Record>();
-            var tables = await GetBookTableNamesAsync(); // e.g., ["book_default", "book_xxx"]
-
-            foreach (var t in tables)
+            foreach (var b in books)
             {
-
-                var rows = await _db.QueryAsync<Record>($"SELECT * FROM {t}");
+                var rows = await _db.QueryAsync<Record>(
+                    $@"SELECT Id, Type, Amount, Category, Note, Timestamp, Account, AccountId
+                       FROM {BookRepository.QuoteIdent(b.TableName)}
+                       WHERE AccountId = ? AND Timestamp >= ? AND Timestamp <= ?
+                       ORDER BY Timestamp DESC;",
+                    accountId, monthStart, monthEndInclusive);
                 results.AddRange(rows);
             }
+            return results.OrderByDescending(r => r.Timestamp).ToList();
+        }
 
-            // Normalize timestamps and account names, then filter in-memory
-            foreach (var r in results)
+
+        private async Task<Account?> GetAccountByNameAsync(string name)
+        {
+            const string sql = @"SELECT * FROM Account WHERE Name = ? COLLATE NOCASE LIMIT 1;";
+            var rows = await _db.QueryAsync<Account>(sql, name);
+            return rows.FirstOrDefault();
+        }
+
+        // create or return existing (case-insensitive) 
+        public async Task<Account> AddAccountAsync(string name)
+        {
+            await EnsureDatabaseInitializedAsync();
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("Account name is required.", nameof(name));
+
+            var trimmed = name.Trim();
+            var exists = await GetAccountByNameAsync(trimmed);
+            if (exists != null) return exists;
+
+            var acc = new Account { Name = trimmed, Balance = 0m, CreatedAt = DateTime.UtcNow };
+            await _db.InsertAsync(acc);            // acc.Id will be populated
+            return acc;
+        }
+
+        //create or upsert with opening balance 
+        public async Task<Account> AddAccountAsync(string name, decimal openingBalance)
+        {
+            await EnsureDatabaseInitializedAsync();
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("Account name is required.", nameof(name));
+
+            var trimmed = name.Trim();
+            var exists = await GetAccountByNameAsync(trimmed);
+            if (exists == null)
             {
-                if (r.Timestamp.Kind == DateTimeKind.Unspecified)
-                    r.Timestamp = DateTime.SpecifyKind(r.Timestamp, DateTimeKind.Local);
-                else if (r.Timestamp.Kind == DateTimeKind.Utc)
-                    r.Timestamp = r.Timestamp.ToLocalTime();
+                var acc = new Account { Name = trimmed, Balance = openingBalance, CreatedAt = DateTime.UtcNow };
+                await _db.InsertAsync(acc);        // acc.Id populated
+                return acc;
             }
-
-            return results
-                .Where(r => NormalizeAccountName(r.Account).Equals(target, StringComparison.OrdinalIgnoreCase)
-                         && r.Timestamp >= monthStart && r.Timestamp <= monthEndInclusive)
-                .OrderByDescending(r => r.Timestamp)
-                .ToList();
+            else
+            {
+                exists.Balance = openingBalance;
+                await _db.UpdateAsync(exists);
+                return exists;
+            }
         }
 
     }

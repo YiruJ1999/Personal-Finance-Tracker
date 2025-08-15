@@ -9,6 +9,7 @@ using System.Linq;
 using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Storage;
+using System.Threading.Tasks;
 
 namespace PersonalFinanceTracker.PageModels
 {
@@ -23,7 +24,8 @@ namespace PersonalFinanceTracker.PageModels
     {
         private readonly DatabaseService _dbService;
         private readonly AccountRepository _accountRepository;
-        private readonly RecordRepository _recordRepository; 
+        private readonly RecordRepository _recordRepository;
+        private readonly BookRepository _bookRepository;
 
         // Observable properties for UI
         [ObservableProperty] private decimal totalAssets;
@@ -36,17 +38,19 @@ namespace PersonalFinanceTracker.PageModels
         // Collection bound to the accounts list
         public ObservableCollection<Account> Accounts { get; } = new();
 
-        // Preference key used across pages to locate current ledger (book)
-        private const string PrefKeyCurrentBook = "current_book";
+        private const string PrefKeyCurrentBookId = "current_book_id"; // Id-based
+        private const string PrefKeyCurrentBook = "current_book";    // legacy name
 
         public AccountPageModel(
             DatabaseService dbService,
             AccountRepository accountRepository,
-            RecordRepository recordRepository) 
+            RecordRepository recordRepository,
+            BookRepository bookRepository)
         {
             _dbService = dbService ?? throw new ArgumentNullException(nameof(dbService));
             _accountRepository = accountRepository ?? throw new ArgumentNullException(nameof(accountRepository));
             _recordRepository = recordRepository ?? throw new ArgumentNullException(nameof(recordRepository));
+            _bookRepository = bookRepository ?? throw new ArgumentNullException(nameof(bookRepository));
         }
 
         // Load page data: sync from records, then list accounts, totals and last-4-months trend.
@@ -55,12 +59,12 @@ namespace PersonalFinanceTracker.PageModels
         {
             await _dbService.InitAsync();
 
-            // 1) Sync Account table by aggregating all records (records are the source of truth)
-            await _accountRepository.SyncAccountsFromRecordsAsync();
+            // 1) Sync Account table by aggregating all books
+            await _accountRepository.SyncAccountsFromBooksAsync(bookId: null);
 
             // 2) Load accounts for the list
             Accounts.Clear();
-            var list = await _accountRepository.GetAccountsWithBalancesAsync();
+            var list = await _accountRepository.ListAsync();
             foreach (var a in list) Accounts.Add(a);
 
             // 3) Total assets (sum of Account table)
@@ -103,18 +107,26 @@ namespace PersonalFinanceTracker.PageModels
             NewAccountOpeningBalance = 0m;
         }
 
-        // Delete the currently selected account (keeps records).
+        // Delete the currently selected account (keeps records unless user chooses otherwise).
         [RelayCommand]
         private async Task DeleteAccountAsync()
         {
             if (SelectedAccount is null)
                 return;
 
-            await _accountRepository.DeleteAccountAsync(SelectedAccount.Name, alsoDeleteRecords: false);
+            // Ask whether to also delete records
+            var choice = await Application.Current.MainPage.DisplayActionSheet(
+                "是否同时删除该账户的所有明细记录？", "取消", null,
+                "仅删除账户（保留明细）",
+                "删除账户并删除全部明细");
+            if (choice is null || choice == "取消") return;
+
+            bool alsoDelete = choice == "删除账户并删除全部明细";
+            await _accountRepository.DeleteAccountAsync(SelectedAccount.Id, alsoDelete);
             await LoadAsync();
         }
 
-        // Update balance by writing an adjustment record.
+        // Update balance by writing an adjustment record (Id-based).
         [RelayCommand]
         private async Task UpdateBalanceAsync()
         {
@@ -135,22 +147,22 @@ namespace PersonalFinanceTracker.PageModels
 
             var type = delta > 0 ? "收入" : "支出";
             var amount = Math.Abs(delta);
-            var book = GetCurrentBook();
+
+            var bookId = await GetOrCreateCurrentBookIdAsync();
 
             var record = new Record
             {
                 Type = type,
                 Amount = amount,
                 Category = "余额调整",
-                Note = "账户详情页手动调整",
+                Note = "账户列表页手动调整",
                 Timestamp = DateTime.Now,
-                Account = SelectedAccount.Name // normalization handled in repository
+                AccountId = SelectedAccount.Id // Id-based
             };
 
-            await _recordRepository.SaveAsync(book, record);
+            await _recordRepository.SaveAsync(bookId, record);
             await LoadAsync();
         }
-
 
         // Keep EditedBalance in sync with the selected account.
         partial void OnSelectedAccountChanged(Account? value)
@@ -158,7 +170,7 @@ namespace PersonalFinanceTracker.PageModels
             EditedBalance = value?.Balance ?? 0m;
         }
 
-        // Navigate to account detail page (parameter is account name from item bindings).
+        // Navigate to account detail page. Pass accountId in the route.
         [RelayCommand]
         private async Task OpenAccountDetailAsync(string accountName)
         {
@@ -166,13 +178,16 @@ namespace PersonalFinanceTracker.PageModels
                 return;
 
             var selected = Accounts.FirstOrDefault(a =>
-                a.Name.Equals(accountName, StringComparison.OrdinalIgnoreCase));
+                string.Equals(a.Name?.Trim(), accountName.Trim(), StringComparison.OrdinalIgnoreCase));
+            if (selected is null) return;
+
             SelectedAccount = selected;
-            EditedBalance = selected?.Balance ?? 0m;
+            EditedBalance = selected.Balance;
 
             if (Shell.Current is not null)
             {
-                var route = $"accountDetail?name={Uri.EscapeDataString(accountName)}";
+                // IMPORTANT: update your route to accept "id" parameter (e.g., [QueryProperty(nameof(AccountId),"id")])
+                var route = $"accountDetail?id={selected.Id}";
                 await Shell.Current.GoToAsync(route);
                 return;
             }
@@ -180,64 +195,21 @@ namespace PersonalFinanceTracker.PageModels
             await Application.Current.MainPage.DisplayAlert("提示", "请先在应用中注册账户详情页的导航路由。", "好的");
         }
 
-
-        // Show Add Account popup (name + optional opening balance).
-        [RelayCommand]
-        private async Task ShowAddAccountPopupAsync()
-        {
-            var name = await Application.Current.MainPage.DisplayPromptAsync(
-                "添加账户", "请输入账户名称：", "保存", "取消", placeholder: "例如：现金/银行卡");
-            if (string.IsNullOrWhiteSpace(name)) return;
-
-            var openingText = await Application.Current.MainPage.DisplayPromptAsync(
-                "期初余额", "可选：输入期初余额（留空则为 0）", "确定", "跳过", keyboard: Keyboard.Numeric);
-
-            decimal opening = 0m;
-            if (!string.IsNullOrWhiteSpace(openingText) && decimal.TryParse(openingText, out var val))
-                opening = val;
-
-            await _accountRepository.AddAccountAsync(name.Trim(), opening);
-            await LoadAsync();
-        }
-
-        // Show delete confirmation with an option to also delete all related records.
-        [RelayCommand]
-        private async Task ShowDeleteAccountPopupAsync(string accountName)
-        {
-            if (string.IsNullOrWhiteSpace(accountName))
-                return;
-
-            var confirm = await Application.Current.MainPage.DisplayAlert(
-                "删除账户", $"确定要删除账户“{accountName}”？", "删除", "取消");
-            if (!confirm) return;
-
-            var choice = await Application.Current.MainPage.DisplayActionSheet(
-                "是否同时删除该账户的所有明细记录？", "取消", null,
-                "仅删除账户（保留明细）",
-                "删除账户并删除全部明细");
-
-            if (choice is null || choice == "取消") return;
-
-            bool alsoDelete = choice == "删除账户并删除全部明细";
-            await _accountRepository.DeleteAccountAsync(accountName, alsoDelete);
-            await LoadAsync();
-        }
-
         // -----------------------
         // Helpers
         // -----------------------
-        private static string GetCurrentBook()
+        private async Task<int> GetOrCreateCurrentBookIdAsync()
         {
-            try
+            if (Preferences.Default.ContainsKey(PrefKeyCurrentBookId))
             {
-                var name = Preferences.Default.Get(PrefKeyCurrentBook, string.Empty);
-                return string.IsNullOrWhiteSpace(name) ? "Default" : name.Trim();
+                var id = Preferences.Default.Get(PrefKeyCurrentBookId, 0);
+                if (id > 0) return id;
             }
-            catch
-            {
-                var name = Preferences.Get(PrefKeyCurrentBook, string.Empty);
-                return string.IsNullOrWhiteSpace(name) ? "Default" : name.Trim();
-            }
+
+            var legacyName = Preferences.Default.Get(PrefKeyCurrentBook, "默认");
+            var book = await _bookRepository.EnsureBookAsync(string.IsNullOrWhiteSpace(legacyName) ? "默认" : legacyName.Trim());
+            Preferences.Default.Set(PrefKeyCurrentBookId, book.Id);
+            return book.Id;
         }
     }
 }

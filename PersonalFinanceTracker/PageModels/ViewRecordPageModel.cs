@@ -1,12 +1,14 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.Maui.Storage;
+using PersonalFinanceTracker.Data;
+using PersonalFinanceTracker.Messages;
 using PersonalFinanceTracker.Models;
 using PersonalFinanceTracker.Services;
 using System;
 using System.Collections.ObjectModel;
-using PersonalFinanceTracker.Messages;
-using Microsoft.Maui.Storage;
+using System.Threading.Tasks;
 
 namespace PersonalFinanceTracker.PageModels
 {
@@ -14,39 +16,52 @@ namespace PersonalFinanceTracker.PageModels
     {
         private readonly DatabaseService _dbService;
         private readonly RecordRepository _recordRepository;
+        private readonly BookRepository _bookRepository;
 
-        // Persisted active book key (must match other pages)
-        private const string PrefKeyCurrentBook = "current_book";
+        // Legacy name-based preference key (kept for backward compatibility)
+        private const string PrefKeyCurrentBookName = "current_book";
+        // New id-based preference key (source of truth)
+        private const string PrefKeyCurrentBookId = "current_book_id";
 
         // Paging state
         private int _currentPage = 1;
         private bool _isLoading = false;
-        private int _pageSize = 15; // Default page size
+        private int _pageSize = 15; // default page size
 
-        public ViewRecordPageModel(DatabaseService dbService, RecordRepository recordRepository)
+        public ViewRecordPageModel(
+            DatabaseService dbService,
+            RecordRepository recordRepository,
+            BookRepository bookRepository)
         {
             _dbService = dbService;
             _recordRepository = recordRepository;
+            _bookRepository = bookRepository;
 
             Records = new ObservableCollection<Record>();
 
-            // Listen for "record saved" events to refresh the list automatically
+            // When a record is saved anywhere, refresh this list
             WeakReferenceMessenger.Default.Register<RecordSavedMessage>(this, async (_, __) =>
             {
                 await ResetAndReloadAsync();
             });
         }
 
-        // -------- State --------
+        // -------- Bindable state --------
 
         /// <summary>
-        /// The active book name; repository calls will target this book's table.
+        /// Display name of the active book (for UI only).
         /// </summary>
         [ObservableProperty]
-        private string currentBook;
+        private string currentBook = "默认";
 
         /// <summary>
-        /// The paged observable collection bound to UI.
+        /// ID of the active book (the real key used by repositories).
+        /// </summary>
+        [ObservableProperty]
+        private int currentBookId;
+
+        /// <summary>
+        /// Paged records bound to the UI.
         /// </summary>
         [ObservableProperty]
         private ObservableCollection<Record> records;
@@ -54,13 +69,19 @@ namespace PersonalFinanceTracker.PageModels
         // -------- Commands / Lifecycle --------
 
         /// <summary>
-        /// Page appearing: ensure DB is ready, set current book, then load first page.
+        /// Page appearing: ensure DB, resolve current bookId (migrating legacy name if needed),
+        /// then load the first page.
         /// </summary>
         [RelayCommand]
         public async Task Appearing()
         {
             await _dbService.InitAsync();
-            CurrentBook = Preferences.Default.Get(PrefKeyCurrentBook, "Default");
+
+            // Resolve book id (migrate from legacy name if needed)
+            var (bookId, displayName) = await EnsureCurrentBookAsync(); 
+            CurrentBookId = bookId;
+            CurrentBook = displayName;
+
             await ResetAndReloadAsync();
         }
 
@@ -71,17 +92,23 @@ namespace PersonalFinanceTracker.PageModels
         public async Task LoadNextPage()
         {
             if (_isLoading) return;
-            _isLoading = true;
+            if (CurrentBookId <= 0)
+            {
+                await AppShell.DisplaySnackbarAsync("未选择有效账本。");
+                return;
+            }
 
+            _isLoading = true;
             try
             {
-                var page = await _recordRepository.GetRecordsPagedAsync(CurrentBook, _currentPage, _pageSize);
+                var page = await _recordRepository.GetRecordsPagedAsync(CurrentBookId, _currentPage, _pageSize);
                 if (page != null && page.Count > 0)
                 {
                     foreach (var r in page)
                         Records.Add(r);
 
-                    _currentPage++; // advance page only when we received some data
+                    // Advance page only when we received some data
+                    _currentPage++;
                 }
             }
             catch (Exception ex)
@@ -107,20 +134,52 @@ namespace PersonalFinanceTracker.PageModels
         }
 
         /// <summary>
-        /// Optional: load entire list at once (not recommended for very large datasets).
+        /// Optional: load the whole list at once (avoid for very large datasets).
         /// </summary>
         public async Task LoadFinancialData()
         {
-            //System.Diagnostics.Debug.WriteLine("LoadFinancialData");
             try
             {
-                var list = await _recordRepository.ListAsync(CurrentBook);
+                if (CurrentBookId <= 0)
+                {
+                    await AppShell.DisplaySnackbarAsync("未选择有效账本。");
+                    return;
+                }
+
+                var list = await _recordRepository.ListAsync(CurrentBookId);
                 Records = new ObservableCollection<Record>(list);
             }
             catch (Exception ex)
             {
-                await AppShell.DisplaySnackbarAsync($"Error loading records: {ex.Message}");
+                await AppShell.DisplaySnackbarAsync($"加载记录失败：{ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// Resolve or create the current book by ID. If only legacy name exists, migrate and persist the id.
+        /// Returns the bookId and outputs the display name.
+        /// </summary>
+        private async Task<(int bookId, string displayName)> EnsureCurrentBookAsync()
+        {
+            const string PrefKeyCurrentBookId = "current_book_id";
+            const string PrefKeyCurrentBook = "current_book";
+
+            var id = Preferences.Default.Get(PrefKeyCurrentBookId, 0);
+            if (id > 0)
+            {
+                var name = Preferences.Default.Get(PrefKeyCurrentBook, "默认");
+                return (id, name);
+            }
+
+            // legacy name -> ensure/create book -> persist id+name
+            var legacyName = Preferences.Default.Get(PrefKeyCurrentBook, "默认");
+            var book = await _bookRepository.EnsureBookAsync(
+                string.IsNullOrWhiteSpace(legacyName) ? "默认" : legacyName.Trim());
+
+            Preferences.Default.Set(PrefKeyCurrentBookId, book.Id);
+            Preferences.Default.Set(PrefKeyCurrentBook, book.Name);
+
+            return (book.Id, book.Name);
         }
     }
 }

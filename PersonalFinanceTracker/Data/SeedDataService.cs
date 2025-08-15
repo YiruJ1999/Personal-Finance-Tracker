@@ -1,68 +1,116 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Storage;
 using PersonalFinanceTracker.Models;
+using PersonalFinanceTracker.Data;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace PersonalFinanceTracker.Data
 {
     public class SeedDataService
     {
         private readonly RecordRepository _recordRepository;
+        private readonly AccountRepository _accountRepository;
+        private readonly BookRepository _bookRepository;
         private readonly ILogger<SeedDataService> _logger;
 
         private readonly string _seedDataFilePath = "SeedData.json";
 
-        // Use the same preference key as your PageModels
+        // Legacy name-based preference key (kept for backward compatibility)
         private const string PrefKeyCurrentBook = "current_book";
+        // New id-based preference key
+        private const string PrefKeyCurrentBookId = "current_book_id";
 
         public SeedDataService(
             RecordRepository recordRepository,
+            AccountRepository accountRepository,
+            BookRepository bookRepository,
             ILogger<SeedDataService> logger)
         {
             _recordRepository = recordRepository;
+            _accountRepository = accountRepository;
+            _bookRepository = bookRepository;
             _logger = logger;
         }
 
         /// <summary>
-        /// Legacy entry point kept for backward compatibility.
-        /// It resolves the current book name from preferences and seeds that book.
+        /// Legacy entry point: resolve current book from preferences and seed that book.
         /// </summary>
         public async Task LoadSeedDataAsync()
         {
-            // Resolve current book from preferences (fallback to "Default")
-            var bookName = Preferences.Default.Get(PrefKeyCurrentBook, "Default");
-            await LoadSeedDataAsync(bookName);
+            // Prefer id-based key; fallback to legacy name-based key
+            int bookId = Preferences.Default.Get(PrefKeyCurrentBookId, 0);
+            if (bookId <= 0)
+            {
+                var legacyName = Preferences.Default.Get(PrefKeyCurrentBook, "默认");
+                var book = await _bookRepository.EnsureBookAsync(
+                    string.IsNullOrWhiteSpace(legacyName) ? "默认" : legacyName.Trim());
+                bookId = book.Id;
+
+                // persist id for future runs
+                Preferences.Default.Set(PrefKeyCurrentBookId, bookId);
+            }
+
+            await LoadSeedDataAsync(bookId);
         }
 
         /// <summary>
-        /// Seed data into the per-book Record table (scheme one: one table per book).
+        /// Seed data into the given book (by bookId).
         /// </summary>
-        public async Task LoadSeedDataAsync(string bookName)
+        public async Task LoadSeedDataAsync(int bookId)
         {
             try
             {
-                // Open the bundled seed JSON from app package
+                // Ensure the physical table exists for this book
+                await _recordRepository.EnsureTableAsync(bookId);
+
                 await using Stream recordStream = await FileSystem.OpenAppPackageFileAsync(_seedDataFilePath);
 
-                // NOTE: Ensure your JSON date format matches your Record.Timestamp type.
-                // If Timestamp is DateTime and JSON is ISO 8601, System.Text.Json will bind automatically.
+                // NOTE: Ensure JSON date format matches Record.Timestamp type.
                 var records = await JsonSerializer.DeserializeAsync<List<Record>>(recordStream);
-                System.Diagnostics.Debug.WriteLine($"Loaded {records?.Count} records from seed data for book {bookName}");
-                if (records != null && records.Count > 0)
+                if (records is null || records.Count == 0)
                 {
-                    foreach (var record in records)
-                    {
-                        // Default account if missing
-                        record.Account ??= "默认账户";
-
-                        // IMPORTANT: save into the specific book's table
-                        await _recordRepository.SaveAsync(bookName, record);
-                    }
+                    _logger.LogInformation("No seed records found in {SeedFile}.", _seedDataFilePath);
+                    return;
                 }
+
+                _logger.LogInformation("Loaded {Count} seed records for bookId={BookId}.", records.Count, bookId);
+
+                foreach (var record in records)
+                {
+                    // 1) Resolve or create account by display name to get AccountId
+                    var displayAccount = (record.Account ?? "默认账户").Trim();
+                    var acc = await _accountRepository.AddAccountAsync(displayAccount); // returns existing or creates new
+
+                    // 2) Ensure essential fields
+                    record.AccountId = acc.Id;                    // use ID-based link
+                    record.Account = acc.Name;                  // keep display name
+                    if (record.Timestamp == default)
+                        record.Timestamp = DateTime.Now;          // fallback if JSON missing
+
+                    // 3) Persist into the specific book's table
+                    await _recordRepository.SaveAsync(bookId, record);
+                }
+
+                _logger.LogInformation("Seed data import finished for bookId={BookId}.", bookId);
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Error loading Record seed data for book {BookName}", bookName);
+                _logger.LogError(e, "Error loading Record seed data for bookId={BookId}", bookId);
             }
+        }
+
+        /// <summary>
+        /// Convenience overload: resolves/creates a book by name, then seeds it.
+        /// </summary>
+        public async Task LoadSeedDataByBookNameAsync(string bookName)
+        {
+            var book = await _bookRepository.EnsureBookAsync(
+                string.IsNullOrWhiteSpace(bookName) ? "默认" : bookName.Trim());
+            await LoadSeedDataAsync(book.Id);
         }
     }
 }

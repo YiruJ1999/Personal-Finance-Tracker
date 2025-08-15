@@ -1,8 +1,14 @@
 using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Maui.Storage;                 // Preferences
 using PersonalFinanceTracker.Models;
 using PersonalFinanceTracker.Services;
+using PersonalFinanceTracker.Data;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace PersonalFinanceTracker.PageModels
 {
@@ -11,25 +17,36 @@ namespace PersonalFinanceTracker.PageModels
         private readonly RecordRepository _recordRepository;
         private readonly DatabaseService _databaseService;
         private readonly SeedDataService _seedDataService;
+        private readonly BookRepository _bookRepository;
         private readonly IServiceProvider _sp;
 
-        // Key for persisting current book name
-        private const string PrefKeyCurrentBook = "current_book";
-        private const string defaultBookName = "Default";
+        // Legacy name-based preference key (kept for migration)
+        private const string PrefKeyCurrentBookName = "current_book";
+        // New id-based preference key
+        private const string PrefKeyCurrentBookId = "current_book_id";
+        private const string DefaultBookDisplayName = "默认";
 
-        public MainPageModel(RecordRepository recordRepository, DatabaseService databaseService, SeedDataService seedDataService, IServiceProvider sp)
+        public MainPageModel(
+            RecordRepository recordRepository,
+            DatabaseService databaseService,
+            SeedDataService seedDataService,
+            BookRepository bookRepository,
+            IServiceProvider sp)
         {
             _recordRepository = recordRepository;
             _databaseService = databaseService;
             _seedDataService = seedDataService;
+            _bookRepository = bookRepository;
             _sp = sp;
-
         }
 
         // -------- Observable properties --------
 
         [ObservableProperty]
-        private string currentBook;  // The active book name used by repositories
+        private string currentBook;  // display name of current book
+
+        [ObservableProperty]
+        private int currentBookId;   // id of current book (source of truth)
 
         [ObservableProperty]
         private List<Record> todayRecords;
@@ -97,63 +114,74 @@ namespace PersonalFinanceTracker.PageModels
         public async Task Appearing()
         {
             System.Diagnostics.Debug.WriteLine("MainPageModel Appearing");
-            // Initialize DB connection (generic; no Record-specific logic here)
+
+            // 1) Init DB connection
             await _databaseService.InitAsync();
 
-            // Un-comment the next lines if you want to reset the seed state
-             //Preferences.Default.Remove("is_seeded");
-             //await _databaseService.ClearDatabaseAsync();
-
-            // Seed once per app (optionally per book; see note below)
+            // 2) One-time seed (uses id-based pref, falls back to legacy name)
             if (!Preferences.Default.ContainsKey("is_seeded"))
             {
-                // If your SeedDataService should seed per book, prefer:
-                // await _seedDataService.LoadSeedDataAsync(CurrentBook);
                 await _seedDataService.LoadSeedDataAsync();
-
                 Preferences.Default.Set("is_seeded", true);
-                Preferences.Default.Set(
-                    $"monthlybugget_{Preferences.Default.Get(PrefKeyCurrentBook, defaultBookName)}"
-                    , 0.0);
+
+                // initialize monthly budget for this book id (use 0 as default)
+                var bookId = await EnsureCurrentBookIdAsync();
+                Preferences.Default.Set(BudgetKeyById(bookId), 0.0);
             }
 
-            // Load page data using the active book
+            // 3) Load data for current book
             await LoadFinancialData();
 
-            MonthlyBugget = Preferences.Default.Get(
-                $"monthlybugget_{Preferences.Default.Get(PrefKeyCurrentBook, defaultBookName)}"
-                , 0.0);
-            CurrentBook = Preferences.Default.Get(PrefKeyCurrentBook, defaultBookName);
+            // 4) Load budget (prefer id-based; fallback legacy name-based once)
+            var curId = await EnsureCurrentBookIdAsync();
+            MonthlyBugget = Preferences.Default.Get(BudgetKeyById(curId),
+                                Preferences.Default.Get(BudgetKeyByLegacyName(
+                                    Preferences.Default.Get(PrefKeyCurrentBookName, DefaultBookDisplayName)), 0.0));
+
+            // 5) Update display name (for UI)
+            CurrentBook = Preferences.Default.Get(PrefKeyCurrentBookName, DefaultBookDisplayName);
         }
 
         [RelayCommand]
         private async Task BuggetTapped()
         {
-
             var popup = _sp.GetRequiredService<BuggetPopup>();
             var result = await Shell.Current.ShowPopupAsync(popup);
 
-            if (result is string amountStr && decimal.TryParse(amountStr, out var amount))
+            if (result is string amountStr && double.TryParse(amountStr, out var amount))
             {
-                MonthlyBugget = (double)amount;
+                MonthlyBugget = amount;
             }
         }
-        // Switch current book at runtime (bind this to a Picker if needed)
+
+        // Switch current book at runtime (bind this to a Picker using names if needed)
         [RelayCommand]
-        private async Task ChangeBook(string newBook)
+        private async Task ChangeBook(string newBookName)
         {
-            // Persist and reload data for the selected book
-            CurrentBook = string.IsNullOrWhiteSpace(newBook) ? defaultBookName : newBook.Trim();
-            Preferences.Default.Set(PrefKeyCurrentBook, CurrentBook);
+            // Resolve or create the book by display name
+            var display = string.IsNullOrWhiteSpace(newBookName) ? DefaultBookDisplayName : newBookName.Trim();
+            var book = await _bookRepository.EnsureBookAsync(display);
+
+            // Persist both id (new) and name (legacy)
+            Preferences.Default.Set(PrefKeyCurrentBookId, book.Id);
+            Preferences.Default.Set(PrefKeyCurrentBookName, book.Name);
+
+            // Update UI state
+            CurrentBookId = book.Id;
+            CurrentBook = book.Name;
+
+            // Reload
             await LoadFinancialData();
         }
 
-        // -------- Data loading --------
+        // -------- Data loading (ID-based) --------
 
         public async Task LoadFinancialData()
         {
-            // IMPORTANT: repository calls now require the book name
-            var allRecords = await _recordRepository.ListAsync(CurrentBook);
+            var bookId = await EnsureCurrentBookIdAsync();
+
+            // Fetch all records for the current book id
+            var allRecords = await _recordRepository.ListAsync(bookId);
 
             var today = DateTime.Today;
             TodayRecords = allRecords
@@ -177,6 +205,7 @@ namespace PersonalFinanceTracker.PageModels
                 new("本月预算", (decimal) MonthlyBugget)
             };
 
+            // Category chart for income (adjust to your needs)
             MonthlyCategoryChartData = monthly
                 .Where(r => r.Type == "收入")
                 .GroupBy(r => r.Category)
@@ -187,22 +216,52 @@ namespace PersonalFinanceTracker.PageModels
                 }).ToList();
 
             foreach (var record in allRecords)
-            {
                 System.Diagnostics.Debug.WriteLine(record.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff"));
-            }
+
             System.Diagnostics.Debug.WriteLine("系统 DateTime.Today 是：" + DateTime.Today.ToString("yyyy-MM-dd"));
         }
 
-        // Persist MonthlyBugget whenever changed
+        // Persist MonthlyBugget whenever changed (store by bookId; also update legacy once for backward-compat)
         partial void OnMonthlyBuggetChanged(double value)
         {
-            Preferences.Default.Set(
-                $"monthlybugget_{Preferences.Default.Get(PrefKeyCurrentBook,defaultBookName)}"
-                , value);
+            var id = Preferences.Default.Get(PrefKeyCurrentBookId, 0);
+            if (id > 0) Preferences.Default.Set(BudgetKeyById(id), value);
+
+            // update legacy name-key only if it exists to avoid overwriting other books
+            var legacyName = Preferences.Default.Get(PrefKeyCurrentBookName, DefaultBookDisplayName);
+            Preferences.Default.Set(BudgetKeyByLegacyName(legacyName), value);
         }
 
+        // -------- Helpers --------
 
+        // Ensure we have a valid current book id; migrate from legacy name if needed
+        private async Task<int> EnsureCurrentBookIdAsync()
+        {
+            var id = Preferences.Default.Get(PrefKeyCurrentBookId, 0);
+            if (id > 0)
+            {
+                CurrentBookId = id;
+                // Keep display name updated for UI
+                var name = Preferences.Default.Get(PrefKeyCurrentBookName, DefaultBookDisplayName);
+                CurrentBook = name;
+                return id;
+            }
 
+            // Fallback to legacy name, then ensure/create a Book row and persist the id
+            var legacyName = Preferences.Default.Get(PrefKeyCurrentBookName, DefaultBookDisplayName);
+            var book = await _bookRepository.EnsureBookAsync(
+                string.IsNullOrWhiteSpace(legacyName) ? DefaultBookDisplayName : legacyName.Trim());
+
+            Preferences.Default.Set(PrefKeyCurrentBookId, book.Id);
+            Preferences.Default.Set(PrefKeyCurrentBookName, book.Name);
+
+            CurrentBookId = book.Id;
+            CurrentBook = book.Name;
+            return book.Id;
+        }
+
+        private static string BudgetKeyById(int bookId) => $"monthlybugget_{bookId}";
+        private static string BudgetKeyByLegacyName(string bookName) => $"monthlybugget_{bookName}";
     }
 
     public record MonthlySummaryItem(string Label, decimal Amount);

@@ -11,6 +11,7 @@ namespace PersonalFinanceTracker.Models
 
         // Account 
         public string Account { get; set; } = string.Empty;
+        public int AccountId { get; set; }
 
         // Income or expenditure
         public string Type { get; set; } = string.Empty;

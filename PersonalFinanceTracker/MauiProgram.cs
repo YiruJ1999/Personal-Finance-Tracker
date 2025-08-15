@@ -62,6 +62,8 @@ namespace PersonalFinanceTracker
 
             builder.Services.AddTransient<BuggetPopup>();
 
+            builder.Services.AddSingleton<BookRepository>();
+
             builder.Services.AddTransient<PersonalFinanceTracker.Pages.CreateNewBookPopup>();
 
             var app = builder.Build();
