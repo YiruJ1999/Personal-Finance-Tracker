@@ -10,9 +10,10 @@ namespace PersonalFinanceTracker.Pages
 
         public MainPage(MainPageModel model)
         {
-            InitializeComponent();
             _model = model;
             BindingContext = _model;
+            InitializeComponent();
+
 
         }
 

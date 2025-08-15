@@ -23,6 +23,7 @@ namespace PersonalFinanceTracker.PageModels
             _databaseService = databaseService;
             _seedDataService = seedDataService;
             _sp = sp;
+
         }
 
         // -------- Observable properties --------
@@ -125,6 +126,18 @@ namespace PersonalFinanceTracker.PageModels
             CurrentBook = Preferences.Default.Get(PrefKeyCurrentBook, defaultBookName);
         }
 
+        [RelayCommand]
+        private async Task BuggetTapped()
+        {
+
+            var popup = _sp.GetRequiredService<BuggetPopup>();
+            var result = await Shell.Current.ShowPopupAsync(popup);
+
+            if (result is string amountStr && decimal.TryParse(amountStr, out var amount))
+            {
+                MonthlyBugget = (double)amount;
+            }
+        }
         // Switch current book at runtime (bind this to a Picker if needed)
         [RelayCommand]
         private async Task ChangeBook(string newBook)
@@ -161,6 +174,7 @@ namespace PersonalFinanceTracker.PageModels
                 new("本月收入", income),
                 new("本月支出", expense),
                 new("收支差额", income - expense),
+                new("本月预算", (decimal) MonthlyBugget)
             };
 
             MonthlyCategoryChartData = monthly
@@ -187,18 +201,8 @@ namespace PersonalFinanceTracker.PageModels
                 , value);
         }
 
-        [RelayCommand]
-        private async Task BuggetTapped()
-        {
 
-            var popup = _sp.GetRequiredService<BuggetPopup>();
-            var result = await Shell.Current.ShowPopupAsync(popup);
 
-            if (result is string amountStr && decimal.TryParse(amountStr, out var amount))
-            {
-                MonthlyBugget = (double)amount;
-            }
-        }
     }
 
     public record MonthlySummaryItem(string Label, decimal Amount);
