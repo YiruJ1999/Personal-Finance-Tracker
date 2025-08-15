@@ -104,14 +104,17 @@ namespace PersonalFinanceTracker.PageModels
 
                 var agg = await _db.QueryAsync<AggregateRow>(sql);
                 var first = agg.Count > 0 ? agg[0] : new AggregateRow();
-
-                // Parse last modified (works if Timestamp is ISO 8601 string or SQLite datetime)
                 DateTime? last = null;
+
                 if (!string.IsNullOrWhiteSpace(first.LastModified) &&
-                    DateTime.TryParse(first.LastModified, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var dt))
+                    long.TryParse(first.LastModified,out var ticks))
                 {
-                    last = dt;
+                    System.Diagnostics.Debug.WriteLine("IF-Condition fulfilled");
+                    last = new DateTime(ticks,DateTimeKind.Local);
                 }
+
+                System.Diagnostics.Debug.WriteLine(first.LastModified);
+                last = last ?? DateTime.MinValue; // fallback to MinValue if parsing fails
 
                 // Budget: try per-book key first, fallback to global MonthlyBugget
                 var perBookBudgetKey = $"monthlybugget_{bookName}";
