@@ -25,7 +25,7 @@
             <Frame Padding="16" HasShadow="True" CornerRadius="12">
                 <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
                     <Label Text="总资产" FontAttributes="Bold" FontSize="16" />
-                    <Label Text="{Binding TotalAssets, StringFormat='{}{0:C}'}"
+                    <Label Text="{Binding TotalAssets, StringFormat='{}€{0}'}"
                FontSize="16" FontAttributes="Bold" />
                 </HorizontalStackLayout>
             </Frame>
@@ -97,7 +97,7 @@
                                     <Grid Padding="12" ColumnDefinitions="*,Auto">
                                         <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="14" />
                                         <Label Grid.Column="1"
-                                           Text="{Binding Balance, StringFormat='{0:C}'}"
+                                           Text="{Binding Balance, StringFormat='{}€{0}'}"
                                            HorizontalTextAlignment="End" 
                                            FontSize="14"/>
 

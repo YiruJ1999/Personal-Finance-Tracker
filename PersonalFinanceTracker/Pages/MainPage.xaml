@@ -29,10 +29,10 @@
                     <Label Text="预算" FontAttributes="Bold" Grid.Column="3" Grid.Row="0" HorizontalOptions="Center" />
 
 
-                    <Label Text="{Binding MonthlySummaryData[0].Amount, StringFormat='{}{0:C}'}" Grid.Row="1" Grid.Column="0" HorizontalOptions="Center" />
-                    <Label Text="{Binding MonthlySummaryData[1].Amount, StringFormat='{}{0:C}'}" Grid.Row="1" Grid.Column="1" HorizontalOptions="Center" />
-                    <Label Text="{Binding MonthlySummaryData[2].Amount, StringFormat='{}{0:C}'}" Grid.Row="1" Grid.Column="2" HorizontalOptions="Center" />
-                    <Label Text="{Binding MonthlyBugget               , StringFormat='{}{0:C}'}" Grid.Row="1" Grid.Column="3" HorizontalOptions="Center" >
+                    <Label Text="{Binding MonthlySummaryData[0].Amount, StringFormat='{}€{0}'}" Grid.Row="1" Grid.Column="0" HorizontalOptions="Center" />
+                    <Label Text="{Binding MonthlySummaryData[1].Amount, StringFormat='{}€{0}'}" Grid.Row="1" Grid.Column="1" HorizontalOptions="Center" />
+                    <Label Text="{Binding MonthlySummaryData[2].Amount, StringFormat='{}€{0}'}" Grid.Row="1" Grid.Column="2" HorizontalOptions="Center" />
+                    <Label Text="{Binding MonthlyBugget               , StringFormat='{}€{0}'}" Grid.Row="1" Grid.Column="3" HorizontalOptions="Center" >
                         <Label.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding BuggetTappedCommand}"/>
                         </Label.GestureRecognizers>

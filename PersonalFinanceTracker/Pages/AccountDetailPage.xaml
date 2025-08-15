@@ -6,7 +6,7 @@
     <Grid RowDefinitions="Auto,Auto,Auto,*" Padding="16" ColumnDefinitions="*,Auto">
         <!-- Total amount -->
         <Label Grid.Row="0" 
-               Text="{Binding TotalAmount, StringFormat='总金额：{0:C}'}"
+               Text="{Binding TotalAmount, StringFormat='总金额：{}€{0}{0}'}"
                FontSize="20" FontAttributes="Bold" HorizontalOptions="Center" />
 
         <!-- Edit account button -->
