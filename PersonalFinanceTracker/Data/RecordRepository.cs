@@ -45,7 +45,7 @@ namespace PersonalFinanceTracker.Data
 
             string sql = $@"
                 CREATE TABLE IF NOT EXISTS ""{table}"" (
-                    ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
                     Type TEXT,
                     Amount REAL NOT NULL,
                     Category TEXT,
@@ -63,7 +63,7 @@ namespace PersonalFinanceTracker.Data
             await EnsureAccountColumnAsync(table); // normalize legacy data if needed
 
             string sql = $@"
-                SELECT ID, Type, Amount, Category, Note, Timestamp, Account
+                SELECT Id, Type, Amount, Category, Note, Timestamp, Account
                 FROM ""{table}""
                 ORDER BY Timestamp DESC;";
             return await _database.QueryAsync<Record>(sql);
@@ -75,9 +75,9 @@ namespace PersonalFinanceTracker.Data
             await EnsureTableAsync(bookName);
             await EnsureAccountColumnAsync(table);
 
-            string sql = $@"SELECT ID, Type, Amount, Category, Note, Timestamp, Account
+            string sql = $@"SELECT Id, Type, Amount, Category, Note, Timestamp, Account
                             FROM ""{table}""
-                            WHERE ID = ?;";
+                            WHERE Id = ?;";
             var list = await _database.QueryAsync<Record>(sql, id);
             return list.Count > 0 ? list[0] : null;
         }
@@ -95,7 +95,7 @@ namespace PersonalFinanceTracker.Data
             await EnsureTableAsync(bookName);
             await EnsureAccountColumnAsync(table);
 
-            if (record.ID == 0)
+            if (record.Id == 0)
             {
                 // INSERT
                 string insertSql = $@"
@@ -113,9 +113,9 @@ namespace PersonalFinanceTracker.Data
                     record.Account
                 );
 
-                // Set generated ID back to model
+                // Set generated Id back to model
                 var id = await _database.ExecuteScalarAsync<long>("SELECT last_insert_rowid();");
-                record.ID = (int)id;
+                record.Id = (int)id;
             }
             else
             {
@@ -123,7 +123,7 @@ namespace PersonalFinanceTracker.Data
                 string updateSql = $@"
                     UPDATE ""{table}""
                     SET Type = ?, Amount = ?, Category = ?, Note = ?, Timestamp = ?, Account = ?
-                    WHERE ID = ?;";
+                    WHERE Id = ?;";
 
                 await _database.ExecuteAsync(
                     updateSql,
@@ -133,7 +133,7 @@ namespace PersonalFinanceTracker.Data
                     record.Note,
                     record.Timestamp,
                     record.Account,
-                    record.ID
+                    record.Id
                 );
             }
         }
@@ -144,8 +144,8 @@ namespace PersonalFinanceTracker.Data
             await EnsureTableAsync(bookName);
             await EnsureAccountColumnAsync(table);
 
-            string sql = $@"DELETE FROM ""{table}"" WHERE ID = ?;";
-            await _database.ExecuteAsync(sql, record.ID);
+            string sql = $@"DELETE FROM ""{table}"" WHERE Id = ?;";
+            await _database.ExecuteAsync(sql, record.Id);
         }
 
         public async Task DeleteAllAsync(string bookName)
@@ -174,7 +174,7 @@ namespace PersonalFinanceTracker.Data
             int skip = Math.Max(0, (pageNumber - 1) * pageSize);
 
             string sql = $@"
-                SELECT ID, Type, Amount, Category, Note, Timestamp, Account
+                SELECT Id, Type, Amount, Category, Note, Timestamp, Account
                 FROM ""{table}""
                 ORDER BY Timestamp DESC
                 LIMIT ? OFFSET ?;";

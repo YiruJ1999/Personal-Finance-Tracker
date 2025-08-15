@@ -100,9 +100,9 @@ namespace PersonalFinanceTracker.Data
                 var tables = await GetBookTableNamesAsync();
                 foreach (var t in tables)
                 {
-                    var tn = SanitizeTableName(t);
+                    
                     // Raw SQL delete by account name
-                    await _db.ExecuteAsync($"DELETE FROM {tn} WHERE Account = ?", name);
+                    await _db.ExecuteAsync($"DELETE FROM {t} WHERE Account = ?", name);
                 }
             }
         }
@@ -131,10 +131,7 @@ namespace PersonalFinanceTracker.Data
             return rows?.ToList() ?? new List<string>();
         }
 
-        private static string SanitizeTableName(string table)
-        {
-            return Regex.Replace(table ?? string.Empty, @"[^a-zA-Z0-9_]+", "");
-        }
+
 
         /// <summary>
         /// Aggregate account balances scanning one or all book tables.
@@ -146,14 +143,14 @@ namespace PersonalFinanceTracker.Data
 
             List<string> tables;
             if (!string.IsNullOrWhiteSpace(book))
-                tables = new List<string> { $"book_{SanitizeTableName(book)}" };
+                tables = new List<string> { $"book_{book}" };
             else
                 tables = await GetBookTableNamesAsync();
 
             foreach (var t in tables)
             {
-                var tn = SanitizeTableName(t);
-                var rows = await _db.QueryAsync<Record>($"SELECT * FROM {tn}");
+
+                var rows = await _db.QueryAsync<Record>($"SELECT * FROM {t}");
 
                 foreach (var r in rows)
                 {
@@ -248,8 +245,8 @@ namespace PersonalFinanceTracker.Data
             var allRecords = new List<Record>();
             foreach (var t in tables)
             {
-                var tn = SanitizeTableName(t);
-                var rows = await _db.QueryAsync<Record>($"SELECT * FROM {tn}");
+
+                var rows = await _db.QueryAsync<Record>($"SELECT * FROM {t}");
                 allRecords.AddRange(rows);
             }
 
@@ -289,8 +286,8 @@ namespace PersonalFinanceTracker.Data
 
             foreach (var t in tables)
             {
-                var tn = SanitizeTableName(t);
-                var rows = await _db.QueryAsync<Record>($"SELECT * FROM {tn}");
+
+                var rows = await _db.QueryAsync<Record>($"SELECT * FROM {t}");
                 results.AddRange(rows);
             }
 

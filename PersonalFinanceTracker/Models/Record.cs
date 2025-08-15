@@ -7,7 +7,7 @@ namespace PersonalFinanceTracker.Models
     public class Record
     {
         [PrimaryKey, AutoIncrement]
-        public int ID { get; set; }
+        public int Id { get; set; }
 
         // Account 
         public string Account { get; set; } = string.Empty;

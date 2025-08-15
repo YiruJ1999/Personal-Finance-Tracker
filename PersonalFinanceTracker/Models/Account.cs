@@ -9,7 +9,7 @@ namespace PersonalFinanceTracker.Models
     public partial class Account
     {
         [PrimaryKey, AutoIncrement]
-        public int id { get; set; }
+        public int Id { get; set; }
         // Account name
         public string Name { get; set; } = string.Empty;
         // Account balance
