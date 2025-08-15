@@ -39,8 +39,9 @@
                                     JustifyContent="SpaceBetween"
                                     AlignItems="Center">
                             <Label Text="{Binding Category}" FlexLayout.Grow="1"  />
-                            <Label Text="{Binding Amount, StringFormat='{}€{0}'}" FlexLayout.Grow="1"  />
+                            <Label Text="{Binding Amount, StringFormat='{}{0:C}'}" FlexLayout.Grow="1"  />
                             <Label Text="{Binding Note}" FlexLayout.Grow="2" />
+
                         </FlexLayout>
                     </Border>
                 </DataTemplate>
