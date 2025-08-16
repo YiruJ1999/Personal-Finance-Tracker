@@ -27,6 +27,8 @@ namespace PersonalFinanceTracker.PageModels
         private readonly RecordRepository _recordRepository;
         private readonly BookRepository _bookRepository;
 
+        private bool _isNavigatingToDetail;
+
         // Observable properties for UI
         [ObservableProperty] private decimal totalAssets;
         [ObservableProperty] private List<ChartPoint> last4MonthsTrend = new();
@@ -174,23 +176,24 @@ namespace PersonalFinanceTracker.PageModels
         [RelayCommand]
         private async Task OpenAccountDetailAsync(int accountId)
         {
-            var selected = Accounts.FirstOrDefault(a => a.Id == accountId);
-            if (selected is null) return;
+            // Prevent double navigation (fast taps, re-entrancy)
+            if (_isNavigatingToDetail) return;
+            _isNavigatingToDetail = true;
 
-            SelectedAccount = selected;
-            EditedBalance = selected.Balance;
-
-            await Shell.Current.GoToAsync("accountDetail" + $"?id={selected.Id}");
-
-            if (Shell.Current is not null)
+            try
             {
-                // IMPORTANT: update your route to accept "id" parameter (e.g., [QueryProperty(nameof(AccountId),"id")])
-                var route = $"accountDetail?id={selected.Id}";
-                await Shell.Current.GoToAsync(route);
-                return;
-            }
+                var selected = Accounts.FirstOrDefault(a => a.Id == accountId);
+                if (selected is null) return;
 
-            await Application.Current.MainPage.DisplayAlert("提示", "请先在应用中注册账户详情页的导航路由。", "好的");
+                SelectedAccount = selected;
+                EditedBalance = selected.Balance;
+
+                await Shell.Current.GoToAsync("accountDetail" + $"?id={selected.Id}");
+            }
+            finally
+            {
+                _isNavigatingToDetail = false;
+            }
         }
 
         // -----------------------
