@@ -24,19 +24,20 @@
 
             try
             {
-                // NOTE: resolve repository however you currently do it
-                await _personalInfoRepository.EnsureDatabaseInitializedAsync();
-                //await _personalInfoRepository.TryAddCurrencyCodeColumnAsync();
+                // 1) Load the full ISO4217->symbol map from CLDR JSON
+                var fullMap = CurrencySymbolLoader.LoadAllSymbols();
+                CurrencyManager.SetSymbolMap(fullMap);
 
-                var info = await _personalInfoRepository.GetPersonalInfoAsync();
-                var code = string.IsNullOrWhiteSpace(info.CurrencyCode) ? "EUR" : info.CurrencyCode;
-
-                // Apply saved currency globally
+                // 2) Read user’s saved currency code from PersonalInfo and apply
+                var repo = new PersonalInfoRepository(new DatabaseService());
+                await repo.EnsureDatabaseInitializedAsync();
+                var info = await repo.GetPersonalInfoAsync();
+                var code = string.IsNullOrWhiteSpace(info?.CurrencyCode) ? "EUR" : info!.CurrencyCode;
                 CurrencyManager.Set(code);
             }
             catch
             {
-                // Swallow errors to avoid blocking app start
+                // Fallback to EUR to avoid blocking app start
                 CurrencyManager.Set("EUR");
             }
         }

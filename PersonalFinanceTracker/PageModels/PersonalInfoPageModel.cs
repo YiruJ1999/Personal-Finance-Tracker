@@ -44,9 +44,9 @@ namespace PersonalFinanceTracker.PageModels
 
         // --- Currency selection ---
 
-        // Provide a small fixed list; extend if needed.
+        // Provide all ISO currency codes from CurrencyManager (sorted)
         public ObservableCollection<string> CurrencyOptions { get; } =
-            new(new[] { "EUR", "USD", "GBP", "JPY", "CNY" });
+            new(CurrencyManager.GetAllCodes());
 
         private string _currencyCode = "EUR";
         /// <summary>

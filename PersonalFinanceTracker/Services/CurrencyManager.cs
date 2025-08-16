@@ -1,40 +1,41 @@
-// Services/CurrencyManager.cs
+﻿// Services/CurrencyManager.cs
 using System.Globalization;
 
 namespace PersonalFinanceTracker.Services
 {
     public static class CurrencyManager
     {
-        // Map from ISO code to symbol; extend as needed
-        private static readonly Dictionary<string, string> Symbols = new()
+        // Default to ISO code => symbol map (can be overridden at startup)
+        private static Dictionary<string, string> _symbols = new(StringComparer.OrdinalIgnoreCase)
         {
-            ["EUR"] = "�",
+            // keep a few safe fallbacks; will be replaced by CLDR map on boot
+            ["EUR"] = "€",
             ["USD"] = "$",
-            ["GBP"] = "?",
-            ["JPY"] = "?",
-            ["CNY"] = "?"
+            ["GBP"] = "£",
+            ["JPY"] = "¥",
+            ["CNY"] = "¥",
         };
 
         public static string CurrentCode { get; private set; } = "EUR";
-
-        public static string CurrentSymbol =>
-            Symbols.TryGetValue(CurrentCode, out var s) ? s : CurrentCode;
+        public static string CurrentSymbol => _symbols.TryGetValue(CurrentCode, out var s) ? s : CurrentCode;
 
         public static event EventHandler? CurrencyChanged;
 
-        /// <summary>
-        /// Set current currency code and update global NumberFormat CurrencySymbol.
-        /// This keeps language/date formats intact and only changes the money symbol.
-        /// </summary>
+        /// <summary>Replace the whole symbol map (e.g., with CLDR full dataset).</summary>
+        public static void SetSymbolMap(Dictionary<string, string> map)
+        {
+            if (map is null || map.Count == 0) return;
+            _symbols = map;
+        }
+
+        /// <summary>Set current currency and update CultureInfo.NumberFormat.CurrencySymbol.</summary>
         public static void Set(string isoCode)
         {
             CurrentCode = isoCode?.ToUpperInvariant() ?? "EUR";
 
-            // clone current culture to keep language/date/time, but change currency symbol
             var culture = (CultureInfo)CultureInfo.CurrentCulture.Clone();
             culture.NumberFormat.CurrencySymbol = CurrentSymbol;
 
-            // apply globally so StringFormat {0:C} reflects the new symbol
             CultureInfo.DefaultThreadCurrentCulture = culture;
             CultureInfo.DefaultThreadCurrentUICulture = culture;
 
