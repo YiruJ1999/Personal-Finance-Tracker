@@ -57,6 +57,9 @@ namespace PersonalFinanceTracker
             builder.Services.AddTransient<AccountPageModel>();
             builder.Services.AddSingleton<AccountRepository>();
 
+            builder.Services.AddTransient<AccountDetailPage>();
+            builder.Services.AddTransient<AccountDetailPageModel>();
+
             builder.Services.AddTransient<BookPage>();
             builder.Services.AddTransient<BookPageModel>();
 

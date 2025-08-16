@@ -172,17 +172,15 @@ namespace PersonalFinanceTracker.PageModels
 
         // Navigate to account detail page. Pass accountId in the route.
         [RelayCommand]
-        private async Task OpenAccountDetailAsync(string accountName)
+        private async Task OpenAccountDetailAsync(int accountId)
         {
-            if (string.IsNullOrWhiteSpace(accountName))
-                return;
-
-            var selected = Accounts.FirstOrDefault(a =>
-                string.Equals(a.Name?.Trim(), accountName.Trim(), StringComparison.OrdinalIgnoreCase));
+            var selected = Accounts.FirstOrDefault(a => a.Id == accountId);
             if (selected is null) return;
 
             SelectedAccount = selected;
             EditedBalance = selected.Balance;
+
+            await Shell.Current.GoToAsync("accountDetail" + $"?id={selected.Id}");
 
             if (Shell.Current is not null)
             {

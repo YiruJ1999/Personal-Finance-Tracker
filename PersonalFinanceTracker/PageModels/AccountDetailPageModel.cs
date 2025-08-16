@@ -1,7 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Storage;                 // Preferences
+using Microsoft.Maui.Storage;
 using PersonalFinanceTracker.Models;
 using PersonalFinanceTracker.Services;
 using PersonalFinanceTracker.Data;
@@ -13,19 +13,22 @@ using System.Threading.Tasks;
 
 namespace PersonalFinanceTracker.PageModels
 {
+    // Optional: uncomment if you want Shell to set AccountId automatically via query "?id=123"
+    // [QueryProperty(nameof(AccountId), "id")]
     public partial class AccountDetailPageModel : ObservableObject
     {
-        private readonly int _accountId;                 // use Id everywhere
         private readonly AccountRepository _accountRepo;
         private readonly RecordRepository _recordRepo;
         private readonly BookRepository _bookRepo;
 
-        private const string PrefKeyCurrentBookId = "current_book_id"; // new Id-based key
-        private const string PrefKeyCurrentBook = "current_book";    // legacy name key (for migration)
+        private const string PrefKeyCurrentBookId = "current_book_id";
+        private const string PrefKeyCurrentBook = "current_book";
 
-        // Bindable title (resolved from Account table by _accountId)
+        // ---- runtime data comes as a property (set by the Page after navigation) ----
+        [ObservableProperty]
+        private int accountId; // when set, we'll trigger InitAsync below
+
         [ObservableProperty] private string accountName;
-
         public ObservableCollection<MonthOption> AvailableMonths { get; } = new();
         public ObservableCollection<Record> MonthlyRecords { get; } = new();
 
@@ -36,30 +39,20 @@ namespace PersonalFinanceTracker.PageModels
             set
             {
                 if (SetProperty(ref _selectedMonth, value))
-                {
-                    // Reload records when month changes
                     _ = LoadMonthlyRecordsAsync();
-                }
             }
         }
 
-        private decimal _totalAmount;
-        public decimal TotalAmount
-        {
-            get => _totalAmount;
-            set => SetProperty(ref _totalAmount, value);
-        }
+        [ObservableProperty] private decimal totalAmount;
 
         public IAsyncRelayCommand EditAccountCommand { get; }
 
-        // New constructor (recommended): pass accountId
+        // DI-friendly ctor: ONLY services/ repositories, no primitive runtime values
         public AccountDetailPageModel(
-            int accountId,
             AccountRepository accountRepo,
             RecordRepository recordRepo,
             BookRepository bookRepo)
         {
-            _accountId = accountId;
             _accountRepo = accountRepo ?? throw new ArgumentNullException(nameof(accountRepo));
             _recordRepo = recordRepo ?? throw new ArgumentNullException(nameof(recordRepo));
             _bookRepo = bookRepo ?? throw new ArgumentNullException(nameof(bookRepo));
@@ -67,14 +60,22 @@ namespace PersonalFinanceTracker.PageModels
             EditAccountCommand = new AsyncRelayCommand(EditAccountAsync);
         }
 
+        // When AccountId changes (set by the page), load everything
+        partial void OnAccountIdChanged(int value)
+        {
+            if (value > 0)
+                _ = InitAsync();
+        }
+
         public async Task InitAsync()
         {
-            // Resolve and show account display name
-            var acc = (await _accountRepo.ListAsync()).FirstOrDefault(a => a.Id == _accountId);
-            AccountName = acc?.Name ?? $"Account #{_accountId}";
-
-            // Build months (last 18, newest first) and select current month
             BuildMonthOptions();
+
+            // Resolve and show account display name
+            var acc = (await _accountRepo.ListAsync()).FirstOrDefault(a => a.Id == AccountId);
+            AccountName = acc?.Name ?? $"Account #{AccountId}";
+
+            // Select current month
             var now = DateTime.Now;
             SelectedMonth = AvailableMonths.First(m => m.Year == now.Year && m.Month == now.Month);
 
@@ -85,6 +86,7 @@ namespace PersonalFinanceTracker.PageModels
 
         private void BuildMonthOptions()
         {
+            if (AvailableMonths.Count > 0) return; // prevent duplicates
             var now = DateTime.Now;
             for (int i = 0; i < 18; i++)
             {
@@ -93,27 +95,25 @@ namespace PersonalFinanceTracker.PageModels
             }
         }
 
-        // Ensure Account table reflects the latest records, then read this account by Id
+        // Ensure Account table reflects latest records, then read this account by Id
         private async Task LoadHeaderAsync()
         {
-            // Sync from all books (records are source of truth)
             await _accountRepo.SyncAccountsFromBooksAsync(bookId: null);
-
             var accounts = await _accountRepo.ListAsync();
-            var self = accounts.FirstOrDefault(a => a.Id == _accountId);
+            var self = accounts.FirstOrDefault(a => a.Id == AccountId);
             TotalAmount = self?.Balance ?? 0m;
         }
 
-        // Load records for the selected month across all books for this accountId
+        // Load records for the selected month across all books for this AccountId
         private async Task LoadMonthlyRecordsAsync()
         {
             MonthlyRecords.Clear();
-            if (SelectedMonth is null) return;
+            if (SelectedMonth is null || AccountId <= 0) return;
 
             var start = new DateTime(SelectedMonth.Year, SelectedMonth.Month, 1, 0, 0, 0, DateTimeKind.Local);
             var end = start.AddMonths(1).AddTicks(-1);
 
-            var records = await _accountRepo.ListRecordsForAccountAcrossBooksAsync(_accountId, start, end);
+            var records = await _accountRepo.ListRecordsForAccountAcrossBooksAsync(AccountId, start, end);
             foreach (var r in records)
                 MonthlyRecords.Add(r);
         }
@@ -124,8 +124,7 @@ namespace PersonalFinanceTracker.PageModels
             string input = await Application.Current.MainPage.DisplayPromptAsync(
                 "编辑此账户", "请输入新的余额：", "保存", "取消", keyboard: Keyboard.Numeric);
 
-            if (string.IsNullOrWhiteSpace(input))
-                return;
+            if (string.IsNullOrWhiteSpace(input)) return;
 
             if (!decimal.TryParse(input.Trim(), NumberStyles.Number, CultureInfo.CurrentCulture, out var newBalance))
             {
@@ -136,7 +135,7 @@ namespace PersonalFinanceTracker.PageModels
             // 1) Read current balance after sync
             await _accountRepo.SyncAccountsFromBooksAsync(bookId: null);
             var accounts = await _accountRepo.ListAsync();
-            var self = accounts.FirstOrDefault(a => a.Id == _accountId);
+            var self = accounts.FirstOrDefault(a => a.Id == AccountId);
             var current = self?.Balance ?? 0m;
 
             // 2) Compute delta
@@ -161,7 +160,7 @@ namespace PersonalFinanceTracker.PageModels
                 Category = "余额调整",
                 Note = "账户详情页手动调整",
                 Timestamp = DateTime.Now,
-                AccountId = _accountId  // Id-based
+                AccountId = AccountId
             };
 
             await _recordRepo.SaveAsync(bookId, adjustment);
