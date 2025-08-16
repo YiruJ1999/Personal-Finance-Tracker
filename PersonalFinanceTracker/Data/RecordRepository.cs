@@ -9,12 +9,12 @@ namespace PersonalFinanceTracker.Data
 {
     public class RecordRepository
     {
-        private readonly DatabaseService _database;
+        private readonly DatabaseService _dbService;
         private readonly BookRepository _books;
 
         public RecordRepository(DatabaseService database, BookRepository books)
         {
-            _database = database;
+            _dbService = database;
             _books = books;
         }
 
@@ -45,7 +45,7 @@ namespace PersonalFinanceTracker.Data
             var q = Q(table); // your QuoteIdent helper
 
             // 1) Resolve existing names → Ids (use a DTO instead of a 1-tuple)
-            var missing = await _database.QueryAsync<AccountNameRow>(
+            var missing = await _dbService.QueryAsync<AccountNameRow>(
                 $@"SELECT DISTINCT Account AS Account
              FROM {q}
             WHERE (AccountId IS NULL OR AccountId = 0)
@@ -60,7 +60,7 @@ namespace PersonalFinanceTracker.Data
                 if (string.IsNullOrEmpty(name)) continue;
 
                 // 2) Ensure the account exists (case-insensitive lookup)
-                var accounts = await _database.QueryAsync<Account>(
+                var accounts = await _dbService.QueryAsync<Account>(
                     @"SELECT * FROM Account WHERE Name = ? COLLATE NOCASE LIMIT 1;",
                     name);
 
@@ -68,11 +68,11 @@ namespace PersonalFinanceTracker.Data
                 if (acc == null)
                 {
                     acc = new Account { Name = name, Balance = 0m, CreatedAt = DateTime.UtcNow };
-                    await _database.InsertAsync(acc); // auto-increments Id
+                    await _dbService.InsertAsync(acc); // auto-increments Id
                 }
 
                 // 3) Backfill AccountId for rows matching this name
-                await _database.ExecuteAsync(
+                await _dbService.ExecuteAsync(
                     $@"UPDATE {q}
                   SET AccountId = ?
                 WHERE (AccountId IS NULL OR AccountId = 0)
@@ -90,7 +90,7 @@ namespace PersonalFinanceTracker.Data
                 SELECT Id, Type, Amount, Category, Note, Timestamp, Account, AccountId
                 FROM {Q(table)}
                 ORDER BY Timestamp DESC;";
-            return await _database.QueryAsync<Record>(sql);
+            return await _dbService.QueryAsync<Record>(sql);
         }
 
         public async Task<Record?> GetByIdAsync(int bookId, int id)
@@ -99,7 +99,7 @@ namespace PersonalFinanceTracker.Data
             await _books.EnsureBookTableSchemaAsync(table);
             await BackfillAccountIdsAsync(table);
 
-            var list = await _database.QueryAsync<Record>(
+            var list = await _dbService.QueryAsync<Record>(
                 $@"SELECT Id, Type, Amount, Category, Note, Timestamp, Account, AccountId
                    FROM {Q(table)} WHERE Id = ?;", id);
             return list.FirstOrDefault();
@@ -115,7 +115,7 @@ namespace PersonalFinanceTracker.Data
             await _books.EnsureBookTableSchemaAsync(table);
 
             // Derive Account name for display (optional but nice to have)
-            var accRow = await _database.FindAsync<Account>(record.AccountId);
+            var accRow = await _dbService.FindAsync<Account>(record.AccountId);
             var displayName = accRow?.Name ?? (record.Account ?? "默认");
 
             if (record.Timestamp.Kind == DateTimeKind.Unspecified)
@@ -127,10 +127,10 @@ namespace PersonalFinanceTracker.Data
                     INSERT INTO {Q(table)}
                         (Type, Amount, Category, Note, Timestamp, Account, AccountId)
                     VALUES (?, ?, ?, ?, ?, ?, ?);";
-                await _database.ExecuteAsync(insertSql,
+                await _dbService.ExecuteAsync(insertSql,
                     record.Type, record.Amount, record.Category, record.Note, record.Timestamp, displayName, record.AccountId);
 
-                var id = await _database.ExecuteScalarAsync<long>("SELECT last_insert_rowid();");
+                var id = await _dbService.ExecuteScalarAsync<long>("SELECT last_insert_rowid();");
                 record.Id = (int)id;
             }
             else
@@ -139,7 +139,7 @@ namespace PersonalFinanceTracker.Data
                     UPDATE {Q(table)}
                        SET Type = ?, Amount = ?, Category = ?, Note = ?, Timestamp = ?, Account = ?, AccountId = ?
                      WHERE Id = ?;";
-                await _database.ExecuteAsync(updateSql,
+                await _dbService.ExecuteAsync(updateSql,
                     record.Type, record.Amount, record.Category, record.Note, record.Timestamp, displayName, record.AccountId, record.Id);
             }
         }
@@ -148,20 +148,20 @@ namespace PersonalFinanceTracker.Data
         {
             var table = await _books.GetTableNameByIdAsync(bookId);
             await _books.EnsureBookTableSchemaAsync(table);
-            await _database.ExecuteAsync($@"DELETE FROM {Q(table)} WHERE Id = ?;", record.Id);
+            await _dbService.ExecuteAsync($@"DELETE FROM {Q(table)} WHERE Id = ?;", record.Id);
         }
 
         public async Task DeleteAllAsync(int bookId)
         {
             var table = await _books.GetTableNameByIdAsync(bookId);
             await _books.EnsureBookTableSchemaAsync(table);
-            await _database.ExecuteAsync($@"DELETE FROM {Q(table)};");
+            await _dbService.ExecuteAsync($@"DELETE FROM {Q(table)};");
         }
 
         public async Task DropBookTableAsync(int bookId)
         {
             var table = await _books.GetTableNameByIdAsync(bookId);
-            await _database.ExecuteAsync($@"DROP TABLE IF EXISTS {Q(table)};");
+            await _dbService.ExecuteAsync($@"DROP TABLE IF EXISTS {Q(table)};");
         }
 
         public async Task<List<Record>> GetRecordsPagedAsync(int bookId, int pageNumber, int pageSize)
@@ -177,7 +177,7 @@ namespace PersonalFinanceTracker.Data
                 FROM {Q(table)}
                 ORDER BY Timestamp DESC
                 LIMIT ? OFFSET ?;";
-            return await _database.QueryAsync<Record>(sql, pageSize, skip);
+            return await _dbService.QueryAsync<Record>(sql, pageSize, skip);
         }
     }
 }
