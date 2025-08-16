@@ -41,5 +41,13 @@ namespace PersonalFinanceTracker.Services
 
             CurrencyChanged?.Invoke(null, EventArgs.Empty);
         }
+
+        public static IReadOnlyList<string> GetAllCodes()
+        {
+            // Return all ISO codes sorted alphabetically
+            return _symbols.Keys
+                .OrderBy(k => k, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+        }
     }
 }
