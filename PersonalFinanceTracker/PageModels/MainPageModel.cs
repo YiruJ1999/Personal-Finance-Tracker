@@ -119,7 +119,8 @@ namespace PersonalFinanceTracker.PageModels
             await _databaseService.InitAsync();
 
             // 2) One-time seed (uses id-based pref, falls back to legacy name)
-            if (!Preferences.Default.ContainsKey("is_seeded"))
+           Preferences.Default.Set("is_seeded",true);
+            if (!Preferences.Default.Get("is_seeded",false))
             {
                 await _seedDataService.LoadSeedDataAsync();
                 Preferences.Default.Set("is_seeded", true);

@@ -30,64 +30,13 @@ namespace PersonalFinanceTracker.Data
             await _books.EnsureBookTableSchemaAsync(table);
         }
 
-        /// <summary>
-        /// Migration helper: backfill AccountId using Account.Name for rows where AccountId is null/0.
-        /// Will create missing accounts if needed.
-        /// </summary>
-        private sealed class AccountNameRow
-        {
-            // Property name MUST match the SQL column alias
-            public string Account { get; set; } = string.Empty;
-        }
-
-        private async Task BackfillAccountIdsAsync(string table)
-        {
-            var q = Q(table); // your QuoteIdent helper
-
-            // 1) Resolve existing names → Ids (use a DTO instead of a 1-tuple)
-            var missing = await _dbService.QueryAsync<AccountNameRow>(
-                $@"SELECT DISTINCT Account AS Account
-             FROM {q}
-            WHERE (AccountId IS NULL OR AccountId = 0)
-              AND Account IS NOT NULL
-              AND TRIM(Account) <> '';");
-
-            if (missing.Count == 0) return;
-
-            foreach (var row in missing)
-            {
-                var name = (row.Account ?? string.Empty).Trim();
-                if (string.IsNullOrEmpty(name)) continue;
-
-                // 2) Ensure the account exists (case-insensitive lookup)
-                var accounts = await _dbService.QueryAsync<Account>(
-                    @"SELECT * FROM Account WHERE Name = ? COLLATE NOCASE LIMIT 1;",
-                    name);
-
-                var acc = accounts.FirstOrDefault();
-                if (acc == null)
-                {
-                    acc = new Account { Name = name, Balance = 0m, CreatedAt = DateTime.UtcNow };
-                    await _dbService.InsertAsync(acc); // auto-increments Id
-                }
-
-                // 3) Backfill AccountId for rows matching this name
-                await _dbService.ExecuteAsync(
-                    $@"UPDATE {q}
-                  SET AccountId = ?
-                WHERE (AccountId IS NULL OR AccountId = 0)
-                  AND Account = ? COLLATE NOCASE;",
-                    acc.Id, name);
-            }
-        }
         public async Task<List<Record>> ListAsync(int bookId)
         {
             var table = await _books.GetTableNameByIdAsync(bookId);
             await _books.EnsureBookTableSchemaAsync(table);
-            await BackfillAccountIdsAsync(table);
 
             var sql = $@"
-                SELECT Id, Type, Amount, Category, Note, Timestamp, Account, AccountId
+                SELECT Id, Type, Amount, Category, Note, Timestamp, AccountId
                 FROM {Q(table)}
                 ORDER BY Timestamp DESC;";
             return await _dbService.QueryAsync<Record>(sql);
@@ -97,10 +46,9 @@ namespace PersonalFinanceTracker.Data
         {
             var table = await _books.GetTableNameByIdAsync(bookId);
             await _books.EnsureBookTableSchemaAsync(table);
-            await BackfillAccountIdsAsync(table);
 
             var list = await _dbService.QueryAsync<Record>(
-                $@"SELECT Id, Type, Amount, Category, Note, Timestamp, Account, AccountId
+                $@"SELECT Id, Type, Amount, Category, Note, Timestamp, AccountId
                    FROM {Q(table)} WHERE Id = ?;", id);
             return list.FirstOrDefault();
         }
@@ -116,7 +64,7 @@ namespace PersonalFinanceTracker.Data
 
             // Derive Account name for display (optional but nice to have)
             var accRow = await _dbService.FindAsync<Account>(record.AccountId);
-            var displayName = accRow?.Name ?? (record.Account ?? "默认");
+            var displayName = accRow?.Name ??  "默认";
 
             if (record.Timestamp.Kind == DateTimeKind.Unspecified)
                 record.Timestamp = DateTime.SpecifyKind(record.Timestamp, DateTimeKind.Local);
@@ -125,10 +73,10 @@ namespace PersonalFinanceTracker.Data
             {
                 string insertSql = $@"
                     INSERT INTO {Q(table)}
-                        (Type, Amount, Category, Note, Timestamp, Account, AccountId)
-                    VALUES (?, ?, ?, ?, ?, ?, ?);";
+                        (Type, Amount, Category, Note, Timestamp, AccountId)
+                    VALUES (?, ?, ?, ?, ?, ?);";
                 await _dbService.ExecuteAsync(insertSql,
-                    record.Type, record.Amount, record.Category, record.Note, record.Timestamp, displayName, record.AccountId);
+                    record.Type, record.Amount, record.Category, record.Note, record.Timestamp, record.AccountId);
 
                 var id = await _dbService.ExecuteScalarAsync<long>("SELECT last_insert_rowid();");
                 record.Id = (int)id;
@@ -137,10 +85,10 @@ namespace PersonalFinanceTracker.Data
             {
                 string updateSql = $@"
                     UPDATE {Q(table)}
-                       SET Type = ?, Amount = ?, Category = ?, Note = ?, Timestamp = ?, Account = ?, AccountId = ?
+                       SET Type = ?, Amount = ?, Category = ?, Note = ?, Timestamp = ?,  AccountId = ?
                      WHERE Id = ?;";
                 await _dbService.ExecuteAsync(updateSql,
-                    record.Type, record.Amount, record.Category, record.Note, record.Timestamp, displayName, record.AccountId, record.Id);
+                    record.Type, record.Amount, record.Category, record.Note, record.Timestamp, record.AccountId, record.Id);
             }
         }
 
@@ -168,12 +116,11 @@ namespace PersonalFinanceTracker.Data
         {
             var table = await _books.GetTableNameByIdAsync(bookId);
             await _books.EnsureBookTableSchemaAsync(table);
-            await BackfillAccountIdsAsync(table);
 
             int skip = Math.Max(0, (pageNumber - 1) * pageSize);
 
             var sql = $@"
-                SELECT Id, Type, Amount, Category, Note, Timestamp, Account, AccountId
+                SELECT Id, Type, Amount, Category, Note, Timestamp, AccountId
                 FROM {Q(table)}
                 ORDER BY Timestamp DESC
                 LIMIT ? OFFSET ?;";

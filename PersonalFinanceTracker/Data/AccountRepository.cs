@@ -40,6 +40,7 @@ namespace PersonalFinanceTracker.Data
         private async Task<Account?> GetAccountByNameAsync(string name)
         {
             var conn = await ConnAsync();
+            await EnsureDatabaseInitializedAsync();
             const string sql = @"SELECT * FROM Account WHERE Name = ? COLLATE NOCASE LIMIT 1;";
             var rows = await conn.QueryAsync<Account>(sql, name);
             return rows.FirstOrDefault();

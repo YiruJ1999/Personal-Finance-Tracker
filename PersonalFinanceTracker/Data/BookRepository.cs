@@ -112,7 +112,6 @@ namespace PersonalFinanceTracker.Data
                     Category TEXT,
                     Note TEXT,
                     Timestamp TEXT NOT NULL,
-                    Account TEXT,         -- legacy/display
                     AccountId INTEGER     -- link to Account
                 );";
             await conn.ExecuteAsync(sql);

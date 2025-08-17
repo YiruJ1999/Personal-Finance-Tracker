@@ -9,8 +9,8 @@ namespace PersonalFinanceTracker.Models
         [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
 
-        // Account 
-        public string Account { get; set; } = string.Empty;
+        // Foreign key to Account
+        [Indexed]
         public int AccountId { get; set; }
 
         // Income or expenditure
@@ -19,7 +19,7 @@ namespace PersonalFinanceTracker.Models
         // Amount
         public decimal Amount { get; set; }
 
-        // Category
+        // Living expenses, entertainment, etc.
         public string Category { get; set; } = string.Empty;
 
         // Note

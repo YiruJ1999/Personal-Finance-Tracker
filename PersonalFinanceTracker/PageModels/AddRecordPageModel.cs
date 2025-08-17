@@ -146,8 +146,7 @@ namespace PersonalFinanceTracker.PageModels
                 Note = finalNote,
                 Timestamp = ts,
                 Type = finalType,
-                AccountId = SelectedAccount.Id,
-                Account = SelectedAccount.Name // optional display; repository will also derive
+                AccountId = SelectedAccount.Id
             };
 
             await _recordRepository.SaveAsync(bookId, record);

@@ -1,58 +1,83 @@
-[
-  {
-    "Type": "支出",
-    "Amount": 35.0,
-    "Category": "饮食",
-    "Note": "早餐",
-    "Account": "现金",
-    "Timestamp": "2025-08-04T08:15:00"
-  },
-  {
-    "Type": "支出",
-    "Amount": 12.0,
-    "Category": "交通",
-    "Note": "地铁",
-    "Account": "交通卡",
-    "Timestamp": "2025-08-04T09:00:00"
-  },
-  {
-    "Type": "支出",
-    "Amount": 75.0,
-    "Category": "购物",
-    "Note": "超市买菜",
-    "Account": "支付宝",
-    "Timestamp": "2025-08-04T12:30:00"
-  },
-  {
-    "Type": "支出",
-    "Amount": 60.0,
-    "Category": "饮食",
-    "Note": "晚餐外卖",
-    "Account": "信用卡",
-    "Timestamp": "2025-08-04T19:00:00"
-  },
-  {
-    "Type": "支出",
-    "Amount": 20.0,
-    "Category": "娱乐",
-    "Note": "小额游戏充值",
-    "Account": "信用卡",
-    "Timestamp": "2025-08-04T21:15:00"
-  },
-  {
-    "Type": "收入",
-    "Amount": 5000.0,
-    "Category": "工资",
-    "Note": "2025年8月工资",
-    "Account": "银行账户",
-    "Timestamp": "2025-08-01T09:00:00"
-  },
-  {
-    "Type": "支出",
-    "Amount": 4500.0,
-    "Category": "数码",
-    "Note": "购买拍立得",
-    "Account": "银行账户",
-    "Timestamp": "2025-08-02T09:00:00"
-  }
-]
+{
+    "Accounts": [
+        {
+            "Id": 1,
+            "Name": "现金",
+            "Type": "Cash",
+            "OpeningBalance": 0,
+            "CreatedAt" : "2025-08-04T08:15:00"
+        },
+        {
+            "Id": 2,
+            "Name": "工资卡",
+            "Type": "Checking",
+            "OpeningBalance": 0,
+            "CreatedAt": "2025-08-04T08:15:00"
+        },
+        {
+            "Id": 3,
+            "Name": "信用卡",
+            "Type": "Credit",
+            "OpeningBalance": 0,
+            "CreatedAt": "2025-08-04T08:15:00"
+        }
+    ],
+    "Records": [
+        {
+            "Type": "支出",
+            "Amount": 35.0,
+            "Category": "饮食",
+            "Note": "早餐",
+            "AccountId": 1,
+            "Timestamp": "2025-08-04T08:15:00"
+        },
+        {
+            "Type": "支出",
+            "Amount": 12.0,
+            "Category": "交通",
+            "Note": "地铁",
+            "AccountId": 2,
+            "Timestamp": "2025-08-04T09:00:00"
+        },
+        {
+            "Type": "支出",
+            "Amount": 75.0,
+            "Category": "购物",
+            "Note": "超市买菜",
+            "AccountId": 2,
+            "Timestamp": "2025-08-04T12:30:00"
+        },
+        {
+            "Type": "支出",
+            "Amount": 60.0,
+            "Category": "饮食",
+            "Note": "晚餐外卖",
+            "AccountId": 1,
+            "Timestamp": "2025-08-04T19:00:00"
+        },
+        {
+            "Type": "支出",
+            "Amount": 20.0,
+            "Category": "娱乐",
+            "Note": "小额游戏充值",
+            "AccountId": 3,
+            "Timestamp": "2025-08-04T21:15:00"
+        },
+        {
+            "Type": "收入",
+            "Amount": 5000.0,
+            "Category": "工资",
+            "Note": "2025年8月工资",
+            "AccountId": 2,
+            "Timestamp": "2025-08-01T09:00:00"
+        },
+        {
+            "Type": "支出",
+            "Amount": 4500.0,
+            "Category": "数码",
+            "Note": "购买拍立得",
+            "AccountId": 1,
+            "Timestamp": "2025-08-02T09:00:00"
+        }
+    ]
+}
