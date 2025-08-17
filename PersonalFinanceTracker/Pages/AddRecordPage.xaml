@@ -3,99 +3,126 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="PersonalFinanceTracker.Pages.AddRecordPage"
              Title="Add Record">
-    <VerticalStackLayout Padding="20" Spacing="10">
-        <!--Type Selection-->
-        <Grid ColumnDefinitions="*,*" Margin="0,0,0,10">
-            <!-- Expense button -->
-            <Button
-                Text="支出"
-                TextColor="Black"
-                Command="{Binding SelectExpenseCommand}">
-                <!-- default = transparent -->
-                <Button.Background>
-                    <SolidColorBrush Color="Transparent" />
-                </Button.Background>
-                <Button.Triggers>
-                    <!-- when IsExpenseSelected == true -> grey -->
-                    <DataTrigger TargetType="Button"
-                                 Binding="{Binding IsExpenseSelected}"
-                                 Value="True">
-                        <Setter Property="Background">
-                            <Setter.Value>
-                                <SolidColorBrush Color="#BDBDBD" />
-                            </Setter.Value>
-                        </Setter>
-                    </DataTrigger>
-                </Button.Triggers>
-            </Button>
 
-            <!-- Income button -->
-            <Button
-                Grid.Column="1"
-                Text="收入"
-                TextColor="Black"
-                Command="{Binding SelectIncomeCommand}">
-                <!-- default = transparent -->
-                <Button.Background>
-                    <SolidColorBrush Color="Transparent" />
-                </Button.Background>
-                <Button.Triggers>
-                    <!-- when IsExpenseSelected == false -> grey -->
-                    <DataTrigger TargetType="Button"
-                                 Binding="{Binding IsExpenseSelected}"
-                                 Value="False">
-                        <Setter Property="Background">
-                            <Setter.Value>
-                                <SolidColorBrush Color="#BDBDBD" />
-                            </Setter.Value>
-                        </Setter>
-                    </DataTrigger>
-                </Button.Triggers>
-            </Button>
-        </Grid>
+    <!-- Outer vertical scroll for the whole page -->
+    <ScrollView Orientation="Vertical">
+        <!-- Use a simple vertical stack as the scroll content -->
+        <VerticalStackLayout Padding="20" Spacing="10">
 
+            <!-- Type Selection -->
+            <Grid ColumnDefinitions="*,*" Margin="0,0,0,10">
+                <!-- Expense button -->
+                <Button
+                    Text="支出"
+                    TextColor="Black"
+                    Command="{Binding SelectExpenseCommand}">
+                    <!-- default = transparent -->
+                    <Button.Background>
+                        <SolidColorBrush Color="Transparent" />
+                    </Button.Background>
+                    <Button.Triggers>
+                        <!-- when IsExpenseSelected == true -> grey -->
+                        <DataTrigger TargetType="Button"
+                                     Binding="{Binding IsExpenseSelected}"
+                                     Value="True">
+                            <Setter Property="Background">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="#BDBDBD" />
+                                </Setter.Value>
+                            </Setter>
+                        </DataTrigger>
+                    </Button.Triggers>
+                </Button>
 
-        <!--Category Selection-->
-        <CollectionView HeightRequest="200"
-                        ItemsSource="{Binding Categories}" 
-                        SelectionMode="Single"
-                        SelectedItem="{Binding SelectedCategory}">
-            <CollectionView.ItemsLayout>
-                <GridItemsLayout Orientation="Vertical" Span="4" />
-            </CollectionView.ItemsLayout>
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <VerticalStackLayout Padding="5" HorizontalOptions="Center">
-                        <Image Source="{Binding Icon}" HeightRequest="40" WidthRequest="40" BackgroundColor="LightGray"/>
-                        <Label Text="{Binding Name}" FontSize="12" HorizontalOptions="Center"/>
-                    </VerticalStackLayout>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-        
-        
-        <!--Note Entry-->
+                <!-- Income button -->
+                <Button
+                    Grid.Column="1"
+                    Text="收入"
+                    TextColor="Black"
+                    Command="{Binding SelectIncomeCommand}">
+                    <!-- default = transparent -->
+                    <Button.Background>
+                        <SolidColorBrush Color="Transparent" />
+                    </Button.Background>
+                    <Button.Triggers>
+                        <!-- when IsExpenseSelected == false -> grey -->
+                        <DataTrigger TargetType="Button"
+                                     Binding="{Binding IsExpenseSelected}"
+                                     Value="False">
+                            <Setter Property="Background">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="#BDBDBD" />
+                                </Setter.Value>
+                            </Setter>
+                        </DataTrigger>
+                    </Button.Triggers>
+                </Button>
+            </Grid>
 
-        <Entry Placeholder="点击写备注..." 
-               Text="{Binding Note}" />
-        
-        <!--Amount Entry-->
-        <Entry Placeholder="€ 0.00" 
-               Keyboard="Numeric" 
-               Text="{Binding Amount}" />
+            <!-- Category Selection: horizontal grid with 2 rows, fixed height, NO vertical scroll -->
+            <CollectionView
+                HeightRequest="170"                             
+                ItemsSource="{Binding Categories}" 
+                SelectionMode="Single"
+                SelectedItem="{Binding SelectedCategory}"
+                VerticalOptions="Start"
+                HorizontalScrollBarVisibility="Never">
+                <CollectionView.ItemsLayout>
+                    <!-- IMPORTANT:
+                         - Orientation="Horizontal" -> scrolls horizontally
+                         - Span="2" means 2 ROWS when orientation is Horizontal -->
+                    <GridItemsLayout Orientation="Horizontal" Span="2" />
+                </CollectionView.ItemsLayout>
 
-        <!-- Account picker -->
-        <Picker Title="选择账户"
-            ItemsSource="{Binding Accounts}"
-            ItemDisplayBinding="{Binding Name}"
-            SelectedItem="{Binding SelectedAccount, Mode=TwoWay}" />
-        
-        <!--Choose Date-->
-        <DatePicker Date="{Binding SelectedDate}" />
+                <!-- Make each item a fixed-height tile so two rows fit exactly -->
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <!-- Fixed tile size helps layout -->
+                        <Grid WidthRequest="80" HeightRequest="80" Padding="6">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Image Grid.Row="0"
+                                   Source="{Binding Icon}"
+                                   HeightRequest="40" WidthRequest="40"
+                                   HorizontalOptions="Center"
+                                   BackgroundColor="LightGray"/>
+                            <Label Grid.Row="1"
+                                   Text="{Binding Name}"
+                                   FontSize="12"
+                                   HorizontalOptions="Center"/>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
 
-        
-        <!--Save Button-->
-        <Button Text="完成" Command="{Binding SaveCommand}" BackgroundColor="HotPink" TextColor="White"/>
+            <!-- Note Entry -->
+            <Entry Placeholder="点击写备注..." 
+                   Text="{Binding Note}" />
 
-    </VerticalStackLayout>
+            <!-- Amount Entry -->
+            <Entry Placeholder="€ 0.00" 
+                   Keyboard="Numeric" 
+                   Text="{Binding Amount}" />
+
+            <!-- Account picker -->
+            <Picker Title="选择账户"
+                    ItemsSource="{Binding Accounts}"
+                    ItemDisplayBinding="{Binding Name}"
+                    SelectedItem="{Binding SelectedAccount, Mode=TwoWay}" />
+
+            <!-- Choose Date -->
+            <DatePicker Date="{Binding SelectedDate}" />
+
+            <!-- Save Button -->
+            <Button Text="完成"
+                    Command="{Binding SaveCommand}"
+                    BackgroundColor="HotPink"
+                    TextColor="White"
+                    Margin="0,10,0,24" />
+            <!-- extra bottom space -->
+
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>
