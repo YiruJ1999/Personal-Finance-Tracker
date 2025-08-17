@@ -130,48 +130,42 @@ namespace PersonalFinanceTracker.Data
 
         public async Task<Dictionary<string, decimal>> GetLast4MonthsTotalAssetsAsync()
         {
+            // Build last-4-month EOMs: M-3, M-2, M-1, M(cur)
             var today = DateTime.Today;
-            var eomList = new List<DateTime>();
-            for (int i = 3; i >= 0; i--)
-            {
-                var target = new DateTime(today.Year, today.Month, 1).AddMonths(-i);
-                var eom = new DateTime(target.Year, target.Month,
-                    DateTime.DaysInMonth(target.Year, target.Month), 23, 59, 59, DateTimeKind.Local);
-                eomList.Add(eom);
-            }
-
-            var totalNow = await GetTotalAssetsAsync();
-
-            var books = await _books.ListBooksAsync();
-            if (books.Count == 0)
-            {
-                await _books.ImportExistingPhysicalBooksIfAnyAsync();
-                books = await _books.ListBooksAsync();
-            }
-
-            var conn = await ConnAsync();
-            var all = new List<(DateTime ts, string type, decimal amount)>();
-            foreach (var b in books)
-            {
-                var rows = await conn.QueryAsync<(string Timestamp, string Type, decimal Amount)>(
-                    $@"SELECT Timestamp, IFNULL(Type,''), IFNULL(Amount,0) FROM {BookRepository.QuoteIdent(b.TableName)};");
-                foreach (var r in rows)
+            var month1st = new DateTime(today.Year, today.Month, 1);
+            var eoms = Enumerable.Range(-3, 4)
+                .Select(i =>
                 {
-                    if (DateTime.TryParse(r.Timestamp, out var t))
-                        all.Add((t, r.Type, r.Amount));
-                }
-            }
+                    var target = month1st.AddMonths(i);
+                    return new DateTime(target.Year, target.Month,
+                        DateTime.DaysInMonth(target.Year, target.Month), 23, 59, 59, DateTimeKind.Local);
+                })
+                .ToArray();
 
-            decimal Sign(string t) => t == "收入" ? 1m : (t == "支出" ? -1m : 0m);
+            var totalNow = await GetTotalAssetsAsync(); // current overall balance (sum of accounts)
+            var startMonth = new DateTime(eoms.First().Year, eoms.First().Month, 1);
+            var all = await LoadRecordsFromBooksAsync(startMonth);
 
+            // For each EOM, subtract all records strictly after that EOM
             var result = new Dictionary<string, decimal>();
-            foreach (var eom in eomList)
+            foreach (var eom in eoms)
             {
-                var deltaAfter = all.Where(x => x.ts > eom).Sum(x => Sign(x.type) * x.amount);
+                decimal deltaAfter = 0m;
+
+                // Sum signed amounts for records after the EOM
+                foreach (var rec in all)
+                {
+                    if (rec.ts > eom)
+                        deltaAfter += SignedFactor(rec.type) * rec.amount;
+                }
+
+                // Historical month-end balance = current - deltaAfter
                 result[eom.ToString("yyyy-MM")] = totalNow - deltaAfter;
             }
+
             return result;
         }
+
 
         // ---------------------------
         // Aggregation by AccountId
@@ -289,5 +283,75 @@ namespace PersonalFinanceTracker.Data
             }
             return results.OrderByDescending(r => r.Timestamp).ToList();
         }
+
+        // Load records from all books; keep only needed window (>= startMonth).
+        private async Task<List<(DateTime ts, string type, decimal amount)>> LoadRecordsFromBooksAsync(DateTime startMonth)
+        {
+            var list = new List<(DateTime ts, string type, decimal amount)>();
+            var books = await _books.ListBooksAsync();
+            if (books.Count == 0)
+            {
+                await _books.ImportExistingPhysicalBooksIfAnyAsync();
+                books = await _books.ListBooksAsync();
+            }
+
+            var conn = await ConnAsync();
+
+            foreach (var b in books)
+            {
+                // NOTE: If Timestamp is stored as ISO text, consider adding WHERE in SQL to reduce traffic.
+                var rows = await conn.QueryAsync<(string Timestamp, string Type, decimal Amount)>(
+                    $@"SELECT Timestamp, IFNULL(Type,''), IFNULL(Amount,0) FROM {BookRepository.QuoteIdent(b.TableName)};");
+
+                foreach (var r in rows)
+                {
+                    if (!DateTime.TryParse(r.Timestamp, out var t)) continue;
+                    var localTs = AsLocal(t);
+                    if (localTs >= startMonth) // only keep records in our 4-month window or later
+                    {
+                        list.Add((localTs, r.Type, r.Amount));
+                    }
+                }
+            }
+
+            return list;
+        }
+
+
+        // ---------------------------
+        // Helpers
+        // ---------------------------
+
+        // Normalize record type to a signed factor: +1 for income, -1 for expense, 0 otherwise.
+        private static int SignedFactor(string? type)
+        {
+            if (string.IsNullOrWhiteSpace(type)) return 0;
+            var s = type.Trim();
+
+            // Chinese
+            if (s.Equals("收入", StringComparison.OrdinalIgnoreCase)) return +1;
+            if (s.Equals("支出", StringComparison.OrdinalIgnoreCase)) return -1;
+            if (s.Equals("转账", StringComparison.OrdinalIgnoreCase)) return 0;
+
+            // English fallback
+            if (s.Equals("income", StringComparison.OrdinalIgnoreCase)) return +1;
+            if (s.Equals("expense", StringComparison.OrdinalIgnoreCase) ||
+                s.Equals("expensee", StringComparison.OrdinalIgnoreCase)) return -1; // typo-safe
+            if (s.Equals("transfer", StringComparison.OrdinalIgnoreCase)) return 0;
+
+            return 0; // unknown types are ignored
+        }
+
+        // Ensure DateTime is local time to compare with local EOM.
+        private static DateTime AsLocal(DateTime dt)
+        {
+            return dt.Kind switch
+            {
+                DateTimeKind.Utc => dt.ToLocalTime(),
+                DateTimeKind.Unspecified => DateTime.SpecifyKind(dt, DateTimeKind.Local),
+                _ => dt
+            };
+        }
+
     }
 }

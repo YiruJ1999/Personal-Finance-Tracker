@@ -42,7 +42,7 @@
 
                         <!-- Numeric axis with currency format -->
                         <chart:SfCartesianChart.YAxes>
-                            <chart:NumericalAxis ShowMajorGridLines="True"  />
+                            <chart:NumericalAxis ShowMajorGridLines="True" Minimum="0" />
                         </chart:SfCartesianChart.YAxes>
 
                         <!-- Bind to Dictionary<string, decimal> (Key -> X, Value -> Y) -->
@@ -51,7 +51,9 @@
                             XBindingPath="Key"
                             YBindingPath="Value"
                             ShowMarkers="True"
-                            EnableTooltip="True" />
+                            EnableTooltip="True" 
+                            YAxisName="总金额"
+                            />
                     </chart:SfCartesianChart>
                 </VerticalStackLayout>
             </Frame>

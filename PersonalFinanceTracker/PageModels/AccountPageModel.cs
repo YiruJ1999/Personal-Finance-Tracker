@@ -87,7 +87,11 @@ namespace PersonalFinanceTracker.PageModels
 
             Last4MonthsTrend = trendData
                 .OrderBy(kv => kv.Key)
-                .Select(kv => new ChartPoint { Key = kv.Key, Value = (double)kv.Value })
+                .Select(kv => new ChartPoint
+                {
+                    Key = kv.Key,
+                    Value = Math.Round((double)kv.Value, 2)
+                })
                 .ToList();
 
             if (SelectedAccount is not null)
