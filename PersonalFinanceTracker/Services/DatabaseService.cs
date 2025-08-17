@@ -1,6 +1,7 @@
 ﻿using SQLite;
 using System.IO;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace PersonalFinanceTracker.Services
 {
@@ -37,17 +38,40 @@ namespace PersonalFinanceTracker.Services
 
 
         /// <summary>
-        /// Completely delete the local SQLite database file.
+        /// Clear all user tables from the existing SQLite file WITHOUT deleting the file itself.
+        /// Drops every table except SQLite internal ones (sqlite_%), then recreates base tables
+        /// needed by the app to continue running.
         /// </summary>
-        public Task ClearDatabaseAsync()
+        public async Task ClearDatabaseAsync()
         {
-            if (File.Exists(dbPath))
+            // Ensure we have a connection
+            if (Database == null)
+                await InitAsync();
+
+            // 1) Query all user table names (exclude internal sqlite_% tables)
+            var tableNames = await QueryScalarsAsync<string>(
+                "SELECT name AS Value FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';");
+
+            // 2) Temporarily disable foreign key checks to avoid drop-order issues
+            await Database.ExecuteAsync("PRAGMA foreign_keys=OFF;");
+
+            try
             {
-                Database = null; // release connection so SQLite file can be deleted
-                File.Delete(dbPath);
+                // 3) Drop each user table
+                foreach (var name in tableNames)
+                {
+                    if (string.IsNullOrWhiteSpace(name)) continue;
+                    await Database.ExecuteAsync($"DROP TABLE IF EXISTS {QuoteIdent(name)};");
+                }
             }
-            return Task.CompletedTask;
+            finally
+            {
+                // 4) Re-enable foreign key checks
+                await Database.ExecuteAsync("PRAGMA foreign_keys=ON;");
+            }
+
         }
+
         public Task<int> InsertAsync<T>(T obj) where T : new()
             => Database.InsertAsync(obj);
 
@@ -69,7 +93,13 @@ namespace PersonalFinanceTracker.Services
             return rows.Select(r => r.Value).ToList();
         }
 
-    class _ScalarRow<TScalar> { public TScalar Value { get; set; } = default!; }
+        private static string QuoteIdent(string ident)
+        {
+            // Safely quote SQLite identifiers with double quotes and escape inner quotes.
+            return "\"" + (ident ?? string.Empty).Replace("\"", "\"\"") + "\"";
+        }
+
+        class _ScalarRow<TScalar> { public TScalar Value { get; set; } = default!; }
     }
 
 }

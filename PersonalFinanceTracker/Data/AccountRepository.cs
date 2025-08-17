@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using SQLite;
 using PersonalFinanceTracker.Models;
 using PersonalFinanceTracker.Services;
+using System.Diagnostics;
 
 namespace PersonalFinanceTracker.Data
 {
@@ -41,9 +42,9 @@ namespace PersonalFinanceTracker.Data
         {
             var conn = await ConnAsync();
             await EnsureDatabaseInitializedAsync();
-            const string sql = @"SELECT * FROM Account WHERE Name = ? COLLATE NOCASE LIMIT 1;";
-            var rows = await conn.QueryAsync<Account>(sql, name);
-            return rows.FirstOrDefault();
+            const string sql = @"SELECT * FROM Accounts WHERE Name = ? COLLATE NOCASE LIMIT 1;";
+            var accountRows = await conn.QueryAsync<Account>(sql, name);
+            return accountRows.FirstOrDefault();
         }
 
         public async Task<List<Account>> ListAsync()

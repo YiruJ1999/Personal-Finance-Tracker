@@ -86,6 +86,7 @@ namespace PersonalFinanceTracker.Data
 
         public async Task<string> GetTableNameByIdAsync(int bookId)
         {
+            await EnsureBooksTableAsync();
             var book = await GetBookByIdAsync(bookId) ?? throw new InvalidOperationException($"Book not found: {bookId}");
             return book.TableName;
         }

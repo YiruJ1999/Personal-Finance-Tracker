@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Storage;
@@ -17,12 +18,11 @@ namespace PersonalFinanceTracker.Data
         private readonly BookRepository _bookRepository;
         private readonly ILogger<SeedDataService> _logger;
 
-        // App package seed file path. Ensure "SeedData.json" is included as Content/Embedded accordingly.
+        // App package seed file path. Ensure "SeedData.json" is included properly.
         private readonly string _seedDataFilePath = "SeedData.json";
 
-        // Legacy name-based preference key (kept for backward compatibility)
+        // Preference keys for current book (still used to SET the current book)
         private const string PrefKeyCurrentBook = "current_book";
-        // New id-based preference key
         private const string PrefKeyCurrentBookId = "current_book_id";
 
         public SeedDataService(
@@ -38,23 +38,20 @@ namespace PersonalFinanceTracker.Data
         }
 
         /// <summary>
-        /// Resolve current book id from preferences (id-first, fallback to legacy name) and seed it.
+        /// Always create a NEW book named "Default" (auto-suffixed if name already exists),
+        /// set it as the current book, and seed accounts + records into it.
         /// </summary>
         public async Task LoadSeedDataAsync()
         {
-            int bookId = Preferences.Default.Get(PrefKeyCurrentBookId, 0);
-            if (bookId <= 0)
-            {
-                var legacyName = Preferences.Default.Get(PrefKeyCurrentBook, "д╛хо");
-                var book = await _bookRepository.EnsureBookAsync(
-                    string.IsNullOrWhiteSpace(legacyName) ? "д╛хо" : legacyName.Trim());
-                bookId = book.Id;
+            // Create a brand-new "Default" book (if "Default" exists, create "Default (2)", "Default (3)", ...)
+            var book = await CreateNewDefaultBookAsync();
 
-                // Persist id for future runs
-                Preferences.Default.Set(PrefKeyCurrentBookId, bookId);
-            }
+            // Persist "current book" info (id + name)
+            Preferences.Default.Set(PrefKeyCurrentBookId, book.Id);
+            Preferences.Default.Set(PrefKeyCurrentBook, book.Name);
 
-            await LoadSeedDataAsync(bookId);
+            // Seed data into the newly created book
+            await LoadSeedDataAsync(book.Id);
         }
 
         /// <summary>
@@ -164,13 +161,30 @@ namespace PersonalFinanceTracker.Data
         }
 
         /// <summary>
-        /// Convenience overload: resolves/creates a book by name, then seeds it.
+        /// Create a brand-new book named "Default". If a book with the same name exists,
+        /// append a numeric suffix (Default (2), Default (3), ...) to guarantee a new one.
         /// </summary>
-        public async Task LoadSeedDataByBookNameAsync(string bookName)
+        private async Task<Book> CreateNewDefaultBookAsync()
         {
-            var book = await _bookRepository.EnsureBookAsync(
-                string.IsNullOrWhiteSpace(bookName) ? "д╛хо" : bookName.Trim());
-            await LoadSeedDataAsync(book.Id);
+            const string baseName = "Default";
+            var existing = await _bookRepository.ListBooksAsync();
+            string nameToUse = baseName;
+
+            // Ensure we create a NEW book by finding a non-conflicting name.
+            int suffix = 2;
+            while (existing.Any(b => string.Equals(b.Name, nameToUse, StringComparison.OrdinalIgnoreCase)))
+            {
+                nameToUse = $"{baseName} ({suffix++})";
+            }
+
+            // EnsureBookAsync should create the book if it does not exist.
+            var book = await _bookRepository.EnsureBookAsync(nameToUse);
+
+            // Ensure the per-book table schema is created.
+            var table = await _bookRepository.GetTableNameByIdAsync(book.Id);
+            await _bookRepository.EnsureBookTableSchemaAsync(table);
+
+            return book;
         }
 
         /// <summary>
