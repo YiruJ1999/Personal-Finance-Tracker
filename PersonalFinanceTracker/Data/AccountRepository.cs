@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using SQLite;
 using PersonalFinanceTracker.Models;
 using PersonalFinanceTracker.Services;
-using System.Diagnostics;
 
 namespace PersonalFinanceTracker.Data
 {
@@ -20,7 +19,7 @@ namespace PersonalFinanceTracker.Data
             _books = books;
         }
 
-        // Get a live connection; auto-init if needed.
+        // Always return a live connection; init DB if needed
         private async Task<SQLiteAsyncConnection> ConnAsync()
         {
             if (_dbService.Database == null)
@@ -28,47 +27,70 @@ namespace PersonalFinanceTracker.Data
             return _dbService.Database!;
         }
 
+        // Create mapped table (Accounts) and migrate legacy table (Account) if needed
         public async Task EnsureDatabaseInitializedAsync()
         {
             var conn = await ConnAsync();
+
+            // Create the table for the current model (uses [Table("Accounts")] mapping)
             await conn.CreateTableAsync<Account>();
+
+            // Figure out mapped table and legacy table names
+            var mappedAttr = typeof(Account).GetCustomAttributes(typeof(TableAttribute), false)
+                                            .OfType<TableAttribute>().FirstOrDefault();
+            var newTable = mappedAttr?.Name ?? "Account"; // should be "Accounts"
+            var oldTable = newTable.Equals("Accounts", StringComparison.OrdinalIgnoreCase) ? "Account" : "Accounts";
+
+            // Migrate: only when legacy table has rows and new table is empty
+            var names = await conn.QueryScalarsAsync<string>("SELECT name FROM sqlite_master WHERE type='table';");
+            bool hasNew = names.Contains(newTable);
+            bool hasOld = names.Contains(oldTable);
+
+            if (hasOld)
+            {
+                var oldCount = await conn.ExecuteScalarAsync<long>($"SELECT COUNT(1) FROM {oldTable};");
+                var newCount = hasNew ? await conn.ExecuteScalarAsync<long>($"SELECT COUNT(1) FROM {newTable};") : 0L;
+
+                if (oldCount > 0 && newCount == 0)
+                {
+                    // IMPORTANT: copy FROM legacy table (oldTable) INTO mapped table (newTable)
+                    await conn.ExecuteAsync(
+                        $"INSERT INTO {newTable} (Id, Name, Balance, CreatedAt) " +
+                        $"SELECT Id, Name, Balance, CreatedAt FROM {oldTable};");
+
+                    // Optional: drop the legacy table
+                    // await conn.ExecuteAsync($"DROP TABLE IF EXISTS {oldTable};");
+                }
+            }
+
+            // Unique index for case-insensitive name lookups / dedup
+            await conn.ExecuteAsync(
+                $"CREATE UNIQUE INDEX IF NOT EXISTS idx_{newTable}_name_nocase ON {newTable}(Name COLLATE NOCASE);");
         }
 
-        // ---------------------------
-        // Basic account operations
-        // ---------------------------
+        // -------------------- Basic ops --------------------
 
         private async Task<Account?> GetAccountByNameAsync(string name)
         {
             var conn = await ConnAsync();
             await EnsureDatabaseInitializedAsync();
-            const string sql = @"SELECT * FROM Accounts WHERE Name = ? COLLATE NOCASE LIMIT 1;";
-            var accountRows = await conn.QueryAsync<Account>(sql, name);
-            return accountRows.FirstOrDefault();
+            var trimmed = name.Trim();
+            return await conn.Table<Account>()
+                             .Where(a => a.Name == trimmed)
+                             .FirstOrDefaultAsync();
         }
 
         public async Task<List<Account>> ListAsync()
         {
             await EnsureDatabaseInitializedAsync();
             var conn = await ConnAsync();
-            return await conn.Table<Account>().OrderBy(a => a.Name).ToListAsync();
+            return await conn.Table<Account>()
+                             .OrderBy(a => a.Name)
+                             .ToListAsync();
         }
 
-        public async Task<Account> AddAccountAsync(string name)
-        {
-            await EnsureDatabaseInitializedAsync();
-            if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentException("Account name is required.", nameof(name));
-
-            var conn = await ConnAsync();
-            var trimmed = name.Trim();
-            var exists = await GetAccountByNameAsync(trimmed);
-            if (exists != null) return exists;
-
-            var acc = new Account { Name = trimmed, Balance = 0m, CreatedAt = DateTime.UtcNow };
-            await conn.InsertAsync(acc); // acc.Id populated
-            return acc;
-        }
+        public async Task<Account> AddAccountAsync(string name) =>
+            await AddAccountAsync(name, 0m);
 
         public async Task<Account> AddAccountAsync(string name, decimal openingBalance)
         {
@@ -77,19 +99,23 @@ namespace PersonalFinanceTracker.Data
                 throw new ArgumentException("Account name is required.", nameof(name));
 
             var conn = await ConnAsync();
-            var trimmed = name.Trim();
-            var exists = await GetAccountByNameAsync(trimmed);
-            if (exists == null)
+            var existing = await GetAccountByNameAsync(name);
+            if (existing == null)
             {
-                var acc = new Account { Name = trimmed, Balance = openingBalance, CreatedAt = DateTime.UtcNow };
+                var acc = new Account { Name = name.Trim(), Balance = openingBalance, CreatedAt = DateTime.UtcNow };
                 await conn.InsertAsync(acc);
+                if (acc.Id == 0)
+                {
+                    var rid = await conn.ExecuteScalarAsync<long>("SELECT last_insert_rowid();");
+                    acc.Id = (int)rid;
+                }
                 return acc;
             }
             else
             {
-                exists.Balance = openingBalance;
-                await conn.UpdateAsync(exists);
-                return exists;
+                existing.Balance = openingBalance;
+                await conn.UpdateAsync(existing);
+                return existing;
             }
         }
 
@@ -98,14 +124,16 @@ namespace PersonalFinanceTracker.Data
             await EnsureDatabaseInitializedAsync();
             var conn = await ConnAsync();
 
-            await conn.ExecuteAsync(@"DELETE FROM Account WHERE Id = ?;", accountId);
+            await conn.DeleteAsync<Account>(accountId);
 
             if (alsoDeleteRecords)
             {
                 var books = await _books.ListBooksAsync();
                 foreach (var b in books)
                 {
-                    await conn.ExecuteAsync($@"DELETE FROM {BookRepository.QuoteIdent(b.TableName)} WHERE AccountId = ?;", accountId);
+                    await conn.ExecuteAsync(
+                        $@"DELETE FROM {BookRepository.QuoteIdent(b.TableName)} WHERE AccountId = ?;",
+                        accountId);
                 }
             }
         }
@@ -117,7 +145,6 @@ namespace PersonalFinanceTracker.Data
 
             var acc = await conn.FindAsync<Account>(accountId);
             if (acc == null) return;
-
             acc.Balance = newBalance;
             await conn.UpdateAsync(acc);
         }
@@ -126,52 +153,42 @@ namespace PersonalFinanceTracker.Data
         {
             await EnsureDatabaseInitializedAsync();
             var conn = await ConnAsync();
-            var list = await conn.Table<Account>().ToListAsync();
-            return list.Sum(a => a.Balance);
+            var all = await conn.Table<Account>().ToListAsync();
+            return all.Sum(a => a.Balance);
         }
+
+        // -------------------- Trend --------------------
 
         public async Task<Dictionary<string, decimal>> GetLast4MonthsTotalAssetsAsync()
         {
-            // Build last-4-month EOMs: M-3, M-2, M-1, M(cur)
             var today = DateTime.Today;
-            var month1st = new DateTime(today.Year, today.Month, 1);
+            var m1 = new DateTime(today.Year, today.Month, 1);
             var eoms = Enumerable.Range(-3, 4)
-                .Select(i =>
-                {
-                    var target = month1st.AddMonths(i);
-                    return new DateTime(target.Year, target.Month,
-                        DateTime.DaysInMonth(target.Year, target.Month), 23, 59, 59, DateTimeKind.Local);
-                })
-                .ToArray();
+                                 .Select(i =>
+                                 {
+                                     var t = m1.AddMonths(i);
+                                     return new DateTime(t.Year, t.Month,
+                                         DateTime.DaysInMonth(t.Year, t.Month), 23, 59, 59, DateTimeKind.Local);
+                                 })
+                                 .ToArray();
 
-            var totalNow = await GetTotalAssetsAsync(); // current overall balance (sum of accounts)
+            var totalNow = await GetTotalAssetsAsync();
             var startMonth = new DateTime(eoms.First().Year, eoms.First().Month, 1);
-            var all = await LoadRecordsFromBooksAsync(startMonth);
+            var recs = await LoadRecordsFromBooksAsync(startMonth);
 
-            // For each EOM, subtract all records strictly after that EOM
-            var result = new Dictionary<string, decimal>();
+            var dict = new Dictionary<string, decimal>();
             foreach (var eom in eoms)
             {
                 decimal deltaAfter = 0m;
+                foreach (var r in recs)
+                    if (r.ts > eom) deltaAfter += SignedFactor(r.type) * r.amount;
 
-                // Sum signed amounts for records after the EOM
-                foreach (var rec in all)
-                {
-                    if (rec.ts > eom)
-                        deltaAfter += SignedFactor(rec.type) * rec.amount;
-                }
-
-                // Historical month-end balance = current - deltaAfter
-                result[eom.ToString("yyyy-MM")] = totalNow - deltaAfter;
+                dict[eom.ToString("yyyy-MM")] = totalNow - deltaAfter;
             }
-
-            return result;
+            return dict;
         }
 
-
-        // ---------------------------
-        // Aggregation by AccountId
-        // ---------------------------
+        // -------------------- Aggregation from books --------------------
 
         private async Task<Dictionary<int, decimal>> SumByAccountIdForBookAsync(string tableName)
         {
@@ -179,13 +196,15 @@ namespace PersonalFinanceTracker.Data
             var q = BookRepository.QuoteIdent(tableName);
 
             var rows = await conn.QueryAsync<(int AccountId, string Type, decimal Amount)>(
-                $@"SELECT IFNULL(AccountId, 0) as AccountId, IFNULL(Type, '') as Type, IFNULL(Amount, 0) as Amount
+                $@"SELECT IFNULL(AccountId, 0) as AccountId,
+                          IFNULL(Type, '')      as Type,
+                          IFNULL(Amount, 0)     as Amount
                    FROM {q};");
 
             var map = new Dictionary<int, decimal>();
             foreach (var r in rows)
             {
-                if (r.AccountId <= 0) continue; // skip rows not linked to an account
+                if (r.AccountId <= 0) continue;
                 var sign = r.Type == "收入" ? 1m : (r.Type == "支出" ? -1m : 0m);
                 var delta = sign * r.Amount;
                 if (!map.ContainsKey(r.AccountId)) map[r.AccountId] = 0m;
@@ -210,8 +229,8 @@ namespace PersonalFinanceTracker.Data
 
             foreach (var b in books)
             {
-                var perBook = await SumByAccountIdForBookAsync(b.TableName);
-                foreach (var kv in perBook)
+                var per = await SumByAccountIdForBookAsync(b.TableName);
+                foreach (var kv in per)
                 {
                     if (!result.ContainsKey(kv.Key)) result[kv.Key] = 0m;
                     result[kv.Key] += kv.Value;
@@ -230,26 +249,26 @@ namespace PersonalFinanceTracker.Data
 
             foreach (var (accountId, balance) in pairs)
             {
-                // Try find by Id
                 var existing = await conn.FindAsync<Account>(accountId);
                 if (existing == null)
                 {
-                    // Create a placeholder row with explicit Id (in case records reference this Id)
-                    // Use INSERT OR IGNORE to avoid crashing if Id somehow appears concurrently.
-                    var affected = await conn.ExecuteAsync(
-                        @"INSERT OR IGNORE INTO Account (Id, Name, Balance, CreatedAt) VALUES (?, ?, ?, ?);",
-                        accountId, $"Account_{accountId}", balance, DateTime.UtcNow);
-
-                    if (affected == 0)
+                    try
                     {
-                        // Row exists but FindAsync failed? Try load again.
-                        existing = await conn.FindAsync<Account>(accountId);
-                        if (existing == null) continue;
-                        existing.Balance = balance;
-                        await conn.UpdateAsync(existing);
+                        await conn.InsertAsync(new Account
+                        {
+                            Id = accountId,
+                            Name = $"Account_{accountId}",
+                            Balance = balance,
+                            CreatedAt = DateTime.UtcNow
+                        });
                     }
+                    catch (SQLiteException)
+                    {
+                        // if a concurrent insert happened, just continue
+                    }
+                    existing = await conn.FindAsync<Account>(accountId);
                 }
-                else
+                if (existing != null)
                 {
                     existing.Balance = balance;
                     await conn.UpdateAsync(existing);
@@ -257,9 +276,7 @@ namespace PersonalFinanceTracker.Data
             }
         }
 
-        // ---------------------------
-        // Cross-book records by account
-        // ---------------------------
+        // -------------------- Records helpers --------------------
 
         public async Task<List<Record>> ListRecordsForAccountAcrossBooksAsync(
             int accountId, DateTime monthStart, DateTime monthEndInclusive)
@@ -272,7 +289,7 @@ namespace PersonalFinanceTracker.Data
             }
 
             var conn = await ConnAsync();
-            var results = new List<Record>();
+            var result = new List<Record>();
             foreach (var b in books)
             {
                 var rows = await conn.QueryAsync<Record>(
@@ -281,15 +298,13 @@ namespace PersonalFinanceTracker.Data
                        WHERE AccountId = ? AND Timestamp >= ? AND Timestamp <= ?
                        ORDER BY Timestamp DESC;",
                     accountId, monthStart, monthEndInclusive);
-                results.AddRange(rows);
+                result.AddRange(rows);
             }
-            return results.OrderByDescending(r => r.Timestamp).ToList();
+            return result.OrderByDescending(r => r.Timestamp).ToList();
         }
 
-        // Load records from all books; keep only needed window (>= startMonth).
         private async Task<List<(DateTime ts, string type, decimal amount)>> LoadRecordsFromBooksAsync(DateTime startMonth)
         {
-            var list = new List<(DateTime ts, string type, decimal amount)>();
             var books = await _books.ListBooksAsync();
             if (books.Count == 0)
             {
@@ -298,62 +313,45 @@ namespace PersonalFinanceTracker.Data
             }
 
             var conn = await ConnAsync();
+            var list = new List<(DateTime ts, string type, decimal amount)>();
 
             foreach (var b in books)
             {
-                // NOTE: If Timestamp is stored as ISO text, consider adding WHERE in SQL to reduce traffic.
                 var rows = await conn.QueryAsync<(string Timestamp, string Type, decimal Amount)>(
-                    $@"SELECT Timestamp, IFNULL(Type,''), IFNULL(Amount,0) FROM {BookRepository.QuoteIdent(b.TableName)};");
+                    $@"SELECT Timestamp, IFNULL(Type,''), IFNULL(Amount,0)
+                       FROM {BookRepository.QuoteIdent(b.TableName)};");
 
                 foreach (var r in rows)
                 {
                     if (!DateTime.TryParse(r.Timestamp, out var t)) continue;
-                    var localTs = AsLocal(t);
-                    if (localTs >= startMonth) // only keep records in our 4-month window or later
-                    {
-                        list.Add((localTs, r.Type, r.Amount));
-                    }
+                    var local = AsLocal(t);
+                    if (local >= startMonth)
+                        list.Add((local, r.Type, r.Amount));
                 }
             }
-
             return list;
         }
 
-
-        // ---------------------------
-        // Helpers
-        // ---------------------------
-
-        // Normalize record type to a signed factor: +1 for income, -1 for expense, 0 otherwise.
         private static int SignedFactor(string? type)
         {
             if (string.IsNullOrWhiteSpace(type)) return 0;
             var s = type.Trim();
-
-            // Chinese
             if (s.Equals("收入", StringComparison.OrdinalIgnoreCase)) return +1;
             if (s.Equals("支出", StringComparison.OrdinalIgnoreCase)) return -1;
             if (s.Equals("转账", StringComparison.OrdinalIgnoreCase)) return 0;
-
-            // English fallback
             if (s.Equals("income", StringComparison.OrdinalIgnoreCase)) return +1;
             if (s.Equals("expense", StringComparison.OrdinalIgnoreCase) ||
-                s.Equals("expensee", StringComparison.OrdinalIgnoreCase)) return -1; // typo-safe
+                s.Equals("expensee", StringComparison.OrdinalIgnoreCase)) return -1;
             if (s.Equals("transfer", StringComparison.OrdinalIgnoreCase)) return 0;
-
-            return 0; // unknown types are ignored
+            return 0;
         }
 
-        // Ensure DateTime is local time to compare with local EOM.
-        private static DateTime AsLocal(DateTime dt)
-        {
-            return dt.Kind switch
+        private static DateTime AsLocal(DateTime dt) =>
+            dt.Kind switch
             {
                 DateTimeKind.Utc => dt.ToLocalTime(),
                 DateTimeKind.Unspecified => DateTime.SpecifyKind(dt, DateTimeKind.Local),
                 _ => dt
             };
-        }
-
     }
 }

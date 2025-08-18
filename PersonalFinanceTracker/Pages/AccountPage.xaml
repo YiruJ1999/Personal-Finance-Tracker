@@ -83,7 +83,9 @@
                                      SemanticProperties.Description="Add new account" />    
                     </Grid>
 
-                    <CollectionView ItemsSource="{Binding Accounts}" SelectionMode="None">
+                    <CollectionView ItemsSource="{Binding Accounts}" 
+                                    SelectionMode="None"
+                                    ItemSizingStrategy="MeasureAllItems">
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
                                 <SwipeView>
@@ -107,8 +109,9 @@
                                         <Grid.GestureRecognizers>
                                             <TapGestureRecognizer
                                                 NumberOfTapsRequired="1"
-                                                Command="{Binding BindingContext.OpenAccountDetailCommand, Source={x:Reference Name=AccountPageRoot}}"
-                                                CommandParameter="{Binding Id}" />
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}},
+                                                          Path=BindingContext.OpenAccountDetailCommand}"
+                                                CommandParameter="{Binding Id}" />  
                                         </Grid.GestureRecognizers>
                                     </Grid>
                                 </SwipeView>
