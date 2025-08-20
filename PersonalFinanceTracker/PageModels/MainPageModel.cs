@@ -62,6 +62,7 @@ namespace PersonalFinanceTracker.PageModels
 
         [ObservableProperty]
         private bool isRefreshing;
+        private bool _isLoaded; // to prevent double-loading on page reappearing
 
         // -------- Commands --------
 
@@ -106,43 +107,64 @@ namespace PersonalFinanceTracker.PageModels
         [RelayCommand]
         private async Task ViewAccount()
         {
-            System.Diagnostics.Debug.WriteLine("点击了账户按钮！");
             await Shell.Current.GoToAsync("ViewAccountPage");
         }
 
         [RelayCommand]
         public async Task Appearing()
         {
-            System.Diagnostics.Debug.WriteLine("MainPageModel Appearing");
+            // 0) Prevent double-loading when page reappears
+            if (_isLoaded) return;
 
             // 1) Init DB connection
             await _databaseService.InitAsync();
 
-            // 2) One-time seed (uses id-based pref, falls back to legacy name)
-            Preferences.Default.Set("is_seeded",false);
-            await _databaseService.ClearDatabaseAsync();
-            if (!Preferences.Default.Get("is_seeded",false))
+            // 2) (Optional, DEBUG only) one-time forced reseed for developers
+            //    Toggle this to true ONLY when you want to rebuild the DB from seed once.
+#if DEBUG
+            const bool ForceReseed = false; // set to true temporarily when you need a clean reseed
+            if (ForceReseed)
             {
-                await _seedDataService.LoadSeedDataAsync();
-                Preferences.Default.Set("is_seeded", true);
+                // Clear DB and reset the seed flag
+                await _databaseService.ClearDatabaseAsync();
+                Preferences.Default.Set("is_seeded", false);
+            }
+#endif
 
-                // initialize monthly budget for this book id (use 0 as default)
-                var bookId = await EnsureCurrentBookIdAsync();
-                Preferences.Default.Set(BudgetKeyById(bookId), 0.0);
+            // 3) One-time seed guarded by the preference flag
+            if (!Preferences.Default.Get("is_seeded", false))
+            {
+                try
+                {
+                    await _seedDataService.LoadSeedDataAsync();
+
+                    Preferences.Default.Set("is_seeded", true);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[Seed] failed: {ex}");
+                    await Shell.Current.DisplayAlert("Init Error", "Failed to load initial data.", "OK");
+                    return;
+                }
             }
 
-            // 3) Load data for current book
+            // 4) Load data for current book (accounts, etc.)
             await LoadFinancialData();
 
-            // 4) Load budget (prefer id-based; fallback legacy name-based once)
+            // 5) Load budget (prefer id-based; fallback legacy once)
             var curId = await EnsureCurrentBookIdAsync();
-            MonthlyBugget = Preferences.Default.Get(BudgetKeyById(curId),
-                                Preferences.Default.Get(BudgetKeyByLegacyName(
-                                    Preferences.Default.Get(PrefKeyCurrentBookName, DefaultBookDisplayName)), 0.0));
+            MonthlyBugget = Preferences.Default.Get(
+                BudgetKeyById(curId),
+                Preferences.Default.Get(
+                    BudgetKeyByLegacyName(Preferences.Default.Get(PrefKeyCurrentBookName, DefaultBookDisplayName)),
+                    0.0));
 
-            // 5) Update display name (for UI)
+            // 6) Update display name for UI
             CurrentBook = Preferences.Default.Get(PrefKeyCurrentBookName, DefaultBookDisplayName);
+
+            _isLoaded = true;
         }
+
 
         [RelayCommand]
         private async Task BuggetTapped()
@@ -216,11 +238,6 @@ namespace PersonalFinanceTracker.PageModels
                     Category = g.Key,
                     Amount = g.Sum(r => r.Amount)
                 }).ToList();
-
-            foreach (var record in allRecords)
-                System.Diagnostics.Debug.WriteLine(record.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff"));
-
-            System.Diagnostics.Debug.WriteLine("系统 DateTime.Today 是：" + DateTime.Today.ToString("yyyy-MM-dd"));
         }
 
         // Persist MonthlyBugget whenever changed (store by bookId; also update legacy once for backward-compat)

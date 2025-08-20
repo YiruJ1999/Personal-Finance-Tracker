@@ -187,11 +187,7 @@ namespace PersonalFinanceTracker.Data
             return book;
         }
 
-        /// <summary>
-        /// Build a mapping from seed account id -> real DB Id, creating accounts as needed.
-        /// If JSON has an "Accounts" array, use those names (and optional OpeningBalance).
-        /// Otherwise derive unique AccountIds from records and create placeholders "’Àªß{seedId}".
-        /// </summary>
+        // Build a mapping from seed account id -> real DB Id, creating accounts as needed.
         private async Task<Dictionary<int, int>> BuildAccountMapAsync(JsonElement root)
         {
             var map = new Dictionary<int, int>();
@@ -214,7 +210,7 @@ namespace PersonalFinanceTracker.Data
 
                     // Optional opening balance support: use repository overload if present
                     decimal opening = 0m;
-                    if (acc.TryGetProperty("OpeningBalance", out var obElem) && TryGetDecimal(obElem, out var ob))
+                    if (acc.TryGetProperty("Balance", out var obElem) && TryGetDecimal(obElem, out var ob))
                         opening = ob;
 
                     Account real;
@@ -268,9 +264,8 @@ namespace PersonalFinanceTracker.Data
             return map;
         }
 
-        /// <summary>
-        /// Parse an int from a JsonElement that could be a number or a string. Returns 0 on failure.
-        /// </summary>
+
+        // Parse an int from a JsonElement that could be a number or a string. Returns 0 on failure.
         private static int ParseFlexibleInt(JsonElement elem)
         {
             if (elem.ValueKind == JsonValueKind.Number && elem.TryGetInt32(out var n)) return n;
@@ -278,9 +273,7 @@ namespace PersonalFinanceTracker.Data
             return 0;
         }
 
-        /// <summary>
-        /// Try to read a decimal from a JsonElement that may be number or string.
-        /// </summary>
+        // Try to read a decimal from a JsonElement that may be number or string.
         private static bool TryGetDecimal(JsonElement elem, out decimal value)
         {
             value = 0m;

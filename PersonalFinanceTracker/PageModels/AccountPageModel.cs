@@ -115,13 +115,15 @@ namespace PersonalFinanceTracker.PageModels
                     if (SelectedAccount is not null)
                         EditedBalance = SelectedAccount.Balance;
 
-                    System.Diagnostics.Debug.WriteLine($"[AccountPage] loaded {Accounts.Count} accounts (UI updated)");
                 });
             }
             finally
             {
                 _isLoading = false;
             }
+
+            Debug.WriteLine($"[AccountPage] loaded {Accounts.Count} accounts, total={TotalAssets}");
+
         }
 
         // Add a new account using bound fields NewAccountName / NewAccountOpeningBalance.

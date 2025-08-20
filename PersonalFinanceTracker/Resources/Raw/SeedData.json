@@ -1,26 +1,26 @@
 {
     "Accounts": [
-        {
-            "Id": 1,
-            "Name": "现金",
-            "Type": "Cash",
-            "OpeningBalance": 0,
-            "CreatedAt" : "2025-08-04T08:15:00"
-        },
-        {
-            "Id": 2,
-            "Name": "工资卡",
-            "Type": "Checking",
-            "OpeningBalance": 0,
-            "CreatedAt": "2025-08-04T08:15:00"
-        },
-        {
-            "Id": 3,
-            "Name": "信用卡",
-            "Type": "Credit",
-            "OpeningBalance": 0,
-            "CreatedAt": "2025-08-04T08:15:00"
-        }
+      {
+        "Id": 1,
+        "Name": "现金",
+        "Type": "Cash",
+        "Balance": 0,
+        "CreatedAt": "2025-08-04T08:15:00"
+      },
+      {
+        "Id": 2,
+        "Name": "工资卡",
+        "Type": "Checking",
+        "Balance": 0,
+        "CreatedAt": "2025-08-04T08:15:00"
+      },
+      {
+        "Id": 3,
+        "Name": "信用卡",
+        "Type": "Credit",
+        "Balance": 0,
+        "CreatedAt": "2025-08-04T08:15:00"
+      }
     ],
     "Records": [
         {
