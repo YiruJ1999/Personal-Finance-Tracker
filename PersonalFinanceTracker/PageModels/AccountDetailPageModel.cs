@@ -69,6 +69,8 @@ namespace PersonalFinanceTracker.PageModels
 
         public async Task InitAsync()
         {
+            System.Diagnostics.Debug.WriteLine($"[Detail] AccountId={AccountId}");
+
             BuildMonthOptions();
 
             // Resolve and show account display name

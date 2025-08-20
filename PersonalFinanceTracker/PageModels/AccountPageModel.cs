@@ -206,27 +206,31 @@ namespace PersonalFinanceTracker.PageModels
 
         // Navigate to account detail page. Pass accountId in the route.
         [RelayCommand]
-        private async Task OpenAccountDetailAsync(int accountId)
+        private async Task OpenAccountDetailAsync()
         {
-            // Prevent double navigation (fast taps, re-entrancy)
             if (_isNavigatingToDetail) return;
             _isNavigatingToDetail = true;
 
             try
             {
-                var selected = Accounts.FirstOrDefault(a => a.Id == accountId);
-                if (selected is null) return;
+                var account = SelectedAccount;
+                if (account is null) return;
 
-                SelectedAccount = selected;
-                EditedBalance = selected.Balance;
+                System.Diagnostics.Debug.WriteLine($"[NAV] OpenAccountDetail fired, accId={account.Id}");
+                EditedBalance = account.Balance;
 
-                await Shell.Current.GoToAsync("accountDetail" + $"?id={selected.Id}");
+                await Shell.Current.GoToAsync("accountDetail", new Dictionary<string, object>
+                {
+                    ["id"] = account.Id
+                });
+                SelectedAccount = null;
             }
             finally
             {
                 _isNavigatingToDetail = false;
             }
         }
+
 
         // Show Add Account popup(name + optional opening balance).
         [RelayCommand]

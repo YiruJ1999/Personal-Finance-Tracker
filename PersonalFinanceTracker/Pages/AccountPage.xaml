@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<!-- View for accounts overview & management (compile-time bindings enabled) -->
+<!-- Accounts overview & management. Uses SelectionChanged for navigation (robust). -->
 <ContentPage
     x:Class="PersonalFinanceTracker.Pages.AccountPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
@@ -13,16 +13,8 @@
 
     <!-- Toolbar: refresh & add -->
     <ContentPage.ToolbarItems>
-        <!-- Refresh toolbar item calls LoadCommand -->
-        <ToolbarItem Text="刷新"
-                     Priority="0"
-                     Order="Primary"
-                     Command="{Binding LoadCommand}" />
-        <!-- Add new account -->
-        <ToolbarItem Text="新增"
-                     Priority="1"
-                     Order="Primary"
-                     Command="{Binding ShowAddAccountPopupCommand}" />
+        <ToolbarItem Text="刷新" Priority="0" Order="Primary" Command="{Binding LoadCommand}" />
+        <ToolbarItem Text="新增" Priority="1" Order="Primary" Command="{Binding ShowAddAccountPopupCommand}" />
     </ContentPage.ToolbarItems>
 
     <ScrollView>
@@ -40,20 +32,14 @@
             <!-- Last 4 months trend line chart -->
             <Frame Padding="16" HasShadow="True" CornerRadius="12">
                 <VerticalStackLayout Spacing="12">
-                    <Label Text="过去4个月的总资产趋势"
-                           FontAttributes="Bold" FontSize="16"/>
+                    <Label Text="过去4个月的总资产趋势" FontAttributes="Bold" FontSize="16"/>
                     <chart:SfCartesianChart>
-                        <!-- Category axis for month keys (YYYY-MM) -->
                         <chart:SfCartesianChart.XAxes>
                             <chart:CategoryAxis ShowMajorGridLines="False" />
                         </chart:SfCartesianChart.XAxes>
-
-                        <!-- Numerical Y axis -->
                         <chart:SfCartesianChart.YAxes>
                             <chart:NumericalAxis ShowMajorGridLines="True" />
                         </chart:SfCartesianChart.YAxes>
-
-                        <!-- Bind to List<ChartPoint> -->
                         <chart:LineSeries
                             ItemsSource="{Binding Last4MonthsTrend}"
                             XBindingPath="Key"
@@ -64,69 +50,50 @@
                 </VerticalStackLayout>
             </Frame>
 
-            <!-- Accounts list with pull-to-refresh -->
+            <!-- Accounts list (Selection-based navigation) -->
             <Frame Padding="0" HasShadow="True" CornerRadius="12">
                 <VerticalStackLayout>
                     <Grid Padding="16" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12" VerticalOptions="Center">
                         <Label Text="所有账户" FontAttributes="Bold" FontSize="16" />
-                        <ImageButton Grid.Column="1"
-                                     Source="refresh.png"
-                                     WidthRequest="28"
-                                     HeightRequest="28"
-                                     BackgroundColor="Transparent"
-                                     Padding="0"
-                                     Command="{Binding LoadCommand}"
-                                     SemanticProperties.Description="Refresh accounts list" />
-                        <ImageButton Grid.Column="2"
-                                     Source="add.png"
-                                     WidthRequest="28"
-                                     HeightRequest="28"
-                                     BackgroundColor="Transparent"
-                                     Padding="0"
-                                     Command="{Binding ShowAddAccountPopupCommand}"
-                                     SemanticProperties.Description="Add new account" />
+                        <ImageButton Grid.Column="1" Source="refresh.png" WidthRequest="28" HeightRequest="28"
+                                     BackgroundColor="Transparent" Padding="0" Command="{Binding LoadCommand}" />
+                        <ImageButton Grid.Column="2" Source="add.png" WidthRequest="28" HeightRequest="28"
+                                     BackgroundColor="Transparent" Padding="0" Command="{Binding ShowAddAccountPopupCommand}" />
                     </Grid>
 
-                    <RefreshView Command="{Binding LoadCommand}">
-                        <CollectionView ItemsSource="{Binding Accounts}"
-                                        SelectionMode="None"
-                                        ItemSizingStrategy="MeasureAllItems">
-                            <CollectionView.ItemTemplate>
-                                <!-- Each row binds to a single Account -->
-                                <DataTemplate x:DataType="m:Account">
-                                    <SwipeView>
-                                        <SwipeView.RightItems>
-                                            <SwipeItems Mode="Reveal">
-                                                <!-- Swipe delete: call VM's delete popup with Account.Id -->
-                                                <SwipeItem Text="删除"
-                                                           BackgroundColor="IndianRed"
-                                                           Command="{Binding BindingContext.ShowDeleteAccountPopupCommand, Source={x:Reference AccountPageRoot}}"
-                                                           CommandParameter="{Binding Id}" />
-                                            </SwipeItems>
-                                        </SwipeView.RightItems>
+                    <CollectionView x:Name="AccountsView"
+                        ItemsSource="{Binding Accounts}"
+                        SelectionMode="Single"
+                        SelectedItem="{Binding SelectedAccount, Mode=TwoWay}"
+                        SelectionChangedCommand="{Binding OpenAccountDetailCommand}"
+                        ItemSizingStrategy="MeasureAllItems">
 
-                                        <Grid Padding="16" ColumnDefinitions="*,Auto">
-                                            <Label Text="{Binding Name}"
-                                                   FontAttributes="Bold"
-                                                   FontSize="14" />
-                                            <Label Grid.Column="1"
-                                                   Text="{Binding Balance, StringFormat='{}{0:C}'}"
-                                                   HorizontalTextAlignment="End"
-                                                   FontSize="14" />
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="m:Account">
+                                <SwipeView x:DataType="{x:Null}">
+                                    <SwipeView.RightItems>
+                                        <SwipeItems Mode="Reveal">
+                                            <SwipeItem
+                                                x:DataType="{x:Null}"
+                                                BindingContext="{Binding .}"
+                                                Text="删除"
+                                                BackgroundColor="IndianRed"
+                                                Command="{Binding BindingContext.ShowDeleteAccountPopupCommand, Source={x:Reference AccountPageRoot}}"
+                                                CommandParameter="{Binding Id}" />
+                                        </SwipeItems>
+                                    </SwipeView.RightItems>
 
-                                            <!-- Tap to navigate to detail: call VM.OpenAccountDetailCommand(Id) -->
-                                            <Grid.GestureRecognizers>
-                                                <TapGestureRecognizer
-                                                    NumberOfTapsRequired="1"
-                                                    Command="{Binding BindingContext.OpenAccountDetailCommand, Source={x:Reference AccountPageRoot}}"
-                                                    CommandParameter="{Binding Id}" />
-                                            </Grid.GestureRecognizers>
-                                        </Grid>
-                                    </SwipeView>
-                                </DataTemplate>
-                            </CollectionView.ItemTemplate>
-                        </CollectionView>
-                    </RefreshView>
+                                    <Grid Padding="16" ColumnDefinitions="*,Auto">
+                                        <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="14" />
+                                        <Label Grid.Column="1"
+                                               Text="{Binding Balance, StringFormat='{}{0:C}'}"
+                                               HorizontalTextAlignment="End"
+                                               FontSize="14" />
+                                    </Grid>
+                                </SwipeView>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
                 </VerticalStackLayout>
             </Frame>
 

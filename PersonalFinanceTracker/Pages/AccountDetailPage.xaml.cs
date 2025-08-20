@@ -1,7 +1,8 @@
-using Microsoft.Maui.Controls;
-using Microsoft.Extensions.DependencyInjection;
+// AccountDetailPage.xaml.cs
 using System;
 using System.Collections.Generic;
+using Microsoft.Maui.Controls;
+using Microsoft.Extensions.DependencyInjection;
 using PersonalFinanceTracker.PageModels;
 
 namespace PersonalFinanceTracker.Pages
@@ -9,27 +10,28 @@ namespace PersonalFinanceTracker.Pages
     public partial class AccountDetailPage : ContentPage, IQueryAttributable
     {
         private readonly AccountDetailPageModel _vm;
-
-        public AccountDetailPage()
+        public AccountDetailPage() : this(ResolveVm()) { }
+        public AccountDetailPage(AccountDetailPageModel vm)
         {
-            var sp = App.Services;
-            _vm = sp.GetRequiredService<AccountDetailPageModel>();
+            _vm = vm ?? throw new ArgumentNullException(nameof(vm));
             BindingContext = _vm;
-
             InitializeComponent();
+        }
+
+        private static AccountDetailPageModel ResolveVm()
+        {
+            var sp = Application.Current?.Handler?.MauiContext?.Services
+                     ?? throw new InvalidOperationException("Service provider not ready.");
+            return sp.GetRequiredService<AccountDetailPageModel>();
         }
 
         public void ApplyQueryAttributes(IDictionary<string, object> query)
         {
-            // Expect "?id=123"
             if (query.TryGetValue("id", out var raw))
             {
                 if (raw is int i) _vm.AccountId = i;
-                else if (raw is string s && int.TryParse(Uri.UnescapeDataString(s), out var id)) _vm.AccountId = id;
+                else if (raw is string s && int.TryParse(s, out var j)) _vm.AccountId = j;
             }
-
-            // Optional: if your VM没有在 AccountId 变化时自动 Init（OnAccountIdChanged 内没调用 Init），解开下面这行：
-            // _ = _vm.InitAsync();
         }
     }
 }

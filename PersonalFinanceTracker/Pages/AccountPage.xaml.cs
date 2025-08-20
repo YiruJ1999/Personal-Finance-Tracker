@@ -10,10 +10,9 @@ namespace PersonalFinanceTracker.Pages
 
         public AccountPage(AccountPageModel vm)
         {
-            InitializeComponent();
-
             _vm = vm ?? throw new ArgumentNullException(nameof(vm));
             BindingContext = _vm;
+            InitializeComponent();
         }
 
         protected override async void OnAppearing()
