@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Storage;
+using Microsoft.Maui.ApplicationModel;
 using PersonalFinanceTracker.Data;
 using PersonalFinanceTracker.Models;
 using PersonalFinanceTracker.Popups;
@@ -24,6 +25,7 @@ namespace PersonalFinanceTracker.PageModels
         public string Key { get; set; } = string.Empty;
         public double Value { get; set; }
     }
+
 
     public partial class AccountPageModel : ObservableObject
     {
@@ -60,6 +62,7 @@ namespace PersonalFinanceTracker.PageModels
             _accountRepository = accountRepository ?? throw new ArgumentNullException(nameof(accountRepository));
             _recordRepository = recordRepository ?? throw new ArgumentNullException(nameof(recordRepository));
             _bookRepository = bookRepository ?? throw new ArgumentNullException(nameof(bookRepository));
+            CurrencyManager.CurrencyChanged += OnCurrencyChanged;
         }
 
         // Load page data: sync from records, then list accounts, totals and last-4-months trend.
@@ -311,6 +314,18 @@ namespace PersonalFinanceTracker.PageModels
             var book = await _bookRepository.EnsureBookAsync(string.IsNullOrWhiteSpace(legacyName) ? "默认" : legacyName.Trim());
             Preferences.Default.Set(PrefKeyCurrentBookId, book.Id);
             return book.Id;
+        }
+
+        // Fire a lightweight UI refresh so all currency strings get re-rendered
+        private async void OnCurrencyChanged(object? sender, EventArgs e) // ADD
+        {
+            await MainThread.InvokeOnMainThreadAsync(async () => await LoadAsync());
+        }
+
+        // (optional) call this when the VM is disposed/removed to avoid leaks
+        public void UnsubscribeCurrency() // ADD (optional)
+        {
+            CurrencyManager.CurrencyChanged -= OnCurrencyChanged;
         }
     }
 }

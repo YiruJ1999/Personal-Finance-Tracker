@@ -10,6 +10,7 @@ using System.Linq;
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 
 namespace PersonalFinanceTracker.PageModels
 {
@@ -58,6 +59,7 @@ namespace PersonalFinanceTracker.PageModels
             _bookRepo = bookRepo ?? throw new ArgumentNullException(nameof(bookRepo));
 
             EditAccountCommand = new AsyncRelayCommand(EditAccountAsync);
+            CurrencyManager.CurrencyChanged += OnCurrencyChanged; 
         }
 
         // When AccountId changes (set by the page), load everything
@@ -187,6 +189,23 @@ namespace PersonalFinanceTracker.PageModels
             Preferences.Default.Set(PrefKeyCurrentBookId, book.Id);
             return book.Id;
         }
+
+        private async void OnCurrencyChanged(object? sender, EventArgs e) // ADD
+        {
+            await MainThread.InvokeOnMainThreadAsync(async () =>
+            {
+                // Keep current AccountId and SelectedMonth; just reload data
+                await LoadHeaderAsync();
+                await LoadMonthlyRecordsAsync();
+            });
+        }
+
+        // (optional) call this when page/VM is disposed
+        public void UnsubscribeCurrency() // ADD (optional)
+        {
+            CurrencyManager.CurrencyChanged -= OnCurrencyChanged;
+        }
+
     }
 
     public record MonthOption(int Year, int Month)

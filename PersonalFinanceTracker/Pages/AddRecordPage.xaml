@@ -102,7 +102,7 @@
                    Text="{Binding Note}" />
 
             <!-- Amount Entry -->
-            <Entry Placeholder="€ 0.00" 
+            <Entry Placeholder="Binding Source={x:Static services:CurrencyManager.CurrentSymbol}, StringFormat='{}{0} 0.00'" 
                    Keyboard="Numeric" 
                    Text="{Binding Amount}" />
 

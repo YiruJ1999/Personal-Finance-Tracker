@@ -5,20 +5,23 @@ using Microsoft.Maui.Controls;
 namespace PersonalFinanceTracker.Converters
 {
     // Convert (Amount, Type) -> "+123.45" / "-67.89"
-    public class AmountWithSignConverter : IMultiValueConverter
+    public sealed class AmountWithSignConverter : IMultiValueConverter
     {
-        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object[] v, Type t, object p, CultureInfo culture)
         {
-            // values[0] = Amount (decimal), values[1] = Type (string: "收入"/"支出")
-            if (values is null || values.Length < 2) return null;
-            if (values[0] is not decimal amount) return null;
+            decimal amount = v[0] is decimal d ? d :
+                             v[0] is string s && decimal.TryParse(s, NumberStyles.Any, culture, out var dv) ? dv : 0m;
 
-            var type = values[1] as string;
-            var sign = type == "收入" ? "+" : "-";
-            return $"{sign}{amount.ToString("0.##", culture)}";
+            var isExpense = (v[1]?.ToString() ?? "").Equals("Expense", StringComparison.OrdinalIgnoreCase)
+                            || (v[1]?.ToString() ?? "").Equals("支出");
+            var signed = isExpense ? -amount : amount;
+
+            var nfi = (NumberFormatInfo)culture.NumberFormat.Clone();
+            nfi.CurrencyPositivePattern = 3; // "n $"
+            nfi.CurrencyNegativePattern = 8; // "-n $"
+            return signed.ToString("C", nfi);
         }
 
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
-            => throw new NotImplementedException(); // one-way only
+        public object[] ConvertBack(object v, Type[] ts, object p, CultureInfo c) => throw new NotSupportedException();
     }
 }

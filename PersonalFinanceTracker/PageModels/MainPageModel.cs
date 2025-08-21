@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 
 namespace PersonalFinanceTracker.PageModels
 {
@@ -38,6 +39,7 @@ namespace PersonalFinanceTracker.PageModels
             _seedDataService = seedDataService;
             _bookRepository = bookRepository;
             _sp = sp;
+            CurrencyManager.CurrencyChanged += OnCurrencyChanged;
         }
 
         // -------- Observable properties --------
@@ -281,6 +283,19 @@ namespace PersonalFinanceTracker.PageModels
 
         private static string BudgetKeyById(int bookId) => $"monthlybugget_{bookId}";
         private static string BudgetKeyByLegacyName(string bookName) => $"monthlybugget_{bookName}";
+        private async void OnCurrencyChanged(object? sender, EventArgs e)
+        {
+            // Ensure UI updates happen on UI thread
+            await MainThread.InvokeOnMainThreadAsync(async () =>
+            {
+                await Refresh(); 
+            });
+        }
+        public void UnsubscribeCurrency() // ADD (optional)
+        {
+            CurrencyManager.CurrencyChanged -= OnCurrencyChanged;
+        }
+
     }
 
     public record MonthlySummaryItem(string Label, decimal Amount);

@@ -70,6 +70,11 @@ namespace PersonalFinanceTracker
             builder.Services.AddTransient<PersonalFinanceTracker.Pages.CreateNewBookPopup>();
 
             var app = builder.Build();
+
+            CurrencyManager.SetSymbolMap(CurrencySymbolLoader.LoadAllSymbols());
+            var saved = Preferences.Default.Get("currency_code", "EUR");
+            CurrencyManager.Set(saved);
+
             App.Services = app.Services;
             return app;
 

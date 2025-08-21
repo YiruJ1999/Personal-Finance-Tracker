@@ -56,7 +56,16 @@ namespace PersonalFinanceTracker.PageModels
         public string CurrencyCode
         {
             get => _currencyCode;
-            set { _currencyCode = value; OnPropertyChanged(); }
+            set 
+            {
+                if (_currencyCode == value) return;
+                _currencyCode = value;
+                OnPropertyChanged();
+
+                // Persist and apply the currency
+                Preferences.Default.Set("currency_code", _currencyCode);
+                CurrencyManager.Set(_currencyCode); // updates CurrencySymbol and raises CurrencyChanged
+            }
         }
 
         private PersonalInfo? _loadedInfo;
