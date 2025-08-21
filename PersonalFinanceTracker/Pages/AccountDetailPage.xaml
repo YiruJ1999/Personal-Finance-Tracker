@@ -34,15 +34,14 @@
         <!-- Monthly records list -->
         <CollectionView Grid.Row="3" ItemsSource="{Binding MonthlyRecords}">
             <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    
+                <DataTemplate x:DataType="m:Record">
                     <Grid Padding="8" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
                         <Label Grid.Row="0" Grid.Column="0"
                                Text="{Binding Category}" FontAttributes="Bold" FontSize="16"/>
                         <Label Grid.Column="1" HorizontalTextAlignment="End">
                             <Label.Text>
                                 <MultiBinding Converter="{StaticResource AmountWithSignConverter}">
-                                    <Binding Path="Amount" />
+                                    <Binding Path="Amount"/>
                                     <Binding Path="Type" />
                                 </MultiBinding>
                             </Label.Text>

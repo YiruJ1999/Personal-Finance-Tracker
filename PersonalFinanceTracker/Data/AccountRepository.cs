@@ -293,7 +293,7 @@ namespace PersonalFinanceTracker.Data
             foreach (var b in books)
             {
                 var rows = await conn.QueryAsync<Record>(
-                    $@"SELECT ID, Type, Amount, Category, Note, Timestamp, Account, AccountId
+                    $@"SELECT Id, Type, Amount, Category, Note, Timestamp, AccountId
                        FROM {BookRepository.QuoteIdent(b.TableName)}
                        WHERE AccountId = ? AND Timestamp >= ? AND Timestamp <= ?
                        ORDER BY Timestamp DESC;",
