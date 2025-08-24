@@ -38,7 +38,11 @@
                             <chart:CategoryAxis ShowMajorGridLines="False" />
                         </chart:SfCartesianChart.XAxes>
                         <chart:SfCartesianChart.YAxes>
-                            <chart:NumericalAxis ShowMajorGridLines="True" />
+                                <chart:NumericalAxis
+                                ShowMajorGridLines="True"
+                                Minimum="{Binding YMin}"
+                                Maximum="{Binding YMax}"
+                                Interval="{Binding YInterval}" />   
                         </chart:SfCartesianChart.YAxes>
                         <chart:LineSeries
                             ItemsSource="{Binding Last4MonthsTrend}"

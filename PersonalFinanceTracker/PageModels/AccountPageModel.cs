@@ -41,6 +41,9 @@ namespace PersonalFinanceTracker.PageModels
         // Observable properties for UI
         [ObservableProperty] private decimal totalAssets;
         [ObservableProperty] private List<ChartPoint> last4MonthsTrend = new();
+        [ObservableProperty] private double yMin;
+        [ObservableProperty] private double yMax;
+        [ObservableProperty] private double yInterval;
         [ObservableProperty] private string newAccountName = string.Empty;
         [ObservableProperty] private decimal newAccountOpeningBalance;
         [ObservableProperty] private Account? selectedAccount;
@@ -74,51 +77,20 @@ namespace PersonalFinanceTracker.PageModels
 
             try
             {
-                await _dbService.InitAsync();
-                await _accountRepository.EnsureDatabaseInitializedAsync();
+                await EnsureDatabaseReadyAsync();
+                await TrySyncAccountsFromBooksAsync();
 
-                // Do not block UI if sync throws due to any legacy table mismatch
-                try
-                {
-                    await _accountRepository.SyncAccountsFromBooksAsync(null);
-                }
-                catch (Exception syncEx)
-                {
-                    System.Diagnostics.Debug.WriteLine("[AccountPage.Load] Sync failed: " + syncEx.Message);
-                }
-
-                // Fetch data off the UI thread
-                var list = await _accountRepository.ListAsync();
+                // Fetch heavy stuff off UI thread
+                var list = await FetchAccountsAsync();
                 var total = list.Sum(a => a.Balance);
-                var trendData = await _accountRepository.GetLast4MonthsTotalAssetsAsync();
-                if (trendData == null || trendData.Count == 0)
-                {
-                    trendData = new Dictionary<string, decimal>
-                    {
-                        ["2025-05"] = 1000,
-                        ["2025-06"] = 2000,
-                        ["2025-07"] = 1800,
-                        ["2025-08"] = 2300,
-                    };
-                }
+                var trendDict = await FetchLast4MonthsTotalsAsync();
 
-                // IMPORTANT: update ObservableCollection and bindable props on the main thread
-                await MainThread.InvokeOnMainThreadAsync(() =>
-                {
-                    Accounts.Clear();
-                    foreach (var a in list) Accounts.Add(a);
+                // Build view models for chart + axis range
+                var trendPoints = BuildTrendPoints(trendDict);
+                ComputeAxisRange(trendPoints);
 
-                    TotalAssets = total;
-
-                    Last4MonthsTrend = trendData
-                        .OrderBy(kv => kv.Key)
-                        .Select(kv => new ChartPoint { Key = kv.Key, Value = Math.Round((double)kv.Value, 2) })
-                        .ToList();
-
-                    if (SelectedAccount is not null)
-                        EditedBalance = SelectedAccount.Balance;
-
-                });
+                // Apply to UI in one batch
+                await ApplyStateAsync(list, total, trendPoints);
             }
             finally
             {
@@ -126,8 +98,127 @@ namespace PersonalFinanceTracker.PageModels
             }
 
             Debug.WriteLine($"[AccountPage] loaded {Accounts.Count} accounts, total={TotalAssets}");
-
         }
+
+        // Ensure DB + tables exist
+        private async Task EnsureDatabaseReadyAsync()
+        {
+            await _dbService.InitAsync();
+            await _accountRepository.EnsureDatabaseInitializedAsync();
+        }
+
+        // Sync account snapshots from books (non-blocking failure)
+        private async Task TrySyncAccountsFromBooksAsync()
+        {
+            try
+            {
+                await _accountRepository.SyncAccountsFromBooksAsync(null);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("[AccountPage.Load] Sync failed: " + ex.Message);
+            }
+        }
+
+        // Query accounts
+        private Task<List<Account>> FetchAccountsAsync()
+            => _accountRepository.ListAsync();
+
+        // Get last-4-month total assets (with a fallback if empty)
+        private async Task<Dictionary<string, decimal>> FetchLast4MonthsTotalsAsync()
+        {
+            var data = await _accountRepository.GetLast4MonthsTotalAssetsAsync();
+            if (data != null && data.Count > 0) return data;
+
+            // Fallback demo data (optional)
+            return new Dictionary<string, decimal>
+            {
+                ["2025-05"] = 1000,
+                ["2025-06"] = 2000,
+                ["2025-07"] = 1800,
+                ["2025-08"] = 2300,
+            };
+        }
+
+        // Build chart points sorted by key
+        private List<ChartPoint> BuildTrendPoints(Dictionary<string, decimal> trendDict)
+        {
+            return trendDict
+                .OrderBy(kv => kv.Key)
+                .Select(kv => new ChartPoint { Key = kv.Key, Value = Math.Round((double)kv.Value, 2) })
+                .ToList();
+        }
+
+        // Compute a nice axis range so the line does not hug X-axis
+        private void ComputeAxisRange(List<ChartPoint> points)
+        {
+            if (points == null || points.Count == 0)
+            {
+                YMin = 0; YMax = 1; YInterval = 0.2;
+                return;
+            }
+
+            var ys = points.Select(p => p.Value).Where(v => !double.IsNaN(v) && !double.IsInfinity(v)).ToList();
+            if (ys.Count == 0)
+            {
+                YMin = 0; YMax = 1; YInterval = 0.2;
+                return;
+            }
+
+            var min = ys.Min();
+            var max = ys.Max();
+
+            if (Math.Abs(max - min) < 1e-9)
+            {
+                // Flat line: add ±10% padding
+                var pad = Math.Max(1, Math.Abs(max) * 0.1);
+                YMin = Math.Max(0, min - pad);
+                YMax = max + pad;
+            }
+            else
+            {
+                var range = max - min;
+                var step = NiceStep(range / 5.0); // target ~5 ticks
+
+                YMax = Math.Ceiling(max / step) * step;
+                var minCandidate = Math.Floor(min / step) * step;
+
+                // Assets usually non-negative; clamp to zero
+                YMin = Math.Max(0, minCandidate);
+
+                if (YMin > 0 && YMin < step * 0.5) YMin = 0;
+            }
+
+            var roughInterval = (YMax - YMin) / 4.0;
+            YInterval = NiceStep(Math.Max(roughInterval, 1e-6));
+        }
+
+        // "1–2–5" nice step
+        private static double NiceStep(double rough)
+        {
+            if (rough <= 0) return 1;
+            var exp = Math.Floor(Math.Log10(rough));
+            var frac = rough / Math.Pow(10, exp);
+            double niceFrac = (frac <= 1) ? 1 : (frac <= 2) ? 2 : (frac <= 5) ? 5 : 10;
+            return niceFrac * Math.Pow(10, exp);
+        }
+
+        // Apply all UI-bound properties on UI thread in one go
+        private Task ApplyStateAsync(List<Account> list, decimal total, List<ChartPoint> trendPoints)
+        {
+            return MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                Accounts.Clear();
+                foreach (var a in list) Accounts.Add(a);
+
+                TotalAssets = total;
+                Last4MonthsTrend = trendPoints;
+
+                if (SelectedAccount is not null)
+                    EditedBalance = SelectedAccount.Balance;
+            });
+        }
+
 
         // Add a new account using bound fields NewAccountName / NewAccountOpeningBalance.
         [RelayCommand]
