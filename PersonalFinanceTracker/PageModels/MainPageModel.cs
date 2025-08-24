@@ -253,6 +253,9 @@ namespace PersonalFinanceTracker.PageModels
             // update legacy name-key only if it exists to avoid overwriting other books
             var legacyName = Preferences.Default.Get(PrefKeyCurrentBookName, DefaultBookDisplayName);
             Preferences.Default.Set(BudgetKeyByLegacyName(legacyName), value);
+
+            // Refresh summary to reflect new budget
+            _ = Refresh();
         }
 
         // -------- Helpers --------
