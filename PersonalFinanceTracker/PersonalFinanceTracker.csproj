@@ -125,5 +125,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Resources\Strings\" />
+	</ItemGroup>
 	
 </Project>

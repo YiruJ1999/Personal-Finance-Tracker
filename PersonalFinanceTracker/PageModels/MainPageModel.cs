@@ -205,8 +205,6 @@ namespace PersonalFinanceTracker.PageModels
         public async Task LoadFinancialData()
         {
             var bookId = await EnsureCurrentBookIdAsync();
-
-            // Fetch all records for the current book id
             var allRecords = await _recordRepository.ListAsync(bookId);
 
             var today = DateTime.Today;
@@ -215,31 +213,35 @@ namespace PersonalFinanceTracker.PageModels
                 .OrderByDescending(r => r.Timestamp)
                 .ToList();
 
+            // Use [month start, tomorrow) so "today"整天都包含
             var monthStart = new DateTime(today.Year, today.Month, 1);
+            var monthEndExclusive = today.AddDays(1);
+
             var monthly = allRecords
-                .Where(r => r.Timestamp >= monthStart && r.Timestamp <= today)
+                .Where(r => r.Timestamp >= monthStart && r.Timestamp < monthEndExclusive)
                 .ToList();
 
             var income = monthly.Where(r => r.Type == "收入").Sum(r => r.Amount);
             var expense = monthly.Where(r => r.Type == "支出").Sum(r => r.Amount);
 
             MonthlySummaryData = new List<MonthlySummaryItem>
-            {
-                new("本月收入", income),
-                new("本月支出", expense),
-                new("收支差额", income - expense),
-                new("本月预算", (decimal) MonthlyBugget)
-            };
+                {
+                    new("本月收入", income),
+                    new("本月支出", expense),
+                    new("收支差额", income - expense),
+                    new("本月预算", (decimal) MonthlyBugget)
+                };
 
-            // Category chart for income (adjust to your needs)
             MonthlyCategoryChartData = monthly
-                .Where(r => r.Type == "收入")
                 .GroupBy(r => r.Category)
                 .Select(g => new CategorySummaryItem
                 {
                     Category = g.Key,
-                    Amount = g.Sum(r => r.Amount)
-                }).ToList();
+                    Amount = (double)g.Sum(r => r.Type == "支出" ? -r.Amount : r.Amount)
+                })
+
+                .OrderByDescending(x => Math.Abs(x.Amount))
+                .ToList();
         }
 
         // Persist MonthlyBugget whenever changed (store by bookId; also update legacy once for backward-compat)
@@ -302,7 +304,7 @@ namespace PersonalFinanceTracker.PageModels
 
     public class CategorySummaryItem
     {
-        public string Category { get; set; }
-        public decimal Amount { get; set; }
+        public string Category { get; set; } = string.Empty;
+        public double Amount { get; set; }
     }
 }
