@@ -142,14 +142,16 @@
             </CollectionView.ItemTemplate>
         </CollectionView>
 
-        <Button Text="新建账本"
-                Command="{Binding AddBookClickedCommand}"
-                BackgroundColor="HotPink"
-                TextColor="White"
-                HorizontalOptions="Center"
-                VerticalOptions="End"
-                Margin="20"
-                HeightRequest="50"
-                Grid.Row="1" />
+        <Border Grid.Row="1"
+                Style="{StaticResource BottomBarContainerStyle}">
+            <FlexLayout Style="{StaticResource BottomBarFlexStyle}">
+                <Button Text="新建账本"
+                    Command="{Binding AddBookClickedCommand}"
+                    Style="{StaticResource BottomBarButtonStyle}"
+                    FlexLayout.Grow="1"
+                     />
+            </FlexLayout>
+        </Border>
+
     </Grid>
 </ContentPage>

@@ -5,128 +5,137 @@
              xmlns:local="clr-namespace:PersonalFinanceTracker.PageModels"
              x:Class="PersonalFinanceTracker.Pages.AddRecordPage"
              Title="Add Record">
+    <Grid RowDefinitions="*,Auto">
 
-    <!-- Outer vertical scroll for the whole page -->
-    <ScrollView Orientation="Vertical">
-        <!-- Use a simple vertical stack as the scroll content -->
-        <VerticalStackLayout Padding="20" Spacing="10">
+        <!-- Outer vertical scroll for the whole page -->
+        <ScrollView Orientation="Vertical"
+                Grid.Row="0">
+            <!-- Use a simple vertical stack as the scroll content -->
+            <VerticalStackLayout Padding="20" Spacing="10">
 
-            <!-- Type Selection -->
-            <Grid ColumnDefinitions="*,*" Margin="0,0,0,10">
-                <!-- Expense button -->
-                <Button
+                <!-- Type Selection -->
+                <Grid ColumnDefinitions="*,*" Margin="0,0,0,10">
+                    <!-- Expense button -->
+                    <Button
                     Text="支出"
                     TextColor="Black"
                     Command="{Binding SelectExpenseCommand}">
-                    <!-- default = transparent -->
-                    <Button.Background>
-                        <SolidColorBrush Color="Transparent" />
-                    </Button.Background>
-                    <Button.Triggers>
-                        <!-- when IsExpenseSelected == true -> grey -->
-                        <DataTrigger TargetType="Button"
+                        <!-- default = transparent -->
+                        <Button.Background>
+                            <SolidColorBrush Color="Transparent" />
+                        </Button.Background>
+                        <Button.Triggers>
+                            <!-- when IsExpenseSelected == true -> grey -->
+                            <DataTrigger TargetType="Button"
                                      Binding="{Binding IsExpenseSelected}"
                                      Value="True">
-                            <Setter Property="Background">
-                                <Setter.Value>
-                                    <SolidColorBrush Color="#BDBDBD" />
-                                </Setter.Value>
-                            </Setter>
-                        </DataTrigger>
-                    </Button.Triggers>
-                </Button>
+                                <Setter Property="Background">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="#BDBDBD" />
+                                    </Setter.Value>
+                                </Setter>
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
 
-                <!-- Income button -->
-                <Button
+                    <!-- Income button -->
+                    <Button
                     Grid.Column="1"
                     Text="收入"
                     TextColor="Black"
                     Command="{Binding SelectIncomeCommand}">
-                    <!-- default = transparent -->
-                    <Button.Background>
-                        <SolidColorBrush Color="Transparent" />
-                    </Button.Background>
-                    <Button.Triggers>
-                        <!-- when IsExpenseSelected == false -> grey -->
-                        <DataTrigger TargetType="Button"
+                        <!-- default = transparent -->
+                        <Button.Background>
+                            <SolidColorBrush Color="Transparent" />
+                        </Button.Background>
+                        <Button.Triggers>
+                            <!-- when IsExpenseSelected == false -> grey -->
+                            <DataTrigger TargetType="Button"
                                      Binding="{Binding IsExpenseSelected}"
                                      Value="False">
-                            <Setter Property="Background">
-                                <Setter.Value>
-                                    <SolidColorBrush Color="#BDBDBD" />
-                                </Setter.Value>
-                            </Setter>
-                        </DataTrigger>
-                    </Button.Triggers>
-                </Button>
-            </Grid>
+                                <Setter Property="Background">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="#BDBDBD" />
+                                    </Setter.Value>
+                                </Setter>
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
+                </Grid>
 
-            <!-- Category Selection: horizontal grid with 2 rows, fixed height, NO vertical scroll -->
-            <CollectionView
+                <!-- Category Selection: horizontal grid with 2 rows, fixed height, NO vertical scroll -->
+                <CollectionView
                 HeightRequest="170"                             
                 ItemsSource="{Binding Categories}" 
                 SelectionMode="Single"
                 SelectedItem="{Binding SelectedCategory}"
                 VerticalOptions="Start"
                 HorizontalScrollBarVisibility="Never">
-                <CollectionView.ItemsLayout>
-                    <!-- IMPORTANT:
+                    <CollectionView.ItemsLayout>
+                        <!-- IMPORTANT:
                          - Orientation="Horizontal" -> scrolls horizontally
                          - Span="2" means 2 ROWS when orientation is Horizontal -->
-                    <GridItemsLayout Orientation="Horizontal" Span="2" />
-                </CollectionView.ItemsLayout>
+                        <GridItemsLayout Orientation="Horizontal" Span="2" />
+                    </CollectionView.ItemsLayout>
 
-                <!-- Make each item a fixed-height tile so two rows fit exactly -->
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <!-- Fixed tile size helps layout -->
-                        <Grid WidthRequest="80" HeightRequest="80" Padding="6">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <Image Grid.Row="0"
+                    <!-- Make each item a fixed-height tile so two rows fit exactly -->
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <!-- Fixed tile size helps layout -->
+                            <Grid WidthRequest="80" HeightRequest="80" Padding="6">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Image Grid.Row="0"
                                    Source="{Binding Icon}"
                                    HeightRequest="40" WidthRequest="40"
                                    HorizontalOptions="Center"
                                    BackgroundColor="LightGray"/>
-                            <Label Grid.Row="1"
+                                <Label Grid.Row="1"
                                    Text="{Binding Name}"
                                    FontSize="12"
                                    HorizontalOptions="Center"/>
-                        </Grid>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
 
-            <!-- Note Entry -->
-            <Entry Placeholder="点击写备注..." 
+                <!-- Note Entry -->
+                <Entry Placeholder="点击写备注..." 
                    Text="{Binding Note}" />
 
-            <!-- Amount Entry -->
-            <Entry
+                <!-- Amount Entry -->
+                <Entry
                 Keyboard="Numeric"
                 Text="{Binding Amount}"
                 Placeholder="{Binding Source={x:Static services:CurrencyManager.CurrentSymbol},
                                       StringFormat='{}{0} 0.00'}" />
 
-            <!-- Account picker -->
-            <Picker Title="选择账户"
+                <!-- Account picker -->
+                <Picker Title="选择账户"
                     ItemsSource="{Binding Accounts}"
                     ItemDisplayBinding="{Binding Name}"
                     SelectedItem="{Binding SelectedAccount, Mode=TwoWay}" />
 
-            <!-- Choose Date -->
-            <DatePicker Date="{Binding SelectedDate}" />
+                <!-- Choose Date -->
+                <DatePicker Date="{Binding SelectedDate}" />
 
-            <!-- Save Button -->
-            <Button Text="完成"
+
+                <!-- extra bottom space -->
+
+            </VerticalStackLayout>
+        </ScrollView>
+        <Border 
+            Grid.Row="1"
+            Style="{StaticResource BottomBarContainerStyle}">
+            <FlexLayout>
+                <!-- Save Button -->
+                <Button Text="完成"
                     Command="{Binding SaveCommand}"
-                    BackgroundColor="HotPink"
-                    TextColor="White"
-                    Margin="0,10,0,24" />
-            <!-- extra bottom space -->
-
-        </VerticalStackLayout>
-    </ScrollView>
+                    Style="{StaticResource BottomBarButtonStyle}"
+                    FlexLayout.Grow="1"/>
+            </FlexLayout>
+        </Border>
+    </Grid>
 </ContentPage>

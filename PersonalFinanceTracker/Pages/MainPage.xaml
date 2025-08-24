@@ -93,22 +93,15 @@
         </ScrollView>
 
         <Border Grid.Row="1"
-                    BackgroundColor="White"
-                    Stroke="LightGray"
-                    StrokeThickness="2"
-                    Padding="20">
+                    Style="{StaticResource BottomBarContainerStyle}">
             <FlexLayout 
-                Direction="Row"
-                JustifyContent="SpaceBetween"
-                AlignItems="Center"
-                Wrap="NoWrap"
-                >
+                Style="{StaticResource BottomBarFlexStyle}"                >
 
-                <Button Text="账本" FlexLayout.Grow="1" Margin="3,0"  Command ="{Binding GoToBookCommand}" />
-                <Button Text="账单" FlexLayout.Grow="1" Margin="3,0" Command ="{Binding ViewRecordCommand}" />
-                <Button Text="+"    FlexLayout.Grow="1" Margin="3,0" Command ="{Binding AddRecordCommand}" />
-                <Button Text="账户" FlexLayout.Grow="1" Margin="3,0" Command="{Binding ViewAccountCommand}"/>
-                <Button Text="个人" FlexLayout.Grow="1" Margin="3,0" Command ="{Binding ViewPersonalCommand}"/>
+                <Button Text="账本"  FlexLayout.Grow="1" Command ="{Binding GoToBookCommand}" Style="{StaticResource BottomBarButtonStyle}" />
+                <Button Text="账单" FlexLayout.Grow="1" Command ="{Binding ViewRecordCommand}" Style="{StaticResource BottomBarButtonStyle}" />
+                <Button Text="+"    FlexLayout.Grow="1" Command ="{Binding AddRecordCommand}" Style="{StaticResource BottomBarButtonStyle}" />
+                <Button Text="账户" FlexLayout.Grow="1" Command="{Binding ViewAccountCommand}" Style="{StaticResource BottomBarButtonStyle}"/>
+                <Button Text="个人" FlexLayout.Grow="1" Command ="{Binding ViewPersonalCommand}" Style="{StaticResource BottomBarButtonStyle}"/>
                 
             </FlexLayout>
 

@@ -5,52 +5,65 @@
     xmlns:sfavatar="clr-namespace:Syncfusion.Maui.Core;assembly=Syncfusion.Maui.Core"
     x:Class="PersonalFinanceTracker.Pages.PersonalInfoPage">
 
+    <Grid RowDefinitions="*,Auto">
+        
 
-    <VerticalStackLayout Padding="20" Spacing="20">
+        <VerticalStackLayout Padding="20" Spacing="20"
+                             Grid.Row="0">
 
-        <!-- Avatar with edit button -->
-        <Grid>
-            <sfavatar:SfAvatarView
-                WidthRequest="100"
-                HeightRequest="100"
-                CornerRadius="50"
-                AvatarShape="Circle"
-                ImageSource="{Binding AvatarPath}"/>
+            <!-- Avatar with edit button -->
+            <Grid>
+                <sfavatar:SfAvatarView
+                    WidthRequest="100"
+                    HeightRequest="100"
+                    CornerRadius="50"
+                    AvatarShape="Circle"
+                    ImageSource="{Binding AvatarPath}"/>
 
-            <Button
-                Text="✏️"
-                BackgroundColor="Transparent"
-                WidthRequest="30"
-                HeightRequest="30"
-                HorizontalOptions="End"
-                VerticalOptions="End"
-                Clicked="OnEditAvatarClicked"
-                Margin="0,0,5,5" />
-        </Grid>
+                <Button
+                    Text="✏️"
+                    BackgroundColor="Transparent"
+                    WidthRequest="30"
+                    HeightRequest="30"
+                    HorizontalOptions="End"
+                    VerticalOptions="End"
+                    Clicked="OnEditAvatarClicked"
+                    Margin="0,0,5,5" />
+            </Grid>
 
-        <!-- Username with edit button -->
-        <Grid>
-            <Label
-                Text="{Binding Name}"
-                FontSize="20"
-                HorizontalOptions="Center" />
+            <!-- Username with edit button -->
+            <Grid>
+                <Label
+                    Text="{Binding Name}"
+                    FontSize="20"
+                    HorizontalOptions="Center" />
 
-            <Button
-                Text="✏️"
-                BackgroundColor="Transparent"
-                WidthRequest="30"
-                HeightRequest="30"
-                HorizontalOptions="End"
-                VerticalOptions="Center"
-                Clicked="OnEditNameClicked"
-                Margin="0,0,5,0" />
-        </Grid>
+                <Button
+                    Text="✏️"
+                    BackgroundColor="Transparent"
+                    WidthRequest="30"
+                    HeightRequest="30"
+                    HorizontalOptions="End"
+                    VerticalOptions="Center"
+                    Clicked="OnEditNameClicked"
+                    Margin="0,0,5,0" />
+            </Grid>
 
-        <!-- Currency picker -->
-        <Picker Title="选择货币"
-                ItemsSource="{Binding CurrencyOptions}"
-                SelectedItem="{Binding CurrencyCode, Mode=TwoWay}" />
+            <!-- Currency picker -->
+            <Picker Title="选择货币"
+                    ItemsSource="{Binding CurrencyOptions}"
+                    SelectedItem="{Binding CurrencyCode, Mode=TwoWay}" />
 
-        <Button Text="保存信息" Clicked="OnSaveClicked" />
-    </VerticalStackLayout>
+            
+        </VerticalStackLayout>
+            
+        <Border Grid.Row="1" Style="{StaticResource BottomBarContainerStyle}">
+            <FlexLayout Style="{StaticResource BottomBarFlexStyle}">
+                <Button Text="保存信息" Clicked="OnSaveClicked" 
+                    Style="{StaticResource BottomBarButtonStyle}"
+                    FlexLayout.Grow="1" />
+            </FlexLayout>
+        </Border>
+
+    </Grid> 
 </ContentPage>

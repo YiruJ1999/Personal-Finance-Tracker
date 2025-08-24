@@ -105,8 +105,8 @@ namespace PersonalFinanceTracker.PageModels
                 var agg = rows.Count > 0 ? rows[0] : new _AggRow();
 
                 DateTime? last = null;
-                if (!string.IsNullOrWhiteSpace(agg.LastModified) && DateTime.TryParse(agg.LastModified, out var parsed))
-                    last = parsed;
+                if (!string.IsNullOrWhiteSpace(agg.LastModified) && long.TryParse(agg.LastModified, out var parsed))
+                    last = new DateTime(parsed);
 
                 // Budget: prefer id-based key, fallback once to legacy name-based key if needed
                 var budget = (decimal)Preferences.Default.Get(BudgetKeyById(b.Id),
