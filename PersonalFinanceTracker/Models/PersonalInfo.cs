@@ -17,6 +17,8 @@ namespace PersonalFinanceTracker.Models
 
         public string CurrencyCode { get; set; } = "EUR";  // default to EUR
 
+        public string LanguageCode { get; set; } = Services.LanguageManager.ZhHans;
+
     }
 
 }

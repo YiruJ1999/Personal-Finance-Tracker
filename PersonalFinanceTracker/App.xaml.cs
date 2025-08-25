@@ -11,6 +11,14 @@
             InitializeComponent();
             _personalInfoRepository = personalInfoRepository;
             _databaseService = databaseService;
+            _ = InitializeLanguageAsync(personalInfoRepository);
+        }
+
+        private async Task InitializeLanguageAsync(PersonalInfoRepository repo)
+        {
+            // Load personal info and set language
+            var info = await repo.GetPersonalInfoAsync();
+            LanguageManager.SetLanguage(info.LanguageCode);
         }
 
         protected override Window CreateWindow(IActivationState? activationState)
