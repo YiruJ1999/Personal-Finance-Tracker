@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Threading;
+using PersonalFinanceTracker.Resources.Strings;
 
 namespace PersonalFinanceTracker.Services
 {

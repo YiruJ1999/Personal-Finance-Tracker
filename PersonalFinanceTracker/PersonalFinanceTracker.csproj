@@ -99,13 +99,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <EmbeddedResource Update="Resources\Strings\AppResources.resx">
-	    <Generator>PublicResXFileCodeGenerator</Generator>
-	    <LastGenOutput>AppResources.Designer.cs</LastGenOutput>
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </EmbeddedResource>
+		<EmbeddedResource Update="Resources\Strings\AppResources.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>AppResources.Designer.cs</LastGenOutput>
+			<CustomToolNamespace>PersonalFinanceTracker.Resources.Strings</CustomToolNamespace>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\Strings\AppResources.en.resx" />
+		<EmbeddedResource Update="Resources\Strings\AppResources.de.resx" />
 	</ItemGroup>
-
+	
 	<ItemGroup>
 	  <MauiXaml Update="Pages\AccountDetailPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Maui.Controls;
 using System;
 using System.ComponentModel;
+using PersonalFinanceTracker.Resources.Strings;
 
 namespace PersonalFinanceTracker.Localization
 {

@@ -1,12 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+	<resheader name="resmimetype">
+		<value>text/microsoft-resx</value>
+	</resheader>
+	<resheader name="version">
+		<value>2.0</value>
+	</resheader>
+	<resheader name="reader">
+		<value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+	<resheader name="writer">
+		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
 
-namespace PersonalFinanceTracker.Resources.Strings
-{
-    class AppResources
-    {
-    }
-}
+	<data name="Settings_Language" xml:space="preserve"><value>Language</value></data>
+	<data name="Hello_User" xml:space="preserve"><value>Hello, {0}!</value></data>
+	<data name="Account" xml:space="preserve"><value>Account</value></data>
+	<data name="Book" xml:space="preserve"><value>Book</value></data>
+	<data name="Record" xml:space="preserve"><value>Record</value></data>
+	<data name="Personal" xml:space="preserve"><value>Profile</value></data>
+</root>
