@@ -12,12 +12,6 @@
     x:DataType="pm:AccountPageModel"
     Title="{loc:Translate Label_Account}">
 
-    <!-- Toolbar: refresh & add -->
-    <ContentPage.ToolbarItems>
-        <ToolbarItem Text="{loc:Translate Toolbar_Refresh}" Priority="0" Order="Primary" Command="{Binding LoadCommand}" />
-        <ToolbarItem Text="{loc:Translate Toolbar_Add}" Priority="1" Order="Primary" Command="{Binding ShowAddAccountPopupCommand}" />
-    </ContentPage.ToolbarItems>
-
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="16">
 
