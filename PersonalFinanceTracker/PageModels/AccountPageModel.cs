@@ -9,6 +9,7 @@ using PersonalFinanceTracker.Data;
 using PersonalFinanceTracker.Models;
 using PersonalFinanceTracker.Popups;
 using PersonalFinanceTracker.Services;
+using PersonalFinanceTracker.Resources.Strings;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

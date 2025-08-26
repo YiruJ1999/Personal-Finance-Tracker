@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui.Views;
 using PersonalFinanceTracker.Models;
 using PersonalFinanceTracker.PageModels;
+using PersonalFinanceTracker.Resources.Strings;
 
 namespace PersonalFinanceTracker.Pages
 {

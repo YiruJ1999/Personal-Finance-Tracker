@@ -5,6 +5,7 @@ using Microsoft.Maui.Storage;                 // Preferences
 using PersonalFinanceTracker.Models;
 using PersonalFinanceTracker.Services;
 using PersonalFinanceTracker.Data;
+using PersonalFinanceTracker.Resources.Strings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +28,10 @@ namespace PersonalFinanceTracker.PageModels
         private const string PrefKeyCurrentBookId = "current_book_id";
         private const string DefaultBookDisplayName = "默认";
 
+        private decimal _lastIncome;
+        private decimal _lastExpense;
+        private decimal _lastBudget;
+
         public MainPageModel(
             RecordRepository recordRepository,
             DatabaseService databaseService,
@@ -40,12 +45,23 @@ namespace PersonalFinanceTracker.PageModels
             _bookRepository = bookRepository;
             _sp = sp;
             CurrencyManager.CurrencyChanged += OnCurrencyChanged;
+            LanguageManager.LanguageChanged += (_, __) =>
+            {
+                OnPropertyChanged(nameof(CurrentBookText));
+                RebuildMonthlySummaryItems();              
+                OnPropertyChanged(nameof(MonthlySummaryData));
+            };
         }
 
         // -------- Observable properties --------
 
         [ObservableProperty]
         private string currentBook;  // display name of current book
+        public string CurrentBookText =>
+        string.IsNullOrWhiteSpace(CurrentBook)
+            ? string.Empty
+            : $"{AppResources.Label_CurrentBook}{CurrentBook}";
+
 
         [ObservableProperty]
         private int currentBookId;   // id of current book (source of truth)
@@ -213,7 +229,6 @@ namespace PersonalFinanceTracker.PageModels
                 .OrderByDescending(r => r.Timestamp)
                 .ToList();
 
-            // Use [month start, tomorrow) so "today"整天都包含
             var monthStart = new DateTime(today.Year, today.Month, 1);
             var monthEndExclusive = today.AddDays(1);
 
@@ -224,13 +239,11 @@ namespace PersonalFinanceTracker.PageModels
             var income = monthly.Where(r => r.Type == "收入").Sum(r => r.Amount);
             var expense = monthly.Where(r => r.Type == "支出").Sum(r => r.Amount);
 
-            MonthlySummaryData = new List<MonthlySummaryItem>
-                {
-                    new("本月收入", income),
-                    new("本月支出", expense),
-                    new("收支差额", income - expense),
-                    new("本月预算", (decimal) MonthlyBugget)
-                };
+            _lastIncome = income;
+            _lastExpense = expense;
+            _lastBudget = (decimal)MonthlyBugget;
+
+            RebuildMonthlySummaryItems();
 
             MonthlyCategoryChartData = monthly
                 .GroupBy(r => r.Category)
@@ -239,10 +252,10 @@ namespace PersonalFinanceTracker.PageModels
                     Category = g.Key,
                     Amount = (double)g.Sum(r => r.Type == "支出" ? -r.Amount : r.Amount)
                 })
-
                 .OrderByDescending(x => Math.Abs(x.Amount))
                 .ToList();
         }
+
 
         // Persist MonthlyBugget whenever changed (store by bookId; also update legacy once for backward-compat)
         partial void OnMonthlyBuggetChanged(double value)
@@ -255,6 +268,7 @@ namespace PersonalFinanceTracker.PageModels
             Preferences.Default.Set(BudgetKeyByLegacyName(legacyName), value);
 
             // Refresh summary to reflect new budget
+            _lastBudget = (decimal)value;
             _ = Refresh();
         }
 
@@ -299,6 +313,23 @@ namespace PersonalFinanceTracker.PageModels
         public void UnsubscribeCurrency() // ADD (optional)
         {
             CurrencyManager.CurrencyChanged -= OnCurrencyChanged;
+        }
+
+        partial void OnCurrentBookChanged(string value)
+        {
+            OnPropertyChanged(nameof(CurrentBookText));
+        }
+
+        // Rebuild monthly summary with localized labels
+        private void RebuildMonthlySummaryItems()
+        {
+            MonthlySummaryData = new List<MonthlySummaryItem>
+            {
+        new(AppResources.Label_MonthIncome,  _lastIncome),
+        new(AppResources.Label_MonthExpense, _lastExpense),
+        new(AppResources.Label_BalanceDiff,  _lastIncome - _lastExpense),
+        new(AppResources.Label_MonthBudget,  (decimal) _lastBudget),
+            };
         }
 
     }

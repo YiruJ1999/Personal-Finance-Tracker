@@ -61,20 +61,119 @@ namespace PersonalFinanceTracker.Resources.Strings {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 账户.
+        ///   Looks up a localized string similar to 新建账本.
         /// </summary>
-        public static string Account {
+        public static string Btn_AddBook {
             get {
-                return ResourceManager.GetString("Account", resourceCulture);
+                return ResourceManager.GetString("Btn_AddBook", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 账本.
+        ///   Looks up a localized string similar to 取消.
         /// </summary>
-        public static string Book {
+        public static string Btn_Cancel {
             get {
-                return ResourceManager.GetString("Book", resourceCulture);
+                return ResourceManager.GetString("Btn_Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 确认.
+        /// </summary>
+        public static string Btn_Confirm {
+            get {
+                return ResourceManager.GetString("Btn_Confirm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 删除.
+        /// </summary>
+        public static string Btn_Delete {
+            get {
+                return ResourceManager.GetString("Btn_Delete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 编辑此账户.
+        /// </summary>
+        public static string Btn_EditAccount {
+            get {
+                return ResourceManager.GetString("Btn_EditAccount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 支出.
+        /// </summary>
+        public static string Btn_Expense {
+            get {
+                return ResourceManager.GetString("Btn_Expense", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 收入.
+        /// </summary>
+        public static string Btn_Income {
+            get {
+                return ResourceManager.GetString("Btn_Income", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 保存.
+        /// </summary>
+        public static string Btn_Save {
+            get {
+                return ResourceManager.GetString("Btn_Save", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 账户名称.
+        /// </summary>
+        public static string Entry_AccountName {
+            get {
+                return ResourceManager.GetString("Entry_AccountName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 请输入新账本名字....
+        /// </summary>
+        public static string Entry_Book {
+            get {
+                return ResourceManager.GetString("Entry_Book", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 请输入预算....
+        /// </summary>
+        public static string Entry_Budget {
+            get {
+                return ResourceManager.GetString("Entry_Budget", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 点击写备注....
+        /// </summary>
+        public static string Entry_Note {
+            get {
+                return ResourceManager.GetString("Entry_Note", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 期初余额（可选）.
+        /// </summary>
+        public static string Entry_OpeningEntry {
+            get {
+                return ResourceManager.GetString("Entry_OpeningEntry", resourceCulture);
             }
         }
         
@@ -88,20 +187,308 @@ namespace PersonalFinanceTracker.Resources.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 账户.
+        /// </summary>
+        public static string Label_Account {
+            get {
+                return ResourceManager.GetString("Label_Account", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 添加账户.
+        /// </summary>
+        public static string Label_AddAccount {
+            get {
+                return ResourceManager.GetString("Label_AddAccount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 所有账户.
+        /// </summary>
+        public static string Label_AllAccounts {
+            get {
+                return ResourceManager.GetString("Label_AllAccounts", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 金额.
+        /// </summary>
+        public static string Label_Amount {
+            get {
+                return ResourceManager.GetString("Label_Amount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 结余.
+        /// </summary>
+        public static string Label_Balance {
+            get {
+                return ResourceManager.GetString("Label_Balance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 收支差额.
+        /// </summary>
+        public static string Label_BalanceDiff {
+            get {
+                return ResourceManager.GetString("Label_BalanceDiff", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 账本.
+        /// </summary>
+        public static string Label_Book {
+            get {
+                return ResourceManager.GetString("Label_Book", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 预算.
+        /// </summary>
+        public static string Label_Budget {
+            get {
+                return ResourceManager.GetString("Label_Budget", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 用途.
+        /// </summary>
+        public static string Label_Category {
+            get {
+                return ResourceManager.GetString("Label_Category", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 当前账本：.
+        /// </summary>
+        public static string Label_CurrentBook {
+            get {
+                return ResourceManager.GetString("Label_CurrentBook", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 删除账户.
+        /// </summary>
+        public static string Label_DeleteAccount {
+            get {
+                return ResourceManager.GetString("Label_DeleteAccount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 确定要删除此账户？.
+        /// </summary>
+        public static string Label_DeleteAccountAlert {
+            get {
+                return ResourceManager.GetString("Label_DeleteAccountAlert", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 同时删除该账户所有明细记录.
+        /// </summary>
+        public static string Label_DeleteAccountAllDetail {
+            get {
+                return ResourceManager.GetString("Label_DeleteAccountAllDetail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 暂无记录.
+        /// </summary>
+        public static string Label_EmptyList {
+            get {
+                return ResourceManager.GetString("Label_EmptyList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 支出.
+        /// </summary>
+        public static string Label_Expense {
+            get {
+                return ResourceManager.GetString("Label_Expense", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 收入.
+        /// </summary>
+        public static string Label_Income {
+            get {
+                return ResourceManager.GetString("Label_Income", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 过去4个月的总资产趋势.
+        /// </summary>
+        public static string Label_Last4MonthsTrend {
+            get {
+                return ResourceManager.GetString("Label_Last4MonthsTrend", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 最近修改时间.
+        /// </summary>
+        public static string Label_LastModified {
+            get {
+                return ResourceManager.GetString("Label_LastModified", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 本月预算.
+        /// </summary>
+        public static string Label_MonthBudget {
+            get {
+                return ResourceManager.GetString("Label_MonthBudget", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 明细（按月份）.
+        /// </summary>
+        public static string Label_MonthDetail {
+            get {
+                return ResourceManager.GetString("Label_MonthDetail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 本月支出.
+        /// </summary>
+        public static string Label_MonthExpense {
+            get {
+                return ResourceManager.GetString("Label_MonthExpense", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 本月收入.
+        /// </summary>
+        public static string Label_MonthIncome {
+            get {
+                return ResourceManager.GetString("Label_MonthIncome", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 本月收支平衡情况.
+        /// </summary>
+        public static string Label_MonthlySummary {
+            get {
+                return ResourceManager.GetString("Label_MonthlySummary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 备注.
+        /// </summary>
+        public static string Label_Note {
+            get {
+                return ResourceManager.GetString("Label_Note", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 个人.
         /// </summary>
-        public static string Personal {
+        public static string Label_Personal {
             get {
-                return ResourceManager.GetString("Personal", resourceCulture);
+                return ResourceManager.GetString("Label_Personal", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to 账单.
         /// </summary>
-        public static string Record {
+        public static string Label_Record {
             get {
-                return ResourceManager.GetString("Record", resourceCulture);
+                return ResourceManager.GetString("Label_Record", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 今日收支.
+        /// </summary>
+        public static string Label_TodayList {
+            get {
+                return ResourceManager.GetString("Label_TodayList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 总金额.
+        /// </summary>
+        public static string Label_TotalAmount {
+            get {
+                return ResourceManager.GetString("Label_TotalAmount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 总资产.
+        /// </summary>
+        public static string Label_TotalAssets {
+            get {
+                return ResourceManager.GetString("Label_TotalAssets", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 账单总览.
+        /// </summary>
+        public static string Label_ViewRecord {
+            get {
+                return ResourceManager.GetString("Label_ViewRecord", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 选择账户.
+        /// </summary>
+        public static string Picker_ChooseAccount {
+            get {
+                return ResourceManager.GetString("Picker_ChooseAccount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 选择月份.
+        /// </summary>
+        public static string Picker_ChooseMonth {
+            get {
+                return ResourceManager.GetString("Picker_ChooseMonth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 选择货币.
+        /// </summary>
+        public static string Picker_Currency {
+            get {
+                return ResourceManager.GetString("Picker_Currency", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 选择语言.
+        /// </summary>
+        public static string Picker_Language {
+            get {
+                return ResourceManager.GetString("Picker_Language", resourceCulture);
             }
         }
         
@@ -111,6 +498,24 @@ namespace PersonalFinanceTracker.Resources.Strings {
         public static string Settings_Language {
             get {
                 return ResourceManager.GetString("Settings_Language", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 添加.
+        /// </summary>
+        public static string Toolbar_Add {
+            get {
+                return ResourceManager.GetString("Toolbar_Add", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 刷新.
+        /// </summary>
+        public static string Toolbar_Refresh {
+            get {
+                return ResourceManager.GetString("Toolbar_Refresh", resourceCulture);
             }
         }
     }

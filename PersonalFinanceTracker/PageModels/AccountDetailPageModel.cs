@@ -5,6 +5,7 @@ using Microsoft.Maui.Storage;
 using PersonalFinanceTracker.Models;
 using PersonalFinanceTracker.Services;
 using PersonalFinanceTracker.Data;
+using PersonalFinanceTracker.Resources.Strings;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System;
@@ -45,7 +46,8 @@ namespace PersonalFinanceTracker.PageModels
         }
 
         [ObservableProperty] private decimal totalAmount;
-
+        public string TotalAmountText =>
+        string.Format("{0}{1:C}", AppResources.Label_TotalAmount, TotalAmount);
         public IAsyncRelayCommand EditAccountCommand { get; }
 
         // DI-friendly ctor: ONLY services/ repositories, no primitive runtime values
@@ -59,7 +61,11 @@ namespace PersonalFinanceTracker.PageModels
             _bookRepo = bookRepo ?? throw new ArgumentNullException(nameof(bookRepo));
 
             EditAccountCommand = new AsyncRelayCommand(EditAccountAsync);
-            CurrencyManager.CurrencyChanged += OnCurrencyChanged; 
+            CurrencyManager.CurrencyChanged += OnCurrencyChanged;
+            LanguageManager.LanguageChanged += (_, __) =>
+            {
+                OnPropertyChanged(nameof(TotalAmountText));
+            };
         }
 
         // When AccountId changes (set by the page), load everything
@@ -204,6 +210,12 @@ namespace PersonalFinanceTracker.PageModels
         public void UnsubscribeCurrency() // ADD (optional)
         {
             CurrencyManager.CurrencyChanged -= OnCurrencyChanged;
+        }
+
+        // When TotalAmount changes, notify TotalAmountText to refresh
+        partial void OnTotalAmountChanged(decimal value)
+        {
+            OnPropertyChanged(nameof(TotalAmountText));
         }
 
     }

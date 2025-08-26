@@ -3,15 +3,16 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:loc="clr-namespace:PersonalFinanceTracker.Localization"
     x:Class="PersonalFinanceTracker.Popups.AddAccountPopup">
     <VerticalStackLayout Padding="16" Spacing="12" WidthRequest="320">
-        <Label Text="添加账户" FontAttributes="Bold" FontSize="18" />
-        <Entry x:Name="NameEntry" Placeholder="账户名称" />
-        <Entry x:Name="OpeningEntry" Placeholder="期初余额（可选）" Keyboard="Numeric" />
+        <Label Text="{loc:Translate Label_AddAccount}" FontAttributes="Bold" FontSize="18" />
+        <Entry x:Name="NameEntry" Placeholder="{loc:Translate Entry_AccountName}" />
+        <Entry x:Name="OpeningEntry" Placeholder="{loc:Translate Entry_OpeningEntry}" Keyboard="Numeric" />
         <Grid ColumnDefinitions="*,Auto,Auto">
             <Label />
-            <Button Grid.Column="1" Text="取消" Clicked="OnCancelClicked" />
-            <Button Grid.Column="2" Text="保存" Clicked="OnSaveClicked" />
+            <Button Grid.Column="1" Text="{loc:Translate Btn_Cancel}" Clicked="OnCancelClicked" />
+            <Button Grid.Column="2" Text="{loc:Translate Btn_Save}" Clicked="OnSaveClicked" />
         </Grid>
     </VerticalStackLayout>
 </toolkit:Popup>

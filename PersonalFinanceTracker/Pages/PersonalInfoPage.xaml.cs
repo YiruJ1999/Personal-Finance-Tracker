@@ -1,4 +1,5 @@
 using PersonalFinanceTracker.PageModels;
+using PersonalFinanceTracker.Resources.Strings;
 
 namespace PersonalFinanceTracker.Pages;
 

@@ -1,4 +1,5 @@
 using CommunityToolkit.Maui.Views;
+using PersonalFinanceTracker.Resources.Strings;
 
 namespace PersonalFinanceTracker.Pages;
 

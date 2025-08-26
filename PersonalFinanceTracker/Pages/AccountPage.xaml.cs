@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Maui.Controls;
 using PersonalFinanceTracker.PageModels;
+using PersonalFinanceTracker.Resources.Strings;
 
 namespace PersonalFinanceTracker.Pages
 {

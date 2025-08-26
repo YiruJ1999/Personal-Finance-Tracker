@@ -1,5 +1,6 @@
 using CommunityToolkit.Maui.Views;
 using System.Text.RegularExpressions;
+using PersonalFinanceTracker.Resources.Strings;
 
 namespace PersonalFinanceTracker.Pages;
 

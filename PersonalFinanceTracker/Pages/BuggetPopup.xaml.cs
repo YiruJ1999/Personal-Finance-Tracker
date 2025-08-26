@@ -1,4 +1,4 @@
-
+using PersonalFinanceTracker.Resources.Strings;
 using CommunityToolkit.Maui.Views;
 using System.Text.RegularExpressions;
 

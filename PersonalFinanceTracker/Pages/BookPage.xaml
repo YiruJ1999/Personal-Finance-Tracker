@@ -3,6 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:pages="clr-namespace:PersonalFinanceTracker.Pages"
              xmlns:local="clr-namespace:PersonalFinanceTracker.PageModels"
+             xmlns:loc="clr-namespace:PersonalFinanceTracker.Localization"
+             xmlns:resx="clr-namespace:PersonalFinanceTracker.Resources.Strings"
              x:Class="PersonalFinanceTracker.Pages.BookPage"
              x:Name="BookPageRoot"                 
              x:DataType="local:BookPageModel"
@@ -70,10 +72,17 @@
 
                                 <!-- Last modified (DateTime? is OK; null shows empty) -->
                                 <Label Grid.Column="1"
-                                       Text="{Binding LastModified, StringFormat='最近修改时间: {0:yyyy-MM-dd HH:mm}'}"
                                        FontSize="14"
                                        HorizontalOptions="End"
-                                       VerticalOptions="Center" />
+                                       VerticalOptions="Center">
+                                    <Label.Text>
+                                        <MultiBinding StringFormat="{}{0}{1:yyyy-MM-dd HH:mm}">
+                                            <Binding Source="{x:Static resx:AppResources.Label_LastModified}" />
+                                            <Binding Path="LastModified" />
+                                        </MultiBinding>
+                                    </Label.Text>
+                                </Label>
+
 
                                 <!-- Header row -->
                                 <Grid Grid.Row="1" Grid.ColumnSpan="2"
@@ -85,10 +94,10 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
-                                    <Label Grid.Column="0" Text="收入" HorizontalOptions="Center" />
-                                    <Label Grid.Column="1" Text="支出" HorizontalOptions="Center" />
-                                    <Label Grid.Column="2" Text="结余" HorizontalOptions="Center" />
-                                    <Label Grid.Column="3" Text="预算" HorizontalOptions="Center" />
+                                    <Label Grid.Column="0" Text="{loc:Translate Label_Income}" HorizontalOptions="Center" />
+                                    <Label Grid.Column="1" Text="{loc:Translate Label_Expense}" HorizontalOptions="Center" />
+                                    <Label Grid.Column="2" Text="{loc:Translate Label_Balance}" HorizontalOptions="Center" />
+                                    <Label Grid.Column="3" Text="{loc:Translate Label_Budget}" HorizontalOptions="Center" />
                                 </Grid>
 
                                 <!-- Data row -->
@@ -145,7 +154,7 @@
         <Border Grid.Row="1"
                 Style="{StaticResource BottomBarContainerStyle}">
             <FlexLayout Style="{StaticResource BottomBarFlexStyle}">
-                <Button Text="新建账本"
+                <Button Text="{loc:Translate Btn_AddBook}"
                     Command="{Binding AddBookClickedCommand}"
                     Style="{StaticResource BottomBarButtonStyle}"
                     FlexLayout.Grow="1"

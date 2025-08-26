@@ -7,14 +7,15 @@
     xmlns:pm="clr-namespace:PersonalFinanceTracker.PageModels"
     xmlns:m="clr-namespace:PersonalFinanceTracker.Models"
     xmlns:chart="clr-namespace:Syncfusion.Maui.Charts;assembly=Syncfusion.Maui.Charts"
+    xmlns:loc="clr-namespace:PersonalFinanceTracker.Localization"
     x:Name="AccountPageRoot"
     x:DataType="pm:AccountPageModel"
-    Title="资产账户">
+    Title="{loc:Translate Label_Account}">
 
     <!-- Toolbar: refresh & add -->
     <ContentPage.ToolbarItems>
-        <ToolbarItem Text="刷新" Priority="0" Order="Primary" Command="{Binding LoadCommand}" />
-        <ToolbarItem Text="新增" Priority="1" Order="Primary" Command="{Binding ShowAddAccountPopupCommand}" />
+        <ToolbarItem Text="{loc:Translate Toolbar_Refresh}" Priority="0" Order="Primary" Command="{Binding LoadCommand}" />
+        <ToolbarItem Text="{loc:Translate Toolbar_Add}" Priority="1" Order="Primary" Command="{Binding ShowAddAccountPopupCommand}" />
     </ContentPage.ToolbarItems>
 
     <ScrollView>
@@ -23,7 +24,7 @@
             <!-- Summary: Total assets -->
             <Frame Padding="16" HasShadow="True" CornerRadius="12">
                 <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
-                    <Label Text="总资产" FontAttributes="Bold" FontSize="16" />
+                    <Label Text="{loc:Translate Label_TotalAssets}" FontAttributes="Bold" FontSize="16" />
                     <Label Text="{Binding TotalAssets, StringFormat='{}{0:C}'}"
                            FontSize="16" FontAttributes="Bold" />
                 </HorizontalStackLayout>
@@ -32,7 +33,7 @@
             <!-- Last 4 months trend line chart -->
             <Frame Padding="16" HasShadow="True" CornerRadius="12">
                 <VerticalStackLayout Spacing="12">
-                    <Label Text="过去4个月的总资产趋势" FontAttributes="Bold" FontSize="16"/>
+                    <Label Text="{loc:Translate Label_Last4MonthsTrend}" FontAttributes="Bold" FontSize="16"/>
                     <chart:SfCartesianChart>
                         <chart:SfCartesianChart.XAxes>
                             <chart:CategoryAxis ShowMajorGridLines="False" />
@@ -58,7 +59,7 @@
             <Frame Padding="0" HasShadow="True" CornerRadius="12">
                 <VerticalStackLayout>
                     <Grid Padding="16" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12" VerticalOptions="Center">
-                        <Label Text="所有账户" FontAttributes="Bold" FontSize="16" />
+                        <Label Text="{loc:Translate Label_AllAccounts}" FontAttributes="Bold" FontSize="16" />
                         <ImageButton Grid.Column="1" Source="refresh.png" WidthRequest="28" HeightRequest="28"
                                      BackgroundColor="Transparent" Padding="0" Command="{Binding LoadCommand}" />
                         <ImageButton Grid.Column="2" Source="add.png" WidthRequest="28" HeightRequest="28"
@@ -80,7 +81,7 @@
                                             <SwipeItem
                                                 x:DataType="{x:Null}"
                                                 BindingContext="{Binding .}"
-                                                Text="删除"
+                                                Text="{loc:Translate Btn_Delete}"
                                                 BackgroundColor="IndianRed"
                                                 Command="{Binding BindingContext.ShowDeleteAccountPopupCommand, Source={x:Reference AccountPageRoot}}"
                                                 CommandParameter="{Binding Id}" />

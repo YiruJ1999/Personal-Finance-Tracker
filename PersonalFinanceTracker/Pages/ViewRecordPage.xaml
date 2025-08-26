@@ -3,9 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:PersonalFinanceTracker.PageModels"
              xmlns:models="clr-namespace:PersonalFinanceTracker.Models"
+             xmlns:loc="clr-namespace:PersonalFinanceTracker.Localization"
              x:Class="PersonalFinanceTracker.Pages.ViewRecordPage"
              x:DataType="local:ViewRecordPageModel"
-             Title="账单总览">
+             Title="{loc:Translate Label_ViewRecord}">
 
     <!-- 使用 Grid 实现：上表头固定 + 下区域填充滚动 -->
     <Grid RowDefinitions="Auto,10,*" Padding="10">
@@ -17,9 +18,9 @@
             AlignItems="Center"
             Grid.Row="0"
             >
-            <Label Text="用途" FontSize="16" FlexLayout.Grow="1"/>
-            <Label Text="数额" FontSize="16" FlexLayout.Grow="1"/>
-            <Label Text="备注" FontSize="16" FlexLayout.Grow="2"/>
+            <Label Text="{loc:Translate Label_Category}" FontSize="16" FlexLayout.Grow="1"/>
+            <Label Text="{loc:Translate Label_Amount}" FontSize="16" FlexLayout.Grow="1"/>
+            <Label Text="{loc:Translate Label_Note}" FontSize="16" FlexLayout.Grow="2"/>
         </FlexLayout>
 
         <!-- 数据列表：自动填满剩余空间 -->
@@ -48,7 +49,7 @@
             </CollectionView.ItemTemplate>
 
             <CollectionView.EmptyView>
-                <Label Text="暂无记录"
+                <Label Text="{loc:Translate Label_EmptyList}"
                        HorizontalOptions="Center"
                        VerticalOptions="Center"
                        TextColor="Gray" />

@@ -4,6 +4,7 @@
              xmlns:local="clr-namespace:PersonalFinanceTracker.PageModels"
              xmlns:models="clr-namespace:PersonalFinanceTracker.Models"
              xmlns:chart="clr-namespace:Syncfusion.Maui.Charts;assembly=Syncfusion.Maui.Charts"
+             xmlns:loc="clr-namespace:PersonalFinanceTracker.Localization"
              x:Class="PersonalFinanceTracker.Pages.MainPage"
              x:DataType="local:MainPageModel"
              BackgroundColor="White">
@@ -14,12 +15,13 @@
             <VerticalStackLayout Spacing="20" Padding="20">
                 
                 <!-- Current Book -->
-                <Label Text="{Binding CurrentBook, StringFormat='当前账本: {0}'}" FontSize="15" FontAttributes="Bold" HorizontalOptions="Start" BackgroundColor="Azure" />
-
-
-
+                <Label Text="{Binding CurrentBookText}"
+                       FontSize="15"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Start"
+                       BackgroundColor="Azure" />
                 <!-- Monthly Summary -->
-                <Label Text="本月收支平衡情况" FontSize="20" FontAttributes="Bold" HorizontalOptions="Center" />
+                <Label Text="{loc:Translate Label_MonthlySummary}" FontSize="20" FontAttributes="Bold" HorizontalOptions="Center" />
 
                 <Grid ColumnDefinitions="*,*,*,*" RowDefinitions="Auto,Auto" RowSpacing="5">
 
@@ -59,7 +61,7 @@
                 </chart:SfCartesianChart>
 
                 <!-- Today's list -->
-                <Label Text="今日收支" FontSize="20" FontAttributes="Bold" HorizontalOptions="Center" />
+                <Label Text="{loc:Translate Label_TodayList}" FontSize="20" FontAttributes="Bold" HorizontalOptions="Center" />
 
                 <CollectionView ItemsSource="{Binding TodayRecords}">
                     <CollectionView.ItemTemplate>
@@ -81,7 +83,7 @@
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                     <CollectionView.EmptyView>
-                        <Label Text="今日暂无记录" HorizontalOptions="Center" VerticalOptions="Center" TextColor="Gray" />
+                        <Label Text="{loc:Translate Label_EmptyList}" HorizontalOptions="Center" VerticalOptions="Center" TextColor="Gray" />
                     </CollectionView.EmptyView>
                 </CollectionView>
 
@@ -97,11 +99,11 @@
             <FlexLayout 
                 Style="{StaticResource BottomBarFlexStyle}"                >
 
-                <Button Text="账本"  FlexLayout.Grow="1" Command ="{Binding GoToBookCommand}" Style="{StaticResource BottomBarButtonStyle}" />
-                <Button Text="账单" FlexLayout.Grow="1" Command ="{Binding ViewRecordCommand}" Style="{StaticResource BottomBarButtonStyle}" />
+                <Button Text="{loc:Translate Label_Book}"  FlexLayout.Grow="1" Command ="{Binding GoToBookCommand}" Style="{StaticResource BottomBarButtonStyle}" />
+                <Button Text="{loc:Translate Label_Record}" FlexLayout.Grow="1" Command ="{Binding ViewRecordCommand}" Style="{StaticResource BottomBarButtonStyle}" />
                 <Button Text="+"    FlexLayout.Grow="1" Command ="{Binding AddRecordCommand}" Style="{StaticResource BottomBarButtonStyle}" />
-                <Button Text="账户" FlexLayout.Grow="1" Command="{Binding ViewAccountCommand}" Style="{StaticResource BottomBarButtonStyle}"/>
-                <Button Text="个人" FlexLayout.Grow="1" Command ="{Binding ViewPersonalCommand}" Style="{StaticResource BottomBarButtonStyle}"/>
+                <Button Text="{loc:Translate Label_Account}" FlexLayout.Grow="1" Command="{Binding ViewAccountCommand}" Style="{StaticResource BottomBarButtonStyle}"/>
+                <Button Text="{loc:Translate Label_Personal}" FlexLayout.Grow="1" Command ="{Binding ViewPersonalCommand}" Style="{StaticResource BottomBarButtonStyle}"/>
                 
             </FlexLayout>
 

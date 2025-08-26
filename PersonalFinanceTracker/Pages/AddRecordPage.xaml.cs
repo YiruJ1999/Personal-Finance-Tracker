@@ -1,4 +1,5 @@
 namespace PersonalFinanceTracker.Pages;
+using PersonalFinanceTracker.Resources.Strings;
 
 public partial class AddRecordPage : ContentPage
 {

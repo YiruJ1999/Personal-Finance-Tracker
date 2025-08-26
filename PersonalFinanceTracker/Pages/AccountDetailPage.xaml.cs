@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using PersonalFinanceTracker.PageModels;
+using PersonalFinanceTracker.Resources.Strings;
 
 namespace PersonalFinanceTracker.Pages
 {

@@ -51,15 +51,13 @@
             </Grid>
 
             <!-- Currency picker -->
-            <Picker Title="选择货币"
+            <Picker Title="{loc:Translate Picker_Currency}"
                     ItemsSource="{Binding CurrencyOptions}"
                     SelectedItem="{Binding CurrencyCode, Mode=TwoWay}" />
 
             <!-- Language picker -->
-            <Label Text="选择语言 / Language / Sprache" FontAttributes="Bold" />
-
             <Picker
-                Title="选择语言"
+                Title="{loc:Translate Picker_Language}"
                 ItemsSource="{Binding LanguageOptions}"
                 ItemDisplayBinding="{Binding DisplayName}"
                 SelectedItem="{Binding SelectedLanguage, Mode=TwoWay}" />
@@ -69,7 +67,7 @@
             
         <Border Grid.Row="1" Style="{StaticResource BottomBarContainerStyle}">
             <FlexLayout Style="{StaticResource BottomBarFlexStyle}">
-                <Button Text="保存信息" Clicked="OnSaveClicked" 
+                <Button Text="{loc:Translate Btn_Save}" Clicked="OnSaveClicked" 
                     Style="{StaticResource BottomBarButtonStyle}"
                     FlexLayout.Grow="1" />
             </FlexLayout>
