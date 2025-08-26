@@ -3,6 +3,7 @@ using PersonalFinanceTracker.Services;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System;
 
 namespace PersonalFinanceTracker.Data
 {
@@ -14,16 +15,15 @@ namespace PersonalFinanceTracker.Data
         {
             _database = database;
         }
-        public async Task EnsureDatabaseInitializedAsync()
-        {
-            await _database.InitAsync();
-        }
 
+        public Task EnsureDatabaseInitializedAsync()
+            => _database.InitAsync(); 
 
         // Get personal information, create default if none exists
         public async Task<PersonalInfo> GetPersonalInfoAsync()
         {
-            var list = await _database.Database.Table<PersonalInfo>().ToListAsync();
+            var db = await _database.GetConnectionAsync(); 
+            var list = await db.Table<PersonalInfo>().ToListAsync();
 
             if (list.Count == 0)
             {
@@ -33,29 +33,32 @@ namespace PersonalFinanceTracker.Data
                     AvatarPath = "default_avatar.png"
                 };
 
-                await _database.Database.InsertAsync(defaultInfo);
+                await db.InsertAsync(defaultInfo);
                 return defaultInfo;
             }
 
             return list.First();
         }
 
-        // update or insert personal information
-        public Task SaveAsync(PersonalInfo personalInfo)
+        // Update or insert personal information
+        public async Task SaveAsync(PersonalInfo personalInfo)
         {
+            var db = await _database.GetConnectionAsync();
+
             if (personalInfo.id == 0)
-                return _database.Database.InsertAsync(personalInfo);
+                await db.InsertAsync(personalInfo);
             else
-                return _database.Database.UpdateAsync(personalInfo);
+                await db.UpdateAsync(personalInfo);
         }
 
-        // get all personal information
-        public Task<List<PersonalInfo>> ListAsync()
+        // Get all personal information
+        public async Task<List<PersonalInfo>> ListAsync()
         {
-            return _database.Database.Table<PersonalInfo>().ToListAsync();
+            var db = await _database.GetConnectionAsync();
+            return await db.Table<PersonalInfo>().ToListAsync();
         }
 
-        // generate a random name for the default user
+        // Generate a random name for the default user
         private static string GenerateRandomName()
         {
             var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";

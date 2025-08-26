@@ -25,6 +25,13 @@ namespace PersonalFinanceTracker.Services
             await Database.CreateTableAsync<Models.Account>();
         }
 
+        public async Task<SQLiteAsyncConnection> GetConnectionAsync()
+        {
+            if (Database == null)
+                await InitAsync();
+            return Database!;
+        }
+
         // Optional convenience wrappers (keep them generic).
         public Task<int> ExecuteAsync(string sql, params object[] args)
             => Database.ExecuteAsync(sql, args);
