@@ -8,7 +8,7 @@
              x:Class="PersonalFinanceTracker.Pages.BookPage"
              x:Name="BookPageRoot"                 
              x:DataType="local:BookPageModel"
-             Title="账本列表">
+             Title="{loc:Translate Label_BookList}">
 
     <Grid RowDefinitions="*,Auto">
 

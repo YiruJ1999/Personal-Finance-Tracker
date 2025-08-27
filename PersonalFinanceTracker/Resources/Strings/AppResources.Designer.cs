@@ -250,6 +250,15 @@ namespace PersonalFinanceTracker.Resources.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 账本列表.
+        /// </summary>
+        public static string Label_BookList {
+            get {
+                return ResourceManager.GetString("Label_BookList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 预算.
         /// </summary>
         public static string Label_Budget {

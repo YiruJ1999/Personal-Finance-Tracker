@@ -270,4 +270,7 @@
   <data name="Label_MonthBudget" xml:space="preserve">
     <value>本月预算</value>
   </data>
+  <data name="Label_BookList" xml:space="preserve">
+    <value>账本列表</value>
+  </data>
 </root>

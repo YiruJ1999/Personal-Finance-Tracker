@@ -294,16 +294,12 @@
 
     <!-- Container: border of the bottom bar -->
     <Style x:Key="BottomBarContainerStyle" TargetType="Border">
-        <!-- Use themed colors instead of hard-coded hex -->
-        <Setter Property="Background"
-          Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray950}}"/>
-        <Setter Property="Stroke"
-          Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"/>
+        <!-- Keep structure, just recolor -->
+        <Setter Property="Background" Value="{StaticResource AccentTealLightBrush}"/>
+        <Setter Property="Stroke" Value="{StaticResource AccentTealBrush}"/>
         <Setter Property="StrokeThickness" Value="1"/>
         <Setter Property="Padding" Value="{StaticResource BottomBarPadding}"/>
-        <!-- Optional: slight top rounding to feel like a sheet -->
         <Setter Property="StrokeShape" Value="Rectangle"/>
-        <!-- Fix height if you want a strict bar height -->
         <Setter Property="HeightRequest" Value="{StaticResource BottomBarHeight}"/>
     </Style>
 
@@ -313,39 +309,43 @@
         <Setter Property="JustifyContent" Value="SpaceBetween"/>
         <Setter Property="AlignItems" Value="Center"/>
         <Setter Property="Wrap" Value="NoWrap"/>
-
     </Style>
 
     <!-- Base button style for items in the bottom bar -->
     <Style x:Key="BottomBarButtonStyle" TargetType="Button">
-        <!-- Keep base button look from your global style, but adapt for the bar -->
-        <!-- flat by default -->
+        <!-- Visual base -->
         <Setter Property="CornerRadius" Value="{StaticResource BottomBarButtonCorner}"/>
         <Setter Property="Padding" Value="0"/>
         <Setter Property="Margin" Value="3"/>
         <Setter Property="FontSize" Value="{OnIdiom 14, Desktop=16}"/>
         <Setter Property="MinimumHeightRequest" Value="44"/>
+
+        <!-- Teal theme -->
+        <Setter Property="BackgroundColor" Value="{StaticResource AccentTeal}"/>
+        <Setter Property="TextColor" Value="{StaticResource White}"/>
+
+        <!-- Hover/pressed states tuned to teal -->
         <Setter Property="VisualStateManager.VisualStateGroups">
             <VisualStateGroupList>
                 <VisualStateGroup x:Name="CommonStates">
                     <VisualState x:Name="Normal"/>
                     <VisualState x:Name="PointerOver">
                         <VisualState.Setters>
-                            <!-- subtle hover on desktop -->
-                            <Setter Property="BackgroundColor"
-                    Value="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}"/>
+                            <!-- Slightly lighter on hover -->
+                            <Setter Property="BackgroundColor" Value="{StaticResource AccentTeal}"/>
+                            <Setter Property="Opacity" Value="0.95"/>
                         </VisualState.Setters>
                     </VisualState>
                     <VisualState x:Name="Pressed">
                         <VisualState.Setters>
-                            <Setter Property="BackgroundColor"
-                    Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray500}}"/>
+                            <!-- Darker when pressed -->
+                            <Setter Property="BackgroundColor" Value="{StaticResource AccentTealDark}"/>
                         </VisualState.Setters>
                     </VisualState>
                     <VisualState x:Name="Disabled">
                         <VisualState.Setters>
-                            <Setter Property="TextColor"
-                    Value="{AppThemeBinding Light={StaticResource Gray300}, Dark={StaticResource Gray600}}"/>
+                            <Setter Property="BackgroundColor" Value="{StaticResource Gray200}"/>
+                            <Setter Property="TextColor" Value="{StaticResource Gray500}"/>
                         </VisualState.Setters>
                     </VisualState>
                 </VisualStateGroup>
@@ -357,12 +357,9 @@
     <Style x:Key="BottomBarPrimaryButtonStyle"
        TargetType="Button"
        BasedOn="{StaticResource BottomBarButtonStyle}">
-        <!-- Make it prominent -->
-        <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
-        <Setter Property="TextColor" Value="{StaticResource White}"/>
+        <!-- Make '+' pop just a bit -->
+        <Setter Property="BackgroundColor" Value="{StaticResource AccentTealDark}"/>
         <Setter Property="FontAttributes" Value="Bold"/>
-        <!-- Keep it same height as others but visually highlighted; 
-       If you want a circle, set WidthRequest/HeightRequest and CornerRadius accordingly -->
     </Style>
 
 

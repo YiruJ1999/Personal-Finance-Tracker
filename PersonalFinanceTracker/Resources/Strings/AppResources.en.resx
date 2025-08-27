@@ -270,4 +270,7 @@
   <data name="Label_MonthBudget" xml:space="preserve">
     <value>Monthly Budget</value>
   </data>
+  <data name="Label_BookList" xml:space="preserve">
+    <value>Book List</value>
+  </data>
 </root>

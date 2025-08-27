@@ -24,7 +24,7 @@
 
             <HorizontalStackLayout HorizontalOptions="Center" Spacing="20">
                 <Button Text="{loc:Translate Btn_Confirm}" Clicked="ConfirmClicked" />
-                <Button Text="{loc:Translate Btn_Save}" Clicked="CancelClicked" />
+                <Button Text="{loc:Translate Btn_Cancel}" Clicked="CancelClicked" />
             </HorizontalStackLayout>
         </VerticalStackLayout>
 
