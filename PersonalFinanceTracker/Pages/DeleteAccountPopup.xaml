@@ -1,20 +1,83 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <toolkit:Popup
+    x:Class="PersonalFinanceTracker.Popups.DeleteAccountPopup"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:loc="clr-namespace:PersonalFinanceTracker.Localization"
-    x:Class="PersonalFinanceTracker.Popups.DeleteAccountPopup">
-    <VerticalStackLayout Padding="16" Spacing="12" WidthRequest="320">
-        <Label Text="{loc:Translate Label_DeleteAccount}" FontAttributes="Bold" FontSize="18" />
-        <Label x:Name="MsgLabel" Text="{loc:Translate Label_DeleteAccountAlert}" />
-        <CheckBox x:Name="AlsoDeleteRecordsCheck" />
-        <Label Text="{loc:Translate Label_DeleteAccountAllDetail}" />
-        <Grid ColumnDefinitions="*,Auto,Auto">
-            <Label />
-            <Button Grid.Column="1" Text="{loc:Translate Btn_Cancel}" Clicked="OnCancelClicked" />
-            <Button Grid.Column="2" Text="{loc:Translate Btn_Delete}" BackgroundColor="IndianRed"
-                    TextColor="White" Clicked="OnDeleteClicked" />
-        </Grid>
-    </VerticalStackLayout>
+    Color="Transparent"             
+>
+
+    <!-- Local fallback theme so it works even if global dictionaries are not merged -->
+    <toolkit:Popup.Resources>
+        <Color x:Key="AccentTeal">#00BDAE</Color>
+        <Color x:Key="AccentTealDark">#009E93</Color>
+        <Color x:Key="AccentTealLight">#E6FAF7</Color>
+
+        <SolidColorBrush x:Key="AccentTealBrush" Color="{StaticResource AccentTeal}" />
+        <SolidColorBrush x:Key="AccentTealDarkBrush" Color="{StaticResource AccentTealDark}" />
+        <SolidColorBrush x:Key="AccentTealLightBrush" Color="{StaticResource AccentTealLight}" />
+
+        <!-- Ghost/outlined button for Cancel -->
+        <Style x:Key="OutlinedButton" TargetType="Button">
+            <Setter Property="BackgroundColor" Value="Transparent" />
+            <Setter Property="TextColor" Value="{StaticResource AccentTealDark}" />
+            <Setter Property="BorderColor" Value="{StaticResource AccentTeal}" />
+            <Setter Property="BorderWidth" Value="1" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="14,10" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="MinimumHeightRequest" Value="44" />
+        </Style>
+
+        <!-- Danger button for Delete -->
+        <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource OutlinedButton}">
+            <Setter Property="BackgroundColor" Value="#D9534F"/>
+            <!-- bootstrap-ish red -->
+            <Setter Property="TextColor" Value="White"/>
+            <Setter Property="BorderWidth" Value="0"/>
+        </Style>
+    </toolkit:Popup.Resources>
+
+    <!-- Teal card -->
+    <Border
+        Background="{StaticResource AccentTealLightBrush}"
+        Stroke="{StaticResource AccentTealBrush}"
+        StrokeThickness="1.2"
+        StrokeShape="RoundRectangle 16"
+        Padding="0">
+        <Border.Shadow>
+            <Shadow Opacity="0.25" Radius="18" Offset="0,6"/>
+        </Border.Shadow>
+
+        <VerticalStackLayout Padding="16" Spacing="14" WidthRequest="360">
+            <!-- Title -->
+            <Label Text="{loc:Translate Label_DeleteAccount}"
+                   FontAttributes="Bold" FontSize="18"
+                   TextColor="{StaticResource AccentTealDark}" />
+
+            <!-- Dynamic message set in code-behind if account name/id is provided -->
+            <Label x:Name="MsgLabel" Text="{loc:Translate Label_DeleteAccountAlert}" FontSize="14"/>
+
+            <!-- Also delete records toggle -->
+            <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                <CheckBox x:Name="AlsoDeleteRecordsCheck" />
+                <Label Text="{loc:Translate Label_DeleteAccountAllDetail}" FontSize="14" VerticalTextAlignment="Center"/>
+            </HorizontalStackLayout>
+
+            <!-- Actions -->
+            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10" Margin="0,6,0,0">
+                <Label/>
+                <!-- spacer -->
+                <Button Grid.Column="1"
+                        Text="{loc:Translate Btn_Cancel}"
+                        Style="{StaticResource OutlinedButton}"
+                        Clicked="OnCancelClicked" />
+                <Button Grid.Column="2"
+                        Text="{loc:Translate Btn_Delete}"
+                        Style="{StaticResource DangerButton}"
+                        Clicked="OnDeleteClicked" />
+            </Grid>
+        </VerticalStackLayout>
+    </Border>
 </toolkit:Popup>

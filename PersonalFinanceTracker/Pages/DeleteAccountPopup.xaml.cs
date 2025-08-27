@@ -1,23 +1,40 @@
+using System;
 using CommunityToolkit.Maui.Views;
-using PersonalFinanceTracker.Resources.Strings;
 
-namespace PersonalFinanceTracker.Popups;
-
-public partial class DeleteAccountPopup : Popup
+namespace PersonalFinanceTracker.Popups
 {
-    private readonly string _accountName;
-    public DeleteAccountPopup(string accountName)
-    {
-        InitializeComponent();
-        _accountName = accountName;
-        MsgLabel.Text = $"确定要删除账户“{_accountName}”？";
-    }
+    public record DeleteAccountDecision(bool Confirmed, bool AlsoDelete);
 
-    private void OnDeleteClicked(object sender, EventArgs e)
+    public partial class DeleteAccountPopup : Popup
     {
-        var alsoDelete = AlsoDeleteRecordsCheck.IsChecked;
-        Close((confirm: true, alsoDelete));
-    }
+        private readonly int _accountId;
+        private readonly string? _accountName;
 
-    private void OnCancelClicked(object sender, EventArgs e) => Close((confirm: false, alsoDelete: false));
+        // accountName optional; pass it if you have it for a nicer message
+        public DeleteAccountPopup(int accountId, string? accountName = null)
+        {
+            InitializeComponent();
+            _accountId = accountId;
+            _accountName = accountName;
+
+            if (!string.IsNullOrWhiteSpace(_accountName))
+            {
+                // Keep text simple; your localization can override if needed
+                MsgLabel.Text = $"确定要删除账户“{_accountName}”（ID: {_accountId}）？";
+            }
+        }
+
+        private void OnCancelClicked(object sender, EventArgs e)
+        {
+            // Close with null meaning canceled
+            Close(null);
+        }
+
+        private void OnDeleteClicked(object sender, EventArgs e)
+        {
+            var alsoDelete = AlsoDeleteRecordsCheck?.IsChecked ?? false;
+            // Close with the decision payload
+            Close(new DeleteAccountDecision(true, alsoDelete));
+        }
+    }
 }

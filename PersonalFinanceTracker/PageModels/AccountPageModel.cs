@@ -362,22 +362,23 @@ namespace PersonalFinanceTracker.PageModels
         [RelayCommand]
         private async Task ShowDeleteAccountPopupAsync(int accountId)
         {
-            if (accountId == 0 )
-                return;
+            if (accountId == 0) return;
 
-            var confirm = await Application.Current.MainPage.DisplayAlert(
-                "删除账户", $"确定要删除账户“{accountId}”？", "删除", "取消");
-            if (!confirm) return;
+            string? accountName = null;
+            
+            accountName = Accounts?.FirstOrDefault(a => a.Id == accountId)?.Name;
 
-            var choice = await Application.Current.MainPage.DisplayActionSheet(
-                "是否同时删除该账户的所有明细记录？", "取消", null,
-                "仅删除账户（保留明细）",
-                "删除账户并删除全部明细");
+            // Show themed popup and await user's decision
+            var popup = new DeleteAccountPopup(accountId, accountName);
+            var resultObj = await Application.Current.MainPage.ShowPopupAsync(popup);
 
-            if (choice is null || choice == "取消") return;
+            // Canceled
+            if (resultObj is not DeleteAccountDecision decision || !decision.Confirmed) return;
 
-            bool alsoDelete = choice == "删除账户并删除全部明细";
-            await _accountRepository.DeleteAccountAsync(accountId, alsoDelete);
+            // Execute deletion
+            await _accountRepository.DeleteAccountAsync(accountId, decision.AlsoDelete);
+
+            // Refresh the page
             await LoadAsync();
         }
 
