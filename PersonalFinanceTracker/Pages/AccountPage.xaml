@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<!-- Accounts overview & management. Uses SelectionChanged for navigation (robust). -->
+<!-- Accounts overview & management. Teal-themed. -->
 <ContentPage
     x:Class="PersonalFinanceTracker.Pages.AccountPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
@@ -10,62 +10,104 @@
     xmlns:loc="clr-namespace:PersonalFinanceTracker.Localization"
     x:Name="AccountPageRoot"
     x:DataType="pm:AccountPageModel"
-    Title="{loc:Translate Label_Account}">
+    Shell.NavBarIsVisible="False"
+    BackgroundColor="{StaticResource LightBackground}">
 
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="16">
 
-            <!-- Summary: Total assets -->
-            <Frame Padding="16" HasShadow="True" CornerRadius="12">
+            <!-- Summary: Total assets (teal chip-like card) -->
+            <Border Style="{StaticResource CardStyle}"
+                    Background="{StaticResource LightSecondaryBackground}"   
+                Stroke="{StaticResource AccentTeal}"
+                StrokeThickness="1"
+                    Padding="16">
                 <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
-                    <Label Text="{loc:Translate Label_TotalAssets}" FontAttributes="Bold" FontSize="16" />
+                    <Label Text="{loc:Translate Label_TotalAssets}"
+                           FontAttributes="Bold" FontSize="16" />
                     <Label Text="{Binding TotalAssets, StringFormat='{}{0:C}'}"
-                           FontSize="16" FontAttributes="Bold" />
+                           FontSize="16" FontAttributes="Bold"
+                           TextColor="{StaticResource AccentTealDark}" />
                 </HorizontalStackLayout>
-            </Frame>
+            </Border>
 
-            <!-- Last 4 months trend line chart -->
-            <Frame Padding="16" HasShadow="True" CornerRadius="12">
+            <!-- Last 4 months trend line chart (teal stroke & markers) -->
+            <Border Style="{StaticResource CardStyle}"
+                    Background="{StaticResource LightSecondaryBackground}"
+                    Stroke="{StaticResource AccentTeal}"
+                    StrokeThickness="1"
+                    Padding="16">
                 <VerticalStackLayout Spacing="12">
-                    <Label Text="{loc:Translate Label_Last4MonthsTrend}" FontAttributes="Bold" FontSize="16"/>
+                    <Label Text="{loc:Translate Label_Last4MonthsTrend}"
+                           FontAttributes="Bold" FontSize="16"/>
                     <chart:SfCartesianChart>
+                        <chart:SfCartesianChart.PaletteBrushes>
+                            <SolidColorBrush Color="{StaticResource AccentTeal}" />
+                        </chart:SfCartesianChart.PaletteBrushes>
+
                         <chart:SfCartesianChart.XAxes>
                             <chart:CategoryAxis ShowMajorGridLines="False" />
                         </chart:SfCartesianChart.XAxes>
                         <chart:SfCartesianChart.YAxes>
-                                <chart:NumericalAxis
+                            <chart:NumericalAxis
                                 ShowMajorGridLines="True"
                                 Minimum="{Binding YMin}"
                                 Maximum="{Binding YMax}"
-                                Interval="{Binding YInterval}" />   
+                                Interval="{Binding YInterval}" />
                         </chart:SfCartesianChart.YAxes>
+
                         <chart:LineSeries
                             ItemsSource="{Binding Last4MonthsTrend}"
                             XBindingPath="Key"
                             YBindingPath="Value"
+                            StrokeWidth="3"              
                             ShowMarkers="True"
-                            EnableTooltip="True" />
+                            EnableTooltip="True">
+                            <chart:LineSeries.MarkerSettings>
+                                <chart:ChartMarkerSettings
+                                    Type="Circle"
+                                    Width="8" Height="8"
+                                    Fill="{StaticResource AccentTealBrush}" />      
+                            </chart:LineSeries.MarkerSettings>
+                        </chart:LineSeries>
+
                     </chart:SfCartesianChart>
                 </VerticalStackLayout>
-            </Frame>
+            </Border>
 
-            <!-- Accounts list (Selection-based navigation) -->
-            <Frame Padding="0" HasShadow="True" CornerRadius="12">
-                <VerticalStackLayout>
-                    <Grid Padding="16" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12" VerticalOptions="Center">
-                        <Label Text="{loc:Translate Label_AllAccounts}" FontAttributes="Bold" FontSize="16" />
-                        <ImageButton Grid.Column="1" Source="refresh.png" WidthRequest="28" HeightRequest="28"
-                                     BackgroundColor="Transparent" Padding="0" Command="{Binding LoadCommand}" />
-                        <ImageButton Grid.Column="2" Source="add.png" WidthRequest="28" HeightRequest="28"
-                                     BackgroundColor="Transparent" Padding="0" Command="{Binding ShowAddAccountPopupCommand}" />
+            <!-- Accounts list (teal header bar + swipe to delete) -->
+            <Border Style="{StaticResource CardStyle}"
+                    Background="{StaticResource LightSecondaryBackground}"
+                    Stroke="{StaticResource AccentTeal}"
+                    StrokeThickness="1"
+                    Padding="0">
+
+                <VerticalStackLayout Spacing="0">
+
+                    <!-- List header with actions -->
+                    <Grid Padding="16"
+                          ColumnDefinitions="*,Auto,Auto"
+                          ColumnSpacing="12"
+                          BackgroundColor="{StaticResource Secondary}">
+                        <Label Text="{loc:Translate Label_AllAccounts}"
+                               FontAttributes="Bold" FontSize="16" />
+                        <ImageButton Grid.Column="1" Source="refresh.png"
+                                     WidthRequest="28" HeightRequest="28"
+                                     BackgroundColor="Transparent" Padding="0"
+                                     Command="{Binding LoadCommand}" />
+                        <ImageButton Grid.Column="2" Source="add.png"
+                                     WidthRequest="28" HeightRequest="28"
+                                     BackgroundColor="Transparent" Padding="0"
+                                     Command="{Binding ShowAddAccountPopupCommand}" />
                     </Grid>
 
+                    <!-- Accounts -->
                     <CollectionView x:Name="AccountsView"
-                        ItemsSource="{Binding Accounts}"
-                        SelectionMode="Single"
-                        SelectedItem="{Binding SelectedAccount, Mode=TwoWay}"
-                        SelectionChangedCommand="{Binding OpenAccountDetailCommand}"
-                        ItemSizingStrategy="MeasureAllItems">
+                                    ItemsSource="{Binding Accounts}"
+                                    SelectionMode="Single"
+                                    SelectedItem="{Binding SelectedAccount, Mode=TwoWay}"
+                                    SelectionChangedCommand="{Binding OpenAccountDetailCommand}"
+                                    ItemSizingStrategy="MeasureAllItems">
 
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="m:Account">
@@ -81,20 +123,33 @@
                                                 CommandParameter="{Binding Id}" />
                                         </SwipeItems>
                                     </SwipeView.RightItems>
+                                    <Border
+                                        Style="{StaticResource CardStyle}"         
+                                        Margin="12,8"
+                                        Stroke="{StaticResource AccentTeal}"
+                                        StrokeThickness="1"
+                                        StrokeShape="RoundRectangle 14">
+                                        <Border.Shadow>
+                                            <Shadow Opacity="0.15" Radius="12" Offset="0,2"/>
+                                        </Border.Shadow>
 
-                                    <Grid Padding="16" ColumnDefinitions="*,Auto">
-                                        <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="14" />
-                                        <Label Grid.Column="1"
-                                               Text="{Binding Balance, StringFormat='{}{0:C}'}"
-                                               HorizontalTextAlignment="End"
-                                               FontSize="14" />
-                                    </Grid>
+                                        <Grid Padding="16" ColumnDefinitions="*,Auto">
+                                            <Label Text="{Binding Name}"
+                                                    FontAttributes="Bold" FontSize="14" />
+                                            <Label Grid.Column="1"
+                                                   Text="{Binding Balance, StringFormat='{}{0:C}'}"
+                                                   HorizontalTextAlignment="End"
+                                                   FontSize="14"
+                                                   TextColor="{StaticResource AccentTealDark}" />
+                                        </Grid>
+                                    </Border>
                                 </SwipeView>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
+
                 </VerticalStackLayout>
-            </Frame>
+            </Border>
 
         </VerticalStackLayout>
     </ScrollView>
