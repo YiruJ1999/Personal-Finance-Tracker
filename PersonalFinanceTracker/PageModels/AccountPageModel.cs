@@ -336,29 +336,21 @@ namespace PersonalFinanceTracker.PageModels
 
             try
             {
-                var name = await Application.Current.MainPage.DisplayPromptAsync(
-                    "添加账户", "请输入账户名称：", "保存", "取消", placeholder: "例如：现金/银行卡");
-                if (string.IsNullOrWhiteSpace(name)) return;
+                // Show the themed popup and await the result
+                var popup = new AddAccountPopup();
+                var resultObj = await Application.Current.MainPage.ShowPopupAsync(popup);
 
-                var openingText = await Application.Current.MainPage.DisplayPromptAsync(
-                    "期初余额", "可选：输入期初余额（留空则为 0）", "确定", "跳过", keyboard: Keyboard.Numeric);
+                // User canceled or closed the popup
+                if (resultObj is not AddAccountResult result) return;
 
-                decimal opening = 0m;
-                if (!string.IsNullOrWhiteSpace(openingText) &&
-                    decimal.TryParse(openingText, System.Globalization.NumberStyles.Number,
-                                     System.Globalization.CultureInfo.CurrentCulture, out var val))
-                {
-                    opening = val;
-                }
+                // Create account with provided name & opening balance
+                var acc = await _accountRepository.AddAccountAsync(result.Name, result.Opening);
 
-                var acc = await _accountRepository.AddAccountAsync(name.Trim(), opening);
-
-                // If you also want AccountPage to refresh even when you're already on it:
+                // Refresh this page
                 await LoadAsync();
 
-                // And additionally notify other pages (optional but nice)
-                CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default
-                    .Send(new AccountChangedMessage(acc.Id));
+                // Notify other listeners (optional)
+                WeakReferenceMessenger.Default.Send(new AccountChangedMessage(acc.Id));
             }
             finally
             {

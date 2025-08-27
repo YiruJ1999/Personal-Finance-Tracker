@@ -1,34 +1,46 @@
+using System;
+using System.Globalization;
 using CommunityToolkit.Maui.Views;
-using PersonalFinanceTracker.Resources.Strings;
 
-namespace PersonalFinanceTracker.Popups;
-
-public partial class AddAccountPopup : Popup
+namespace PersonalFinanceTracker.Popups
 {
-    public AddAccountPopup()
-    {
-        InitializeComponent();
-    }
+    public record AddAccountResult(string Name, decimal Opening);
 
-    // Return tuple (name, openingBalance?) back to caller
-    private void OnSaveClicked(object sender, EventArgs e)
+    public partial class AddAccountPopup : Popup
     {
-        // Validate and close with result
-        var name = NameEntry.Text?.Trim();
-        decimal? opening = null;
-
-        if (!string.IsNullOrWhiteSpace(OpeningEntry.Text) &&
-            decimal.TryParse(OpeningEntry.Text, out var val))
+        public AddAccountPopup()
         {
-            opening = val;
+            InitializeComponent();
         }
 
-        // You may validate name non-empty here.
-        Close((name, opening));
-    }
+        // Cancel -> return null
+        private void OnCancelClicked(object sender, EventArgs e)
+        {
+            Close(null);
+        }
 
-    private void OnCancelClicked(object sender, EventArgs e)
-    {
-        Close(null);
+        // Save -> validate and return result
+        private void OnSaveClicked(object sender, EventArgs e)
+        {
+            // Validate name
+            var name = NameEntry?.Text?.Trim();
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                // Keep popup open and focus the field
+                NameEntry?.Focus();
+                return;
+            }
+
+            decimal opening = 0m;
+            var raw = OpeningEntry?.Text;
+            if (!string.IsNullOrWhiteSpace(raw) &&
+                decimal.TryParse(raw, NumberStyles.Number, CultureInfo.CurrentCulture, out var val))
+            {
+                opening = val;
+            }
+
+            // Close popup and pass result to the caller
+            Close(new AddAccountResult(name, opening));
+        }
     }
 }
