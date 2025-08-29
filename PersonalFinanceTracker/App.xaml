@@ -28,7 +28,7 @@
                         Source="background_grass.jpg"               
                         TileWidth="{OnIdiom 22, Desktop=26}"
                         TileHeight="{OnIdiom 22, Desktop=26}"
-                        SpacingX="20" SpacingY="20"
+                        SpacingX="25" SpacingY="25"
                         PatternOpacity="{AppThemeBinding Light=0.08, Dark=0.05}"
                         InputTransparent="True" />
                     <BoxView BackgroundColor="#10FFFFFF" />
