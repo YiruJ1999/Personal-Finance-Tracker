@@ -7,71 +7,79 @@
     x:Class="PersonalFinanceTracker.Pages.PersonalInfoPage">
 
     <Grid RowDefinitions="*,Auto">
-        
 
-        <VerticalStackLayout Padding="20" Spacing="20"
-                             Grid.Row="0">
+        <Border Grid.Row="0"
+                Stroke="{StaticResource PrimaryBrush}"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 14"
+                BackgroundColor="{StaticResource Secondary}"
+                Padding="20"
+                Margin="16">
+            <VerticalStackLayout Spacing="20">
 
-            <!-- Avatar with edit button -->
-            <Grid>
-                <sfavatar:SfAvatarView
-                    WidthRequest="100"
-                    HeightRequest="100"
-                    CornerRadius="50"
-                    AvatarShape="Circle"
-                    ImageSource="{Binding AvatarPath}"/>
+                <Grid>
+                    <sfavatar:SfAvatarView
+                        WidthRequest="100"
+                        HeightRequest="100"
+                        CornerRadius="50"
+                        AvatarShape="Circle"
+                        ImageSource="{Binding AvatarPath}"/>
+                    <ImageButton
+                        Source="pencil.png"
+                        BackgroundColor="Transparent"
+                        Padding="0"
+                        WidthRequest="28"
+                        HeightRequest="28"
+                        HorizontalOptions="End"
+                        VerticalOptions="End"
+                        Margin="0,0,5,5"
+                        Clicked="OnEditAvatarClicked"/>
+                </Grid>
 
-                <Button
-                    Text="✏️"
-                    BackgroundColor="Transparent"
-                    WidthRequest="30"
-                    HeightRequest="30"
-                    HorizontalOptions="End"
-                    VerticalOptions="End"
-                    Clicked="OnEditAvatarClicked"
-                    Margin="0,0,5,5" />
-            </Grid>
+                <Grid>
+                    <Label
+                        Text="{Binding Name}"
+                        FontSize="20"
+                        FontAttributes="Bold"
+                        TextColor="{StaticResource PrimaryDark}"
+                        HorizontalOptions="Center"
+                        VerticalTextAlignment="Center"/>
+                    <ImageButton
+                        Source="pencil.png"
+                        BackgroundColor="Transparent"
+                        Padding="0"
+                        WidthRequest="24"
+                        HeightRequest="24"
+                        HorizontalOptions="End"
+                        VerticalOptions="Center"
+                        Margin="0,0,5,0"
+                        Clicked="OnEditNameClicked"/>
+                </Grid>
 
-            <!-- Username with edit button -->
-            <Grid>
-                <Label
-                    Text="{Binding Name}"
-                    FontSize="20"
-                    HorizontalOptions="Center" />
+                <Picker Title="{loc:Translate Picker_Currency}"
+                        ItemsSource="{Binding CurrencyOptions}"
+                        SelectedItem="{Binding CurrencyCode, Mode=TwoWay}"
+                        TextColor="{StaticResource DarkOnLightBackground}"
+                        TitleColor="{StaticResource PrimaryDark}"/>
 
-                <Button
-                    Text="✏️"
-                    BackgroundColor="Transparent"
-                    WidthRequest="30"
-                    HeightRequest="30"
-                    HorizontalOptions="End"
-                    VerticalOptions="Center"
-                    Clicked="OnEditNameClicked"
-                    Margin="0,0,5,0" />
-            </Grid>
+                <Picker Title="{loc:Translate Picker_Language}"
+                        ItemsSource="{Binding LanguageOptions}"
+                        ItemDisplayBinding="{Binding DisplayName}"
+                        SelectedItem="{Binding SelectedLanguage, Mode=TwoWay}"
+                        TextColor="{StaticResource DarkOnLightBackground}"
+                        TitleColor="{StaticResource PrimaryDark}"/>
 
-            <!-- Currency picker -->
-            <Picker Title="{loc:Translate Picker_Currency}"
-                    ItemsSource="{Binding CurrencyOptions}"
-                    SelectedItem="{Binding CurrencyCode, Mode=TwoWay}" />
+            </VerticalStackLayout>
+        </Border>
 
-            <!-- Language picker -->
-            <Picker
-                Title="{loc:Translate Picker_Language}"
-                ItemsSource="{Binding LanguageOptions}"
-                ItemDisplayBinding="{Binding DisplayName}"
-                SelectedItem="{Binding SelectedLanguage, Mode=TwoWay}" />
-
-
-        </VerticalStackLayout>
-            
         <Border Grid.Row="1" Style="{StaticResource BottomBarContainerStyle}">
             <FlexLayout Style="{StaticResource BottomBarFlexStyle}">
-                <Button Text="{loc:Translate Btn_Save}" Clicked="OnSaveClicked" 
-                    Style="{StaticResource BottomBarButtonStyle}"
-                    FlexLayout.Grow="1" />
+                <Button Text="{loc:Translate Btn_Save}"
+                        Clicked="OnSaveClicked"
+                        Style="{StaticResource BottomBarButtonStyle}"
+                        FlexLayout.Grow="1"/>
             </FlexLayout>
         </Border>
 
-    </Grid> 
+    </Grid>
 </ContentPage>
