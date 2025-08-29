@@ -295,8 +295,8 @@
     <!-- Container: border of the bottom bar -->
     <Style x:Key="BottomBarContainerStyle" TargetType="Border">
         <!-- Keep structure, just recolor -->
-        <Setter Property="Background" Value="{StaticResource AccentTealLightBrush}"/>
-        <Setter Property="Stroke" Value="{StaticResource AccentTealBrush}"/>
+        <Setter Property="Background" Value="{StaticResource PrimaryLightBrush}"/>
+        <Setter Property="Stroke" Value="{StaticResource PrimaryBrush}"/>
         <Setter Property="StrokeThickness" Value="1"/>
         <Setter Property="Padding" Value="{StaticResource BottomBarPadding}"/>
         <Setter Property="StrokeShape" Value="Rectangle"/>
@@ -321,7 +321,7 @@
         <Setter Property="MinimumHeightRequest" Value="44"/>
 
         <!-- Teal theme -->
-        <Setter Property="BackgroundColor" Value="{StaticResource AccentTeal}"/>
+        <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
         <Setter Property="TextColor" Value="{StaticResource White}"/>
 
         <!-- Hover/pressed states tuned to teal -->
@@ -332,14 +332,14 @@
                     <VisualState x:Name="PointerOver">
                         <VisualState.Setters>
                             <!-- Slightly lighter on hover -->
-                            <Setter Property="BackgroundColor" Value="{StaticResource AccentTeal}"/>
+                            <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
                             <Setter Property="Opacity" Value="0.95"/>
                         </VisualState.Setters>
                     </VisualState>
                     <VisualState x:Name="Pressed">
                         <VisualState.Setters>
                             <!-- Darker when pressed -->
-                            <Setter Property="BackgroundColor" Value="{StaticResource AccentTealDark}"/>
+                            <Setter Property="BackgroundColor" Value="{StaticResource PrimaryDark}"/>
                         </VisualState.Setters>
                     </VisualState>
                     <VisualState x:Name="Disabled">
@@ -358,7 +358,7 @@
        TargetType="Button"
        BasedOn="{StaticResource BottomBarButtonStyle}">
         <!-- Make '+' pop just a bit -->
-        <Setter Property="BackgroundColor" Value="{StaticResource AccentTealDark}"/>
+        <Setter Property="BackgroundColor" Value="{StaticResource PrimaryDark}"/>
         <Setter Property="FontAttributes" Value="Bold"/>
     </Style>
 

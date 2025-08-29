@@ -4,20 +4,46 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:PersonalFinanceTracker"
-    xmlns:conv="clr-namespace:PersonalFinanceTracker.Converters">
+    xmlns:conv="clr-namespace:PersonalFinanceTracker.Converters"
+    xmlns:controls="clr-namespace:PersonalFinanceTracker.Controls">
 
     <Application.Resources>
         <ResourceDictionary>
 
-            <!-- 1) Only ResourceDictionary entries go here -->
+            <!-- 1) Merge existing resource dictionaries first -->
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
                 <ResourceDictionary Source="Resources/Styles/AppStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-            <!-- 2) Converter outside MergedDictionaries -->
+            <!-- 2) Global converters -->
             <conv:AmountWithSignConverter x:Key="AmountWithSignConverter" />
+
+            <!-- 3) Global page ControlTemplate with tiled grass background -->
+            <ControlTemplate x:Key="GrassPageTemplate">
+                <Grid>
+                    <!-- Tiled grass pattern (drawn by a lightweight GraphicsView) -->
+                    <controls:TiledBackgroundView
+                        Source="background_grass.jpg"               
+                        TileWidth="{OnIdiom 22, Desktop=26}"
+                        TileHeight="{OnIdiom 22, Desktop=26}"
+                        SpacingX="20" SpacingY="20"
+                        PatternOpacity="{AppThemeBinding Light=0.08, Dark=0.05}"
+                        InputTransparent="True" />
+                    <BoxView BackgroundColor="#10FFFFFF" />
+                    <ContentPresenter />
+                </Grid>
+            </ControlTemplate>
+
+            <!-- 4) Apply the template to every Page (override the implicit Page style from Styles.xaml) -->
+            <Style TargetType="ContentPage" ApplyToDerivedTypes="True">
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="BackgroundColor"
+                        Value="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}" />
+                <!-- Add global grass background -->
+                <Setter Property="ControlTemplate" Value="{StaticResource GrassPageTemplate}" />
+            </Style>
 
         </ResourceDictionary>
     </Application.Resources>

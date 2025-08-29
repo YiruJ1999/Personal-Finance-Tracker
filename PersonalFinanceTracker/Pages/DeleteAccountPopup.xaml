@@ -10,19 +10,19 @@
 
     <!-- Local fallback theme so it works even if global dictionaries are not merged -->
     <toolkit:Popup.Resources>
-        <Color x:Key="AccentTeal">#00BDAE</Color>
-        <Color x:Key="AccentTealDark">#009E93</Color>
-        <Color x:Key="AccentTealLight">#E6FAF7</Color>
+        <Color x:Key="Primary">#00BDAE</Color>
+        <Color x:Key="PrimaryDark">#009E93</Color>
+        <Color x:Key="PrimaryLight">#E6FAF7</Color>
 
-        <SolidColorBrush x:Key="AccentTealBrush" Color="{StaticResource AccentTeal}" />
-        <SolidColorBrush x:Key="AccentTealDarkBrush" Color="{StaticResource AccentTealDark}" />
-        <SolidColorBrush x:Key="AccentTealLightBrush" Color="{StaticResource AccentTealLight}" />
+        <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource Primary}" />
+        <SolidColorBrush x:Key="PrimaryDarkBrush" Color="{StaticResource PrimaryDark}" />
+        <SolidColorBrush x:Key="PrimaryLightBrush" Color="{StaticResource PrimaryLight}" />
 
         <!-- Ghost/outlined button for Cancel -->
         <Style x:Key="OutlinedButton" TargetType="Button">
             <Setter Property="BackgroundColor" Value="Transparent" />
-            <Setter Property="TextColor" Value="{StaticResource AccentTealDark}" />
-            <Setter Property="BorderColor" Value="{StaticResource AccentTeal}" />
+            <Setter Property="TextColor" Value="{StaticResource PrimaryDark}" />
+            <Setter Property="BorderColor" Value="{StaticResource Primary}" />
             <Setter Property="BorderWidth" Value="1" />
             <Setter Property="CornerRadius" Value="10" />
             <Setter Property="Padding" Value="14,10" />
@@ -41,8 +41,8 @@
 
     <!-- Teal card -->
     <Border
-        Background="{StaticResource AccentTealLightBrush}"
-        Stroke="{StaticResource AccentTealBrush}"
+        Background="{StaticResource PrimaryLightBrush}"
+        Stroke="{StaticResource PrimaryBrush}"
         StrokeThickness="1.2"
         StrokeShape="RoundRectangle 16"
         Padding="0">
@@ -54,7 +54,7 @@
             <!-- Title -->
             <Label Text="{loc:Translate Label_DeleteAccount}"
                    FontAttributes="Bold" FontSize="18"
-                   TextColor="{StaticResource AccentTealDark}" />
+                   TextColor="{StaticResource PrimaryDark}" />
 
             <!-- Dynamic message set in code-behind if account name/id is provided -->
             <Label x:Name="MsgLabel" Text="{loc:Translate Label_DeleteAccountAlert}" FontSize="14"/>
