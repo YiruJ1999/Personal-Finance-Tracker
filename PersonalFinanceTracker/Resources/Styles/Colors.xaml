@@ -4,32 +4,35 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
+    <!-- ===== Brand Colors: Grass Green palette ===== -->
+    <Color x:Key="Primary">#4CAF50</Color>
+    <!-- main color-->
+    <Color x:Key="PrimaryDark">#388E3C</Color>
+    <Color x:Key="PrimaryLight">#C8E6C9</Color>
+    <Color x:Key="PrimaryDarkText">#1F3D21</Color>
 
-    <!-- Primary brand: teal -->
-    <Color x:Key="Primary">#00BDAE</Color>
-    <Color x:Key="PrimaryDark">#009E93</Color>
-    <Color x:Key="PrimaryDarkText">#0D2F2C</Color>
+    <Color x:Key="Secondary">#EAF7EC</Color>
+    <!-- soft mint surface -->
+    <Color x:Key="SecondaryDarkText">#1E3A22</Color>
+    <Color x:Key="Tertiary">#81C784</Color>
+    <!-- supportive green -->
 
-
-    <Color x:Key="Secondary">#E6FAF7</Color>
-    <Color x:Key="SecondaryDarkText">#007E74</Color>
-
-    <Color x:Key="Tertiary">#2AAE7A</Color>
-
+    <!-- Neutrals & Surfaces -->
     <Color x:Key="DarkBackground">#17171A</Color>
     <Color x:Key="LightOnDarkBackground">#C3C3C3</Color>
-    <Color x:Key="LightBackground">#F7FCFB</Color>
+    <Color x:Key="LightBackground">#F7FAF7</Color>
     <Color x:Key="DarkOnLightBackground">#0D0D0D</Color>
-
-    <Color x:Key="LightSecondaryBackground">#F0FBF9</Color>
+    <Color x:Key="LightSecondaryBackground">#EEF5EF</Color>
     <Color x:Key="DarkSecondaryBackground">#222228</Color>
 
+    <!-- Utility -->
     <Color x:Key="White">White</Color>
     <Color x:Key="Black">Black</Color>
     <Color x:Key="Magenta">#D600AA</Color>
     <Color x:Key="MidnightBlue">#190649</Color>
     <Color x:Key="OffBlack">#1f1f1f</Color>
 
+    <!-- Grays -->
     <Color x:Key="Gray100">#E1E1E1</Color>
     <Color x:Key="Gray200">#C8C8C8</Color>
     <Color x:Key="Gray300">#ACACAC</Color>
@@ -39,15 +42,7 @@
     <Color x:Key="Gray900">#212121</Color>
     <Color x:Key="Gray950">#141414</Color>
 
-    <Color x:Key="AccentTeal">#00BDAE</Color>
-    <Color x:Key="AccentTealDark">#009E93</Color>
-    <Color x:Key="AccentTealLight">#E6FAF7</Color>
-
-    <SolidColorBrush x:Key="AccentTealBrush" Color="{StaticResource AccentTeal}"/>
-    <SolidColorBrush x:Key="AccentTealDarkBrush" Color="{StaticResource AccentTealDark}"/>
-    <SolidColorBrush x:Key="AccentTealLightBrush" Color="{StaticResource AccentTealLight}"/>
-
-
+    <!-- Brushes -->
     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource Primary}"/>
     <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource Secondary}"/>
     <SolidColorBrush x:Key="TertiaryBrush" Color="{StaticResource Tertiary}"/>
@@ -62,4 +57,8 @@
     <SolidColorBrush x:Key="Gray600Brush" Color="{StaticResource Gray600}"/>
     <SolidColorBrush x:Key="Gray900Brush" Color="{StaticResource Gray900}"/>
     <SolidColorBrush x:Key="Gray950Brush" Color="{StaticResource Gray950}"/>
+
+    <!-- Accent brushes -->
+    <SolidColorBrush x:Key="PrimaryDarkBrush" Color="{StaticResource PrimaryDark}"/>
+    <SolidColorBrush x:Key="PrimaryLightBrush" Color="{StaticResource Tertiary}"/>
 </ResourceDictionary>

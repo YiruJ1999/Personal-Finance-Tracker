@@ -6,7 +6,7 @@
              xmlns:loc="clr-namespace:PersonalFinanceTracker.Localization"
              x:Class="PersonalFinanceTracker.Pages.ViewRecordPage"
              x:DataType="local:ViewRecordPageModel"
-             Title="{loc:Translate Label_ViewRecord}">
+             Shell.NavBarIsVisible="False">
 
     <!-- 使用 Grid 实现：上表头固定 + 下区域填充滚动 -->
     <Grid RowDefinitions="Auto,10,*" Padding="10">

@@ -1,164 +1,119 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:pages="clr-namespace:PersonalFinanceTracker.Pages"
              xmlns:local="clr-namespace:PersonalFinanceTracker.PageModels"
              xmlns:loc="clr-namespace:PersonalFinanceTracker.Localization"
              xmlns:resx="clr-namespace:PersonalFinanceTracker.Resources.Strings"
              x:Class="PersonalFinanceTracker.Pages.BookPage"
-             x:Name="BookPageRoot"                 
+             x:Name="BookPageRoot"
              x:DataType="local:BookPageModel"
-             Title="{loc:Translate Label_BookList}">
+             Shell.NavBarIsVisible="False"
+>
 
     <Grid RowDefinitions="*,Auto">
-
         <CollectionView
             x:Name="BooksView"
             ItemsSource="{Binding Books}"
             SelectedItem="{Binding SelectedBook, Mode=TwoWay}"
-            SelectionMode="Single"                 
-            Margin="20"
-            VerticalOptions="FillAndExpand"
+            SelectionMode="Single"
+            ItemSizingStrategy="MeasureAllItems"
+            Margin="16"
             Grid.Row="0">
 
             <CollectionView.ItemTemplate>
-                <!-- item context is BookSummary -->
                 <DataTemplate x:DataType="local:BookSummary">
 
-                    <!-- Overlay a close button on top of the card -->
                     <Grid>
 
-                        <!-- Selected state is applied to the root; use TargetName to style the Border -->
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup Name="CommonStates">
                                 <VisualState Name="Normal">
                                     <VisualState.Setters>
-                                        <Setter TargetName="Card" Property="Border.BackgroundColor" Value="#DDAAFF" />
-                                        <Setter TargetName="Card" Property="Border.StrokeThickness" Value="0" />
+                                        <Setter TargetName="Card" Property="Border.BackgroundColor" Value="{StaticResource Secondary}" />
+                                        <Setter TargetName="Card" Property="Border.Stroke" Value="{StaticResource PrimaryBrush}" />
+                                        <Setter TargetName="Card" Property="Border.StrokeThickness" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState Name="Selected">
                                     <VisualState.Setters>
-                                        <Setter TargetName="Card" Property="Border.BackgroundColor" Value="#C6B3FF" />
-                                        <Setter TargetName="Card" Property="Border.Stroke" Value="#7A49FF" />
+                                        <Setter TargetName="Card" Property="Border.BackgroundColor" Value="{StaticResource PrimaryLight}" />
+                                        <Setter TargetName="Card" Property="Border.Stroke" Value="{StaticResource PrimaryBrush}" />
                                         <Setter TargetName="Card" Property="Border.StrokeThickness" Value="2" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                        <!-- Card -->
                         <Border x:Name="Card"
-                                StrokeShape="RoundRectangle 10"
-                                BackgroundColor="#DDAAFF"
-                                StrokeThickness="0"
-                                Padding="15"
-                                Margin="0,0,0,20">
+                                StrokeShape="RoundRectangle 14"
+                                BackgroundColor="{StaticResource Secondary}"
+                                Stroke="{StaticResource PrimaryBrush}"
+                                StrokeThickness="1"
+                                Padding="16"
+                                Margin="0,0,0,16">
+                            <Border.Shadow>
+                                <Shadow Opacity="0.14" Radius="10" Offset="0,3"/>
+                            </Border.Shadow>
 
-                            <!-- Card inner layout -->
                             <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="10" ColumnSpacing="20">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
 
-                                <!-- Book name -->
-                                <Label Grid.Column="0"
-                                       Text="{Binding BookName}"
-                                       FontSize="20"
-                                       FontAttributes="Bold"
-                                       VerticalOptions="Center"
-                                       HorizontalOptions="Start" />
+                                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                                    <Label Grid.Column="0"
+                                           Text="{Binding BookName}"
+                                           FontSize="20"
+                                           FontAttributes="Bold"
+                                           TextColor="{StaticResource PrimaryDark}"
+                                           VerticalOptions="Center" />
+                                    <HorizontalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
+                                        <Label FontSize="14" VerticalTextAlignment="Center">
+                                            <Label.Text>
+                                                <MultiBinding StringFormat="{}{0}{1:yyyy-MM-dd HH:mm}">
+                                                    <Binding Source="{x:Static resx:AppResources.Label_LastModified}" />
+                                                    <Binding Path="LastModified" />
+                                                </MultiBinding>
+                                            </Label.Text>
+                                        </Label>
+                                        <ImageButton
+                                            x:DataType="{x:Null}"
+                                            Source="delete.png"
+                                            BackgroundColor="Transparent"
+                                            VerticalOptions="Center"
+                                            Padding="0"
+                                            WidthRequest="24"
+                                            HeightRequest="24"
+                                            Command="{Binding Path=BindingContext.DropBookCommand, Source={x:Reference BookPageRoot}}"
+                                            CommandParameter="{Binding .}" />
+                                    </HorizontalStackLayout>
+                                </Grid>
 
-                                <!-- Last modified (DateTime? is OK; null shows empty) -->
-                                <Label Grid.Column="1"
-                                       FontSize="14"
-                                       HorizontalOptions="End"
-                                       VerticalOptions="Center">
-                                    <Label.Text>
-                                        <MultiBinding StringFormat="{}{0}{1:yyyy-MM-dd HH:mm}">
-                                            <Binding Source="{x:Static resx:AppResources.Label_LastModified}" />
-                                            <Binding Path="LastModified" />
-                                        </MultiBinding>
-                                    </Label.Text>
-                                </Label>
-
-
-                                <!-- Header row -->
-                                <Grid Grid.Row="1" Grid.ColumnSpan="2"
-                                      ColumnSpacing="20"
-                                      Margin="0,10,0,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                    <Label Grid.Column="0" Text="{loc:Translate Label_Income}" HorizontalOptions="Center" />
+                                <Grid Grid.Row="1" ColumnDefinitions="*,*,*,*" ColumnSpacing="20" Margin="0,4,0,0">
+                                    <Label Grid.Column="0" Text="{loc:Translate Label_Income}"  HorizontalOptions="Center" />
                                     <Label Grid.Column="1" Text="{loc:Translate Label_Expense}" HorizontalOptions="Center" />
                                     <Label Grid.Column="2" Text="{loc:Translate Label_Balance}" HorizontalOptions="Center" />
-                                    <Label Grid.Column="3" Text="{loc:Translate Label_Budget}" HorizontalOptions="Center" />
+                                    <Label Grid.Column="3" Text="{loc:Translate Label_Budget}"  HorizontalOptions="Center" />
                                 </Grid>
 
-                                <!-- Data row -->
-                                <Grid Grid.Row="2" Grid.ColumnSpan="2"
-                                      ColumnSpacing="20"
-                                      Margin="0,5,0,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <!-- Currency formatting uses current culture -->
-                                    <Label Grid.Column="0"
-                                           Text="{Binding IncomeAmount, StringFormat='{}{0:C}'}"
-                                           HorizontalOptions="Center" />
-                                    <Label Grid.Column="1"
-                                           Text="{Binding ExpenseAmount, StringFormat='{}{0:C}'}"
-                                           HorizontalOptions="Center" />
-                                    <Label Grid.Column="2"
-                                           Text="{Binding BalanceAmount, StringFormat='{}{0:C}'}"
-                                           HorizontalOptions="Center" />
-                                    <Label Grid.Column="3"
-                                           Text="{Binding BudgetAmount, StringFormat='{}{0:C}'}"
-                                           HorizontalOptions="Center" />
+                                <Grid Grid.Row="2" ColumnDefinitions="*,*,*,*" ColumnSpacing="20">
+                                    <Label Grid.Column="0" Text="{Binding IncomeAmount,  StringFormat='{}{0:C}'}" HorizontalOptions="Center" TextColor="{StaticResource PrimaryDark}" />
+                                    <Label Grid.Column="1" Text="{Binding ExpenseAmount, StringFormat='{}{0:C}'}" HorizontalOptions="Center" TextColor="{StaticResource PrimaryDark}" />
+                                    <Label Grid.Column="2" Text="{Binding BalanceAmount, StringFormat='{}{0:C}'}" HorizontalOptions="Center" TextColor="{StaticResource PrimaryDark}" />
+                                    <Label Grid.Column="3" Text="{Binding BudgetAmount,  StringFormat='{}{0:C}'}" HorizontalOptions="Center" TextColor="{StaticResource PrimaryDark}" />
                                 </Grid>
+
                             </Grid>
                         </Border>
 
-                        <!-- Top-right close (delete) button -->
-                        <Button Text="×"
-                                WidthRequest="28"
-                                HeightRequest="28"
-                                Padding="0"
-                                BackgroundColor="#66000000"
-                                TextColor="White"
-                                CornerRadius="14"
-                                HorizontalOptions="End"
-                                VerticalOptions="Start"
-                                Margin="0,8,8,0"
-                                x:DataType="{x:Null}"
-                                Command="{Binding Path=BindingContext.DropBookCommand,
-                                                  Source={x:Reference BookPageRoot}}"
-                                CommandParameter="{Binding .}"
-                                AutomationId="DeleteBookButton" 
-                                ZIndex="10"
-                                />
                     </Grid>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
 
-        <Border Grid.Row="1"
-                Style="{StaticResource BottomBarContainerStyle}">
+        <Border Grid.Row="1" Style="{StaticResource BottomBarContainerStyle}">
             <FlexLayout Style="{StaticResource BottomBarFlexStyle}">
                 <Button Text="{loc:Translate Btn_AddBook}"
-                    Command="{Binding AddBookClickedCommand}"
-                    Style="{StaticResource BottomBarButtonStyle}"
-                    FlexLayout.Grow="1"
-                     />
+                        Command="{Binding AddBookClickedCommand}"
+                        Style="{StaticResource BottomBarButtonStyle}"
+                        FlexLayout.Grow="1" />
             </FlexLayout>
         </Border>
 

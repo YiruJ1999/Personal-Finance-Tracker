@@ -18,8 +18,8 @@
 
                 <!-- Current Book -->
                 <Border
-                     BackgroundColor="{StaticResource AccentTealLight}"  
-                    Stroke="{StaticResource AccentTeal}"
+                     BackgroundColor="{StaticResource PrimaryLight}"  
+                    Stroke="{StaticResource Primary}"
                     StrokeThickness="2"
                     StrokeShape="RoundRectangle 14"
                     Padding="10,6"
@@ -28,7 +28,7 @@
                         Text="{Binding CurrentBookText}"
                         FontSize="16"
                         FontAttributes="Bold"
-                        TextColor="{StaticResource AccentTealDark}" />
+                        TextColor="{StaticResource PrimaryDark}" />
                 </Border>
 
                 <!-- Monthly Summary -->
@@ -82,7 +82,7 @@
                                             XBindingPath="Category"
                                             YBindingPath="Amount"
                                             ShowDataLabels="True" 
-                                            Fill="{StaticResource AccentTealBrush}"/>
+                                            Fill="{StaticResource PrimaryBrush}"/>
                     </chart:SfCartesianChart.Series>
                 </chart:SfCartesianChart>
 

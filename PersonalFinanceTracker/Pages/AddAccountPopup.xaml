@@ -10,7 +10,7 @@
     <!-- Card wrapper for teal theme -->
     <Border
         Background="{StaticResource Secondary}"            
-        Stroke="{StaticResource AccentTeal}"
+        Stroke="{StaticResource Primary}"
         StrokeThickness="1"
         StrokeShape="RoundRectangle 16"
         Padding="0">
@@ -22,7 +22,7 @@
             <Label
                 Text="{loc:Translate Label_AddAccount}"
                 FontAttributes="Bold" FontSize="18"
-                TextColor="{StaticResource AccentTealDark}"/>
+                TextColor="{StaticResource PrimaryDark}"/>
 
             <!-- Name input -->
             <sf:SfTextInputLayout Hint="{loc:Translate Entry_AccountName}">
@@ -47,7 +47,7 @@
                         Text="{loc:Translate Btn_Cancel}"
                         FontSize="14"
                         Style="{StaticResource GhostHoverButton}"
-                        TextColor="{StaticResource AccentTealDark}"
+                        TextColor="{StaticResource PrimaryDark}"
                         Clicked="OnCancelClicked"/>
                 <Button Grid.Column="2"
                         Text="{loc:Translate Btn_Save}"
