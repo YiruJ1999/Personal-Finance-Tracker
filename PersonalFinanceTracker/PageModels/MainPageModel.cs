@@ -56,7 +56,9 @@ namespace PersonalFinanceTracker.PageModels
         // -------- Observable properties --------
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(CurrentBookText))]
         private string currentBook;  // display name of current book
+
         public string CurrentBookText =>
         string.IsNullOrWhiteSpace(CurrentBook)
             ? string.Empty
@@ -80,7 +82,6 @@ namespace PersonalFinanceTracker.PageModels
 
         [ObservableProperty]
         private bool isRefreshing;
-        private bool _isLoaded; // to prevent double-loading on page reappearing
 
         // -------- Commands --------
 
@@ -131,8 +132,6 @@ namespace PersonalFinanceTracker.PageModels
         [RelayCommand]
         public async Task Appearing()
         {
-            // 0) Prevent double-loading when page reappears
-            if (_isLoaded) return;
 
             // 1) Init DB connection
             await _databaseService.InitAsync();
@@ -179,8 +178,6 @@ namespace PersonalFinanceTracker.PageModels
 
             // 6) Update display name for UI
             CurrentBook = Preferences.Default.Get(PrefKeyCurrentBookName, DefaultBookDisplayName);
-
-            _isLoaded = true;
         }
 
 
@@ -282,8 +279,7 @@ namespace PersonalFinanceTracker.PageModels
             {
                 CurrentBookId = id;
                 // Keep display name updated for UI
-                var name = Preferences.Default.Get(PrefKeyCurrentBookName, DefaultBookDisplayName);
-                CurrentBook = name;
+                var CurrentBook = Preferences.Default.Get(PrefKeyCurrentBookName, DefaultBookDisplayName);
                 return id;
             }
 
@@ -317,6 +313,7 @@ namespace PersonalFinanceTracker.PageModels
 
         partial void OnCurrentBookChanged(string value)
         {
+            System.Diagnostics.Debug.WriteLine(value);
             OnPropertyChanged(nameof(CurrentBookText));
         }
 
