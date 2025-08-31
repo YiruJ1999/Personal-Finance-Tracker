@@ -5,7 +5,7 @@
              xmlns:local="clr-namespace:PersonalFinanceTracker.PageModels"
              xmlns:loc="clr-namespace:PersonalFinanceTracker.Localization"
              x:Class="PersonalFinanceTracker.Pages.AddRecordPage"
-             Title="Add Record">
+             Shell.NavBarIsVisible="False">
     <Grid RowDefinitions="*,Auto">
 
         <!-- Outer vertical scroll for the whole page -->
@@ -16,112 +16,122 @@
 
                 <!-- Type Selection -->
                 <Grid ColumnDefinitions="*,*" Margin="0,0,0,10">
-                    <!-- Expense button -->
                     <Button
-                    Text="{loc:Translate Btn_Expense}"
-                    TextColor="Black"
-                    Command="{Binding SelectExpenseCommand}">
-                        <!-- default = transparent -->
-                        <Button.Background>
-                            <SolidColorBrush Color="Transparent" />
-                        </Button.Background>
+                        Text="{loc:Translate Btn_Expense}"
+                        Command="{Binding SelectExpenseCommand}"
+                        TextColor="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
+                        BorderColor="{StaticResource Primary}"
+                        BorderWidth="1"
+                        BackgroundColor="Transparent"
+                        CornerRadius="8">
                         <Button.Triggers>
-                            <!-- when IsExpenseSelected == true -> grey -->
-                            <DataTrigger TargetType="Button"
-                                     Binding="{Binding IsExpenseSelected}"
-                                     Value="True">
-                                <Setter Property="Background">
-                                    <Setter.Value>
-                                        <SolidColorBrush Color="#BDBDBD" />
-                                    </Setter.Value>
-                                </Setter>
+                            <DataTrigger TargetType="Button" Binding="{Binding IsExpenseSelected}" Value="True">
+                                <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                                <Setter Property="TextColor" Value="White" />
+                                <Setter Property="BorderWidth" Value="0" />
                             </DataTrigger>
                         </Button.Triggers>
                     </Button>
 
-                    <!-- Income button -->
-                    <Button
-                    Grid.Column="1"
-                    Text="{loc:Translate Btn_Income}"
-                    TextColor="Black"
-                    Command="{Binding SelectIncomeCommand}">
-                        <!-- default = transparent -->
-                        <Button.Background>
-                            <SolidColorBrush Color="Transparent" />
-                        </Button.Background>
+                    <Button Grid.Column="1"
+                            Text="{loc:Translate Btn_Income}"
+                            Command="{Binding SelectIncomeCommand}"
+                            TextColor="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
+                            BorderColor="{StaticResource Primary}"
+                            BorderWidth="1"
+                            BackgroundColor="Transparent"
+                            CornerRadius="8">
                         <Button.Triggers>
-                            <!-- when IsExpenseSelected == false -> grey -->
-                            <DataTrigger TargetType="Button"
-                                     Binding="{Binding IsExpenseSelected}"
-                                     Value="False">
-                                <Setter Property="Background">
-                                    <Setter.Value>
-                                        <SolidColorBrush Color="#BDBDBD" />
-                                    </Setter.Value>
-                                </Setter>
+                            <DataTrigger TargetType="Button" Binding="{Binding IsExpenseSelected}" Value="False">
+                                <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                                <Setter Property="TextColor" Value="White" />
+                                <Setter Property="BorderWidth" Value="0" />
                             </DataTrigger>
                         </Button.Triggers>
                     </Button>
                 </Grid>
 
+
                 <!-- Category Selection: horizontal grid with 2 rows, fixed height, NO vertical scroll -->
                 <CollectionView
-                HeightRequest="170"                             
-                ItemsSource="{Binding Categories}" 
-                SelectionMode="Single"
-                SelectedItem="{Binding SelectedCategory}"
-                VerticalOptions="Start"
-                HorizontalScrollBarVisibility="Never">
+                    ItemsSource="{Binding Categories}"
+                    SelectionMode="Single"
+                    SelectedItem="{Binding SelectedCategory}"
+                    VerticalOptions="Start"
+                    HorizontalScrollBarVisibility="Never">
                     <CollectionView.ItemsLayout>
-                        <!-- IMPORTANT:
-                         - Orientation="Horizontal" -> scrolls horizontally
-                         - Span="2" means 2 ROWS when orientation is Horizontal -->
-                        <GridItemsLayout Orientation="Horizontal" Span="2" />
+                        <GridItemsLayout Orientation="Vertical" Span="{Binding CategoryColumns}" />
                     </CollectionView.ItemsLayout>
 
-                    <!-- Make each item a fixed-height tile so two rows fit exactly -->
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <!-- Fixed tile size helps layout -->
-                            <Grid WidthRequest="80" HeightRequest="80" Padding="6">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-                                <Image Grid.Row="0"
-                                   Source="{Binding Icon}"
-                                   HeightRequest="40" WidthRequest="40"
-                                   HorizontalOptions="Center"
-                                   BackgroundColor="LightGray"/>
-                                <Label Grid.Row="1"
-                                   Text="{Binding Name}"
-                                   FontSize="12"
-                                   HorizontalOptions="Center"/>
-                            </Grid>
+                            <Border x:Name="Tile"
+                                    Padding="6"
+                                    Margin="4"
+                                    Background="Transparent"
+                                    StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 10">
+                                <Border.Content>
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <Image Grid.Row="0"
+                                               Source="{Binding Icon}"
+                                               HeightRequest="40" WidthRequest="40"
+                                               HorizontalOptions="Center"
+                                               BackgroundColor="Transparent"
+                                               Aspect="AspectFit"/>
+                                        <Label Grid.Row="1"
+                                               Text="{Binding Name}"
+                                               FontSize="12"
+                                               HorizontalOptions="Center"/>
+                                    </Grid>
+                                </Border.Content>
+
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroup Name="CommonStates">
+                                        <VisualState Name="Normal">
+                                            <VisualState.Setters>
+                                                <Setter TargetName="Tile" Property="StrokeThickness" Value="0"/>
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState Name="Selected">
+                                            <VisualState.Setters>
+                                                <Setter TargetName="Tile" Property="Stroke" Value="{StaticResource PrimaryDarkBrush}"/>
+                                                <Setter TargetName="Tile" Property="StrokeThickness" Value="2"/>
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                </VisualStateManager.VisualStateGroups>
+                            </Border>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
+
                 </CollectionView>
-
-                <!-- Note Entry -->
-                <Entry Placeholder="{loc:Translate Entry_Note}" 
-                   Text="{Binding Note}" />
-
-                <!-- Amount Entry -->
-                <Entry
-                Keyboard="Numeric"
-                Text="{Binding Amount}"
-                Placeholder="{Binding Source={x:Static services:CurrencyManager.CurrentSymbol},
-                                      StringFormat='{}{0} 0.00'}" />
 
                 <!-- Account picker -->
                 <Picker Title="{loc:Translate Picker_ChooseAccount}"
-                    ItemsSource="{Binding Accounts}"
-                    ItemDisplayBinding="{Binding Name}"
-                    SelectedItem="{Binding SelectedAccount, Mode=TwoWay}" />
+                        ItemsSource="{Binding Accounts}"
+                        ItemDisplayBinding="{Binding Name}"
+                        SelectedItem="{Binding SelectedAccount, Mode=TwoWay}"
+                        FontSize="16"
+                        TitleColor="{StaticResource PrimaryDark}"
+                        TextColor="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"/>
 
-                <!-- Choose Date -->
-                <DatePicker Date="{Binding SelectedDate}" />
-
+                <!-- Note, Amount, Date -->
+                <Entry Placeholder="{loc:Translate Entry_Note}" 
+                       Text="{Binding Note}" 
+                       FontSize="16"/>
+                
+                <Entry Keyboard="Numeric" 
+                       Text="{Binding Amount}" 
+                       FontSize="16"
+                       Placeholder="{Binding Source={x:Static services:CurrencyManager.CurrentSymbol}, StringFormat='{}{0} 0.00'}"/>
+                
+                <DatePicker Date="{Binding SelectedDate}" FontSize="16"/>
 
                 <!-- extra bottom space -->
 
@@ -134,7 +144,13 @@
                 <!-- Save Button -->
                 <Button Text="{loc:Translate Btn_Save}"
                     Command="{Binding SaveCommand}"
-                    Style="{StaticResource BottomBarButtonStyle}"
+                    Style="{x:Null}"
+                    BackgroundColor="Transparent"
+                    BorderWidth="0"
+                    CornerRadius="0"
+                    Padding="10,14"
+                    TextColor="{StaticResource Primary}"
+                    FontAttributes="Bold"
                     FlexLayout.Grow="1"/>
             </FlexLayout>
         </Border>

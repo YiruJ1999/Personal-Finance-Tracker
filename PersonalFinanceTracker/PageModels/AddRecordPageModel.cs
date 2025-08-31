@@ -62,6 +62,15 @@ namespace PersonalFinanceTracker.PageModels
         [ObservableProperty] private ObservableCollection<Account> accounts;
         [ObservableProperty] private Account selectedAccount;
 
+        // layout
+        private int _categoryColumns = 4;
+        public int CategoryColumns
+        {
+            get => _categoryColumns;
+            set { if (_categoryColumns != value) { _categoryColumns = value; OnPropertyChanged(); } }
+        }
+
+
         [RelayCommand]
         public async Task Appearing()
         {
