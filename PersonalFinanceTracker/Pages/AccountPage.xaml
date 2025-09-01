@@ -42,7 +42,7 @@
                            FontAttributes="Bold" FontSize="16"/>
                     <chart:SfCartesianChart>
                         <chart:SfCartesianChart.PaletteBrushes>
-                            <SolidColorBrush Color="{StaticResource Primary}" />
+                            <SolidColorBrush Color="{StaticResource PrimaryDark}" />
                         </chart:SfCartesianChart.PaletteBrushes>
 
                         <chart:SfCartesianChart.XAxes>
@@ -67,7 +67,7 @@
                                 <chart:ChartMarkerSettings
                                     Type="Circle"
                                     Width="8" Height="8"
-                                    Fill="{StaticResource PrimaryBrush}" />      
+                                    Fill="{StaticResource PrimaryDarkBrush}" />      
                             </chart:LineSeries.MarkerSettings>
                         </chart:LineSeries>
 

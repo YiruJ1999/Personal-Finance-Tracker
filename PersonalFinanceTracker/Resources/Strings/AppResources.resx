@@ -300,4 +300,22 @@
   <data name="Category_Bonus" xml:space="preserve">
     <value>奖金</value>
   </data>
+  <data name="Dialog_PickerTitle" xml:space="preserve">
+    <value>选择头像</value>
+  </data>
+  <data name="Dialog_EditUsernameTitle" xml:space="preserve">
+    <value>修改用户名</value>
+  </data>
+  <data name="Dialog_EditUsernamePrompt" xml:space="preserve">
+    <value>请输入新的用户名。</value>
+  </data>
+  <data name="Dialog_SaveSuccessTitle" xml:space="preserve">
+    <value>成功</value>
+  </data>
+  <data name="Dialog_SaveSuccessMsg" xml:space="preserve">
+    <value>信息已保存。</value>
+  </data>
+  <data name="Dialog_OK" xml:space="preserve">
+    <value>确定</value>
+  </data>
 </root>

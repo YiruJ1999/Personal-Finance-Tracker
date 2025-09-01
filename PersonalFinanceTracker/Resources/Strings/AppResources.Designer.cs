@@ -214,6 +214,60 @@ namespace PersonalFinanceTracker.Resources.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 请输入新的用户名。.
+        /// </summary>
+        public static string Dialog_EditUsernamePrompt {
+            get {
+                return ResourceManager.GetString("Dialog_EditUsernamePrompt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 修改用户名.
+        /// </summary>
+        public static string Dialog_EditUsernameTitle {
+            get {
+                return ResourceManager.GetString("Dialog_EditUsernameTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 确定.
+        /// </summary>
+        public static string Dialog_OK {
+            get {
+                return ResourceManager.GetString("Dialog_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 选择头像.
+        /// </summary>
+        public static string Dialog_PickerTitle {
+            get {
+                return ResourceManager.GetString("Dialog_PickerTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 信息已保存。.
+        /// </summary>
+        public static string Dialog_SaveSuccessMsg {
+            get {
+                return ResourceManager.GetString("Dialog_SaveSuccessMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 成功.
+        /// </summary>
+        public static string Dialog_SaveSuccessTitle {
+            get {
+                return ResourceManager.GetString("Dialog_SaveSuccessTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 账户名称.
         /// </summary>
         public static string Entry_AccountName {

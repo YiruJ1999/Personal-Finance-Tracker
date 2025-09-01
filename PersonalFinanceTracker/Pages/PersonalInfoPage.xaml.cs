@@ -23,7 +23,7 @@ public partial class PersonalInfoPage : ContentPage
     {
         var result = await FilePicker.PickAsync(new PickOptions
         {
-            PickerTitle = "选择头像",
+            PickerTitle = AppResources.Dialog_PickerTitle,
             FileTypes = FilePickerFileType.Images
         });
 
@@ -35,7 +35,11 @@ public partial class PersonalInfoPage : ContentPage
 
     private async void OnEditNameClicked(object sender, EventArgs e)
     {
-        string name = await DisplayPromptAsync("修改用户名", "请输入新的用户名", initialValue: pageModel.Name);
+        string name = await DisplayPromptAsync(
+            AppResources.Dialog_EditUsernameTitle,   
+            AppResources.Dialog_EditUsernamePrompt,  
+            initialValue: pageModel.Name);
+
         if (!string.IsNullOrWhiteSpace(name))
         {
             pageModel.Name = name;
@@ -45,6 +49,9 @@ public partial class PersonalInfoPage : ContentPage
     private async void OnSaveClicked(object sender, EventArgs e)
     {
         await pageModel.SaveAsync();
-        await DisplayAlert("成功", "信息已保存", "确定");
+        await DisplayAlert(
+            AppResources.Dialog_SaveSuccessTitle, 
+            AppResources.Dialog_SaveSuccessMsg,   
+            AppResources.Dialog_OK);
     }
 }

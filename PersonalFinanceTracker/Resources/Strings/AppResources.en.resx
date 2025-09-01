@@ -300,4 +300,22 @@
   <data name="Category_Bonus" xml:space="preserve">
     <value>Bonus</value>
   </data>
+  <data name="Dialog_PickerTitle" xml:space="preserve">
+    <value>Choose Avatar</value>
+  </data>
+  <data name="Dialog_EditUsernameTitle" xml:space="preserve">
+    <value>Edit Username</value>
+  </data>
+  <data name="Dialog_EditUsernamePrompt" xml:space="preserve">
+    <value>Please enter a new username</value>
+  </data>
+  <data name="Dialog_SaveSuccessTitle" xml:space="preserve">
+    <value>Success</value>
+  </data>
+  <data name="Dialog_SaveSuccessMsg" xml:space="preserve">
+    <value>Information saved.</value>
+  </data>
+  <data name="Dialog_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
 </root>
