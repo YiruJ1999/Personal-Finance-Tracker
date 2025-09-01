@@ -1,23 +1,22 @@
 ﻿using PersonalFinanceTracker.Models;
+using PersonalFinanceTracker.Resources.Strings; 
 
 public static class CategoryData
 {
     public static List<CategoryModel> GetExpenseCategories() => new()
     {
-        new() { Name = "饮食", Icon = "food.png" },
-        new() { Name = "交通", Icon = "shopping.png" },
-        new() { Name = "购物", Icon = "transport.png" },
-        new() { Name = "娱乐", Icon = "entertainment.png" },
-        new() { Name = "医疗", Icon = "medical.png" },
-        new() { Name = "教育", Icon = "education.png" },
-        new() { Name = "数码", Icon = "camera.png" },
-
+        new() { Name = AppResources.Category_Food,         Icon = "food.png" },
+        new() { Name = AppResources.Category_Transport,    Icon = "transport.png" },
+        new() { Name = AppResources.Category_Shopping,     Icon = "shopping.png" },
+        new() { Name = AppResources.Category_Entertainment,Icon = "entertainment.png" },
+        new() { Name = AppResources.Category_Medical,      Icon = "medical.png" },
+        new() { Name = AppResources.Category_Education,    Icon = "education.png" },
+        new() { Name = AppResources.Category_Digital,      Icon = "camera.png" },
     };
 
     public static List<CategoryModel> GetIncomeCategories() => new()
     {
-        new() { Name = "工资", Icon = "salary.png" },
-        new() { Name = "奖金", Icon = "bonus.png" },
-        
+        new() { Name = AppResources.Category_Salary, Icon = "salary.png" },
+        new() { Name = AppResources.Category_Bonus,  Icon = "bonus.png" },
     };
 }

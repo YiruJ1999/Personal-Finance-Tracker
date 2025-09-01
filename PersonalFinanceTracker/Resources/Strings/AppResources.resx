@@ -273,4 +273,31 @@
   <data name="Label_BookList" xml:space="preserve">
     <value>账本列表</value>
   </data>
+  <data name="Category_Food" xml:space="preserve">
+    <value>饮食</value>
+  </data>
+  <data name="Category_Transport" xml:space="preserve">
+    <value>交通</value>
+  </data>
+  <data name="Category_Shopping" xml:space="preserve">
+    <value>购物</value>
+  </data>
+  <data name="Category_Entertainment" xml:space="preserve">
+    <value>娱乐</value>
+  </data>
+  <data name="Category_Medical" xml:space="preserve">
+    <value>医疗</value>
+  </data>
+  <data name="Category_Education" xml:space="preserve">
+    <value>教育</value>
+  </data>
+  <data name="Category_Digital" xml:space="preserve">
+    <value>数码</value>
+  </data>
+  <data name="Category_Salary" xml:space="preserve">
+    <value>工资</value>
+  </data>
+  <data name="Category_Bonus" xml:space="preserve">
+    <value>奖金</value>
+  </data>
 </root>

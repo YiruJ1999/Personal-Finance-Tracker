@@ -133,6 +133,87 @@ namespace PersonalFinanceTracker.Resources.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 奖金.
+        /// </summary>
+        public static string Category_Bonus {
+            get {
+                return ResourceManager.GetString("Category_Bonus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 数码.
+        /// </summary>
+        public static string Category_Digital {
+            get {
+                return ResourceManager.GetString("Category_Digital", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 教育.
+        /// </summary>
+        public static string Category_Education {
+            get {
+                return ResourceManager.GetString("Category_Education", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 娱乐.
+        /// </summary>
+        public static string Category_Entertainment {
+            get {
+                return ResourceManager.GetString("Category_Entertainment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 饮食.
+        /// </summary>
+        public static string Category_Food {
+            get {
+                return ResourceManager.GetString("Category_Food", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 医疗.
+        /// </summary>
+        public static string Category_Medical {
+            get {
+                return ResourceManager.GetString("Category_Medical", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 工资.
+        /// </summary>
+        public static string Category_Salary {
+            get {
+                return ResourceManager.GetString("Category_Salary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 购物.
+        /// </summary>
+        public static string Category_Shopping {
+            get {
+                return ResourceManager.GetString("Category_Shopping", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 交通.
+        /// </summary>
+        public static string Category_Transport {
+            get {
+                return ResourceManager.GetString("Category_Transport", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 账户名称.
         /// </summary>
         public static string Entry_AccountName {

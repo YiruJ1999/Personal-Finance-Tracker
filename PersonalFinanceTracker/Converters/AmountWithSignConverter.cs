@@ -4,21 +4,30 @@ using Microsoft.Maui.Controls;
 
 namespace PersonalFinanceTracker.Converters
 {
-    // Convert (Amount, Type) -> "+123.45" / "-67.89"
+    // Convert (Amount, Type) -> localized currency string with sign
     public sealed class AmountWithSignConverter : IMultiValueConverter
     {
-        public object Convert(object[] v, Type t, object p, CultureInfo culture)
+        public object Convert(object[] v, Type t, object p, CultureInfo _)
         {
-            decimal amount = v[0] is decimal d ? d :
-                             v[0] is string s && decimal.TryParse(s, NumberStyles.Any, culture, out var dv) ? dv : 0m;
+            // Use the app's current culture (kept in sync by your CurrencyManager)
+            var culture = CultureInfo.CurrentCulture;
 
-            var isExpense = (v[1]?.ToString() ?? "").Equals("Expense", StringComparison.OrdinalIgnoreCase)
-                            || (v[1]?.ToString() ?? "").Equals("支出");
+            // Parse amount with the same culture
+            decimal amount =
+                v[0] is decimal d ? d :
+                v[0] is string s && decimal.TryParse(s, NumberStyles.Any, culture, out var dv) ? dv : 0m;
+
+            // Be tolerant to different languages for "expense"
+            var type = (v[1]?.ToString() ?? string.Empty);
+            var isExpense = type.Equals("Expense", StringComparison.OrdinalIgnoreCase) || type.Equals("支出");
+
             var signed = isExpense ? -amount : amount;
 
+            // Optional: keep your preferred currency patterns
             var nfi = (NumberFormatInfo)culture.NumberFormat.Clone();
             nfi.CurrencyPositivePattern = 3; // "n $"
             nfi.CurrencyNegativePattern = 8; // "-n $"
+
             return signed.ToString("C", nfi);
         }
 

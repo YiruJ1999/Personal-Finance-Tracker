@@ -5,6 +5,7 @@ using PersonalFinanceTracker.Models;
 using PersonalFinanceTracker.Services;
 using PersonalFinanceTracker.Data;
 using PersonalFinanceTracker.Messages;
+using PersonalFinanceTracker.Resources.Strings;
 using Microsoft.Maui.Storage;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -42,6 +43,15 @@ namespace PersonalFinanceTracker.PageModels
 
             // fire-and-forget load accounts
             _ = LoadAccountsAsync();
+
+            // Listen for language changes to update category names
+            LanguageManager.LanguageChanged += async (_, __) =>
+            {
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    RefreshCategories(preserveSelection: true);
+                });
+            };
         }
 
         // ----- state -----
@@ -78,20 +88,39 @@ namespace PersonalFinanceTracker.PageModels
             await EnsureDefaultAccountsAndReloadAsync();
         }
 
+        /// <summary>
+        /// Rebuild Categories from CategoryData based on IsExpenseSelected.
+        /// Optionally preserve current selection (matched by Icon).
+        /// </summary>
+        private void RefreshCategories(bool preserveSelection)
+        {
+            // Remember current selection (by Icon) to restore after rebuilding names
+            var prevIcon = preserveSelection ? SelectedCategory?.Icon : null;
+
+            if (IsExpenseSelected)
+                Categories = new ObservableCollection<CategoryModel>(CategoryData.GetExpenseCategories());
+            else
+                Categories = new ObservableCollection<CategoryModel>(CategoryData.GetIncomeCategories());
+
+            // Restore selection by Icon if possible
+            if (!string.IsNullOrEmpty(prevIcon))
+                SelectedCategory = Categories.FirstOrDefault(c => c.Icon == prevIcon);
+        }
+
         // ----- category toggle -----
         [RelayCommand]
         private void SelectExpense()
         {
             IsExpenseSelected = true;
-            Categories = new ObservableCollection<CategoryModel>(CategoryData.GetExpenseCategories());
-            SelectedCategory = null; // reset selection to avoid stale category
+            RefreshCategories(preserveSelection: false);
+            SelectedCategory = null;
         }
 
         [RelayCommand]
         private void SelectIncome()
         {
             IsExpenseSelected = false;
-            Categories = new ObservableCollection<CategoryModel>(CategoryData.GetIncomeCategories());
+            RefreshCategories(preserveSelection: false);
             SelectedCategory = null;
         }
 
@@ -172,6 +201,8 @@ namespace PersonalFinanceTracker.PageModels
             Categories = new ObservableCollection<CategoryModel>(CategoryData.GetExpenseCategories());
             SelectedDate = DateTime.Now;
         }
+
+
 
         // ----- helpers -----
         private async Task LoadAccountsAsync(string? preserveSelectionByName = null)

@@ -220,14 +220,15 @@ namespace PersonalFinanceTracker.PageModels
             var bookId = await EnsureCurrentBookIdAsync();
             var allRecords = await _recordRepository.ListAsync(bookId);
 
-            var today = DateTime.Today;
+            var todayStart = DateTime.Today;
+            var tomorrowStart = todayStart.AddDays(1);
             TodayRecords = allRecords
-                .Where(r => r.Timestamp.Date == today)
+                .Where(r => r.Timestamp >= todayStart && r.Timestamp < tomorrowStart) // include local day precisely
                 .OrderByDescending(r => r.Timestamp)
                 .ToList();
 
-            var monthStart = new DateTime(today.Year, today.Month, 1);
-            var monthEndExclusive = today.AddDays(1);
+            var monthStart = new DateTime(todayStart.Year, todayStart.Month, 1);
+            var monthEndExclusive = monthStart.AddDays(1);
 
             var monthly = allRecords
                 .Where(r => r.Timestamp >= monthStart && r.Timestamp < monthEndExclusive)
@@ -278,8 +279,7 @@ namespace PersonalFinanceTracker.PageModels
             if (id > 0)
             {
                 CurrentBookId = id;
-                // Keep display name updated for UI
-                var CurrentBook = Preferences.Default.Get(PrefKeyCurrentBookName, DefaultBookDisplayName);
+                CurrentBook = Preferences.Default.Get(PrefKeyCurrentBookName, DefaultBookDisplayName);
                 return id;
             }
 

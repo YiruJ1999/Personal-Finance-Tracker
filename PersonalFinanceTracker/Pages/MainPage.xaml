@@ -125,15 +125,6 @@
         <Border Grid.Row="2"
                 Style="{StaticResource BottomBarContainerStyle}">
             <FlexLayout Style="{StaticResource BottomBarFlexStyle}">
-                <Button 
-                Command="{Binding GoToBookCommand}"
-                Style="{StaticResource BottomBarButtonStyle}">
-                    <HorizontalStackLayout Spacing="4" HorizontalOptions="Center">
-                        <Image Source="icon_book.png" HeightRequest="20" WidthRequest="20"/>
-                        <Label Text="{loc:Translate Label_Book}" FontSize="12"/>
-                    </HorizontalStackLayout>
-                </Button>
-
                 <Button Text="{loc:Translate Label_Book}" FlexLayout.Grow="1" Command="{Binding GoToBookCommand}" Style="{StaticResource BottomBarButtonStyle}" />
                 <Button Text="{loc:Translate Label_Record}" FlexLayout.Grow="1" Command="{Binding ViewRecordCommand}" Style="{StaticResource BottomBarButtonStyle}" />
                 <Button Text="+" FlexLayout.Grow="1" Command="{Binding AddRecordCommand}" Style="{StaticResource BottomBarPrimaryButtonStyle}" />

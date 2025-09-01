@@ -273,4 +273,31 @@
   <data name="Label_BookList" xml:space="preserve">
     <value>Book List</value>
   </data>
+  <data name="Category_Food" xml:space="preserve">
+    <value>Food</value>
+  </data>
+  <data name="Category_Transport" xml:space="preserve">
+    <value>Transport</value>
+  </data>
+  <data name="Category_Shopping" xml:space="preserve">
+    <value>Shopping</value>
+  </data>
+  <data name="Category_Entertainment" xml:space="preserve">
+    <value>Entertainment</value>
+  </data>
+  <data name="Category_Medical" xml:space="preserve">
+    <value>Medical</value>
+  </data>
+  <data name="Category_Education" xml:space="preserve">
+    <value>Education</value>
+  </data>
+  <data name="Category_Digital" xml:space="preserve">
+    <value>Digital</value>
+  </data>
+  <data name="Category_Salary" xml:space="preserve">
+    <value>Salary</value>
+  </data>
+  <data name="Category_Bonus" xml:space="preserve">
+    <value>Bonus</value>
+  </data>
 </root>
