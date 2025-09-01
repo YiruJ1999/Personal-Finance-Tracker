@@ -238,7 +238,7 @@
     <value>今日收支</value>
   </data>
   <data name="Label_EmptyList" xml:space="preserve">
-    <value>暂无记录</value>
+    <value>暂无记录...</value>
   </data>
   <data name="Picker_Currency" xml:space="preserve">
     <value>选择货币</value>

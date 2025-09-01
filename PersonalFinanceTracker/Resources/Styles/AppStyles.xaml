@@ -295,8 +295,8 @@
     <!-- Container: border of the bottom bar -->
     <Style x:Key="BottomBarContainerStyle" TargetType="Border">
         <!-- Keep structure, just recolor -->
-        <Setter Property="Background" Value="{StaticResource PrimaryLightBrush}"/>
-        <Setter Property="Stroke" Value="{StaticResource PrimaryBrush}"/>
+        <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
+        <Setter Property="Stroke" Value="{StaticResource PrimaryDarkBrush}"/>
         <Setter Property="StrokeThickness" Value="1"/>
         <Setter Property="Padding" Value="{StaticResource BottomBarPadding}"/>
         <Setter Property="StrokeShape" Value="Rectangle"/>

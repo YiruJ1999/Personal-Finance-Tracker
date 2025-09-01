@@ -565,7 +565,7 @@ namespace PersonalFinanceTracker.Resources.Strings {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 暂无记录.
+        ///   Looks up a localized string similar to 暂无记录....
         /// </summary>
         public static string Label_EmptyList {
             get {

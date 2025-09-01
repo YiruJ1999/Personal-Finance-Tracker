@@ -112,10 +112,16 @@
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                     <CollectionView.EmptyView>
-                        <Label Text="{loc:Translate Label_EmptyList}"
-                               HorizontalOptions="Center"
-                               VerticalOptions="Center"
-                               TextColor="Gray" />
+                        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center">
+                            <Label Text="{loc:Translate Label_EmptyList}"
+                                   HorizontalOptions="Center"
+                                   TextColor="Gray"
+                                   Margin="0,10"/>
+                            <Image Source="norecord.png"
+                                   WidthRequest="120"
+                                   HeightRequest="120"
+                                   HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
                     </CollectionView.EmptyView>
                 </CollectionView>
             </VerticalStackLayout>

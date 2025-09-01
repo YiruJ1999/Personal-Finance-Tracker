@@ -37,7 +37,7 @@
                                 <VisualState Name="Selected">
                                     <VisualState.Setters>
                                         <Setter TargetName="Card" Property="Border.BackgroundColor" Value="{StaticResource PrimaryLight}" />
-                                        <Setter TargetName="Card" Property="Border.Stroke" Value="{StaticResource PrimaryBrush}" />
+                                        <Setter TargetName="Card" Property="Border.Stroke" Value="{StaticResource PrimaryDarkBrush}" />
                                         <Setter TargetName="Card" Property="Border.StrokeThickness" Value="2" />
                                     </VisualState.Setters>
                                 </VisualState>

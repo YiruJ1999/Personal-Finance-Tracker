@@ -238,7 +238,7 @@
     <value>Heutige Transaktionen</value>
   </data>
   <data name="Label_EmptyList" xml:space="preserve">
-    <value>Keine Einträge</value>
+    <value>Keine Einträge...</value>
   </data>
   <data name="Picker_Currency" xml:space="preserve">
     <value>Währung auswählen</value>
