@@ -1,59 +1,106 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
-            x:Class="PersonalFinanceTracker.Pages.AccountDetailPage"
-            xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-            xmlns:pm="clr-namespace:PersonalFinanceTracker.PageModels"
-            xmlns:m="clr-namespace:PersonalFinanceTracker.Models"
-            xmlns:loc="clr-namespace:PersonalFinanceTracker.Localization"
-            x:DataType="pm:AccountDetailPageModel"
-            Title="{Binding AccountName}">
-    <Grid RowDefinitions="Auto,Auto,Auto,*" Padding="16" ColumnDefinitions="*,Auto">
-        <!-- Total amount -->
-        <Label Grid.Row="0"
-               Text="{Binding TotalAmountText}"
-               FontSize="20"
-               FontAttributes="Bold"
-               HorizontalOptions="Center" />
+    x:Class="PersonalFinanceTracker.Pages.AccountDetailPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:pm="clr-namespace:PersonalFinanceTracker.PageModels"
+    xmlns:m="clr-namespace:PersonalFinanceTracker.Models"
+    xmlns:loc="clr-namespace:PersonalFinanceTracker.Localization"
+    x:DataType="pm:AccountDetailPageModel"
+>
 
-        <!-- Edit account button -->
-        <Button Grid.Row="1" Text="{loc:Translate Btn_EditAccount}" FontSize="16"
-                Command="{Binding EditAccountCommand}" 
-                HorizontalOptions="Center"
-                Style="{StaticResource GhostHoverButton}" />
+    <Grid RowDefinitions="Auto,Auto,*" Padding="0">
 
-        <!-- Month picker row -->
-        <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Padding="0,8,0,8">
-            <Label Grid.Column="0" Text="{loc:Translate Label_MonthDetail}" FontAttributes="Bold" />
-            <!-- Month selector on the right -->
-            <Picker Grid.Column="1" WidthRequest="170"
+        <Border Grid.Row="0"
+                Stroke="{StaticResource PrimaryBrush}"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 14"
+                BackgroundColor="{StaticResource Secondary}"
+                Padding="12"
+                Margin="16,12,16,8">
+            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="6">
+                <Label Grid.Column="0"
+                       Text="{Binding AccountName}"
+                       FontSize="20"
+                       FontAttributes="Bold"
+                       TextColor="{StaticResource PrimaryDark}" />
+                <ImageButton Grid.Column="1"
+                             Source="pencil.png"
+                             BackgroundColor="Transparent"
+                             Padding="0"
+                             WidthRequest="24"
+                             HeightRequest="24"
+                             HorizontalOptions="End"
+                             VerticalOptions="Center"
+                             Command="{Binding EditAccountCommand}" />
+                <Label Grid.Row="1" Grid.ColumnSpan="2"
+                       Text="{Binding TotalAmountText}"
+                       FontSize="18"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center" 
+                       TextColor="{StaticResource PrimaryDarkText}"/>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Padding="16,0" Margin="0,0,0,8">
+            <Label Grid.Column="0"
+                   Text="{loc:Translate Label_MonthDetail}"
+                   FontAttributes="Bold" 
+                   TextColor="{StaticResource PrimaryDarkText}"/>
+            <Picker Grid.Column="1"
+                    WidthRequest="180"
                     Title="{loc:Translate Picker_ChooseMonth}"
                     ItemsSource="{Binding AvailableMonths}"
                     ItemDisplayBinding="{Binding Display}"
-                    SelectedItem="{Binding SelectedMonth}" 
-                    FontSize="16"/>
+                    SelectedItem="{Binding SelectedMonth}"
+                    FontSize="16"
+                    TitleColor="{StaticResource PrimaryDark}" />
         </Grid>
 
-        <!-- Monthly records list -->
-        <CollectionView Grid.Row="3" ItemsSource="{Binding MonthlyRecords}">
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="m:Record">
-                    <Grid Padding="8" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
-                        <Label Grid.Row="0" Grid.Column="0"
-                               Text="{Binding Category}" FontAttributes="Bold" FontSize="16"/>
-                        <Label Grid.Column="1" HorizontalTextAlignment="End">
-                            <Label.Text>
-                                <MultiBinding Converter="{StaticResource AmountWithSignConverter}">
-                                    <Binding Path="Amount"/>
-                                    <Binding Path="Type" />
-                                </MultiBinding>
-                            </Label.Text>
-                        </Label>
-                        <Label Grid.Row="1" Grid.ColumnSpan="2"
-                               Text="{Binding Note}" FontSize="12" TextColor="Gray"/>
+        <Border Grid.Row="2"
+                Stroke="{StaticResource PrimaryBrush}"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 14"
+                BackgroundColor="{StaticResource Secondary}"
+                Padding="0"
+                Margin="16,0,16,16">
+            <CollectionView ItemsSource="{Binding MonthlyRecords}"
+                            VerticalOptions="FillAndExpand">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="m:Record">
+                        <Grid Padding="12" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                            <Label Grid.Row="0" Grid.Column="0"
+                                   Text="{Binding Category}"
+                                   FontAttributes="Bold" FontSize="16" />
+                            <Label Grid.Row="0" Grid.Column="1"
+                                   HorizontalTextAlignment="End"
+                                   FontSize="16">
+                                <Label.Text>
+                                    <MultiBinding Converter="{StaticResource AmountWithSignConverter}">
+                                        <Binding Path="Amount" />
+                                        <Binding Path="Type" />
+                                    </MultiBinding>
+                                </Label.Text>
+                            </Label>
+                            <Label Grid.Row="1" Grid.ColumnSpan="2"
+                                   Text="{Binding Note}"
+                                   FontSize="12"
+                                   TextColor="Gray" />
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+                <CollectionView.EmptyView>
+                    <Grid Padding="24"
+                          HorizontalOptions="CenterAndExpand"
+                          VerticalOptions="CenterAndExpand">
+                        <Label Text="{loc:Translate Label_NoMonthlyRecords}"
+                               FontSize="16"
+                               TextColor="{StaticResource PrimaryDark}" />
                     </Grid>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+                </CollectionView.EmptyView>
+            </CollectionView>
+        </Border>
+
     </Grid>
 </ContentPage>

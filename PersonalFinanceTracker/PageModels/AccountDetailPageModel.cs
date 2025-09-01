@@ -131,54 +131,116 @@ namespace PersonalFinanceTracker.PageModels
         // Edit balance by writing an adjustment record (by AccountId, into current bookId)
         private async Task EditAccountAsync()
         {
-            string input = await Application.Current.MainPage.DisplayPromptAsync(
-                "编辑此账户", "请输入新的余额：", "保存", "取消", keyboard: Keyboard.Numeric);
-
-            if (string.IsNullOrWhiteSpace(input)) return;
-
-            if (!decimal.TryParse(input.Trim(), NumberStyles.Number, CultureInfo.CurrentCulture, out var newBalance))
+            try
             {
-                await Application.Current.MainPage.DisplayAlert("提示", "请输入有效的金额。", "好的");
-                return;
+                // 1) Ensure we run UI prompts on the UI thread
+                await MainThread.InvokeOnMainThreadAsync(async () =>
+                {
+                    // Read current balance once so we can show it to the user
+                    await _accountRepo.SyncAccountsFromBooksAsync(bookId: null);
+                    var accounts = await _accountRepo.ListAsync();
+                    var self = accounts.FirstOrDefault(a => a.Id == AccountId);
+                    var current = self?.Balance ?? 0m;
+                    var prompt = $"{AppResources.Dialog_EnterNewBalance}{Environment.NewLine}" +
+                                   $"{AppResources.Dialog_Current}{current.ToString("C", CultureInfo.CurrentCulture)}";
+
+
+                    string prefill = current.ToString("N2", CultureInfo.CurrentCulture);
+
+                    string input = await Application.Current.MainPage.DisplayPromptAsync(
+                        AppResources.Dialog_EditAccountTitle,
+                        prompt,
+                        AppResources.Dialog_Save,                          
+                        AppResources.Dialog_Cancel,                        
+                        keyboard: Keyboard.Numeric,
+                        initialValue: prefill);
+
+                    if (string.IsNullOrWhiteSpace(input))
+                        return;
+
+                    // 2) Parse input robustly (CurrentCulture first, then fallback)
+                    if (!TryParseMoney(input, CultureInfo.CurrentCulture, out var newBalance) &&
+                        !TryParseMoney(input, CultureInfo.InvariantCulture, out newBalance))
+                    {
+                        await Application.Current.MainPage.DisplayAlert(
+                            AppResources.Dialog_Tip,            
+                            AppResources.Dialog_InvalidAmount, 
+                            AppResources.Dialog_OK);          
+                        return;
+                    }
+
+                    // 3) Compute delta
+                    var delta = newBalance - current;
+                    if (delta == 0m)
+                    {
+                        await LoadHeaderAsync();
+                        return;
+                    }
+
+                    // For DB compatibility, we keep Chinese literals "收入"/"支出"
+                    var type = delta > 0 ? "收入" : "支出";
+                    var amount = Math.Abs(delta);
+
+                    // 4) Confirm with a localized preview (type + formatted delta)
+                    var preview = string.Format(
+                        AppResources.Dialog_AdjustmentPreview, 
+                        delta > 0 ? AppResources.Label_Income : AppResources.Label_Expense,
+                        amount.ToString("C", CultureInfo.CurrentCulture));
+
+                    var confirm = await Application.Current.MainPage.DisplayActionSheet(
+                        preview,
+                        AppResources.Dialog_Cancel,              
+                        null,
+                        AppResources.Dialog_Confirm);              
+
+                    if (confirm != AppResources.Dialog_Confirm)
+                        return;
+
+                    // 5) Resolve current bookId
+                    var bookId = await GetOrCreateCurrentBookIdAsync();
+
+                    // 6) Persist an adjustment record (keep invariant internal strings)
+                    var adjustment = new Record
+                    {
+                        Type = type,                                // "收入"/"支出"
+                        Amount = amount,
+                        Category = "余额调整",                        // invariant DB string; UI can localize when displaying
+                        Note = "账户详情页手动调整",                   // invariant DB string
+                        Timestamp = DateTime.Now,
+                        AccountId = AccountId
+                    };
+
+                    await _recordRepo.SaveAsync(bookId, adjustment);
+
+                    // 7) Refresh UI (header + list)
+                    await LoadHeaderAsync();
+                    await LoadMonthlyRecordsAsync();
+
+                    await Application.Current.MainPage.DisplayAlert(
+                        AppResources.Dialog_Success,
+                        AppResources.Dialog_BalanceUpdated,         
+                        AppResources.Dialog_OK);                
+                });
             }
-
-            // 1) Read current balance after sync
-            await _accountRepo.SyncAccountsFromBooksAsync(bookId: null);
-            var accounts = await _accountRepo.ListAsync();
-            var self = accounts.FirstOrDefault(a => a.Id == AccountId);
-            var current = self?.Balance ?? 0m;
-
-            // 2) Compute delta
-            var delta = newBalance - current;
-            if (delta == 0m)
+            catch (Exception ex)
             {
-                await LoadHeaderAsync();
-                return;
+                // Localized error surface (and keep a debug trace)
+                System.Diagnostics.Debug.WriteLine($"[EditAccount] {ex}");
+                await Application.Current.MainPage.DisplayAlert(
+                    AppResources.Dialog_Error,                      
+                    AppResources.Dialog_GenericError,               
+                    AppResources.Dialog_OK);
             }
+        }
 
-            var type = delta > 0 ? "收入" : "支出";
-            var amount = Math.Abs(delta);
-
-            // 3) Resolve current bookId (migrate legacy name if needed)
-            var bookId = await GetOrCreateCurrentBookIdAsync();
-
-            // 4) Persist an adjustment record
-            var adjustment = new Record
-            {
-                Type = type,
-                Amount = amount,
-                Category = "余额调整",
-                Note = "账户详情页手动调整",
-                Timestamp = DateTime.Now,
-                AccountId = AccountId
-            };
-
-            await _recordRepo.SaveAsync(bookId, adjustment);
-
-            // 5) Refresh UI
-            await LoadHeaderAsync();
-            await LoadMonthlyRecordsAsync();
-            await Application.Current.MainPage.DisplayAlert("提示", "余额已更新", "好的");
+        /// <summary>
+        /// Try to parse money input with given culture, allowing currency symbols and thousands.
+        /// </summary>
+        private static bool TryParseMoney(string input, CultureInfo culture, out decimal value)
+        {
+            // Allow currency symbol, thousands separators, leading/trailing whitespace, and decimals
+            var styles = NumberStyles.AllowCurrencySymbol | NumberStyles.Number;
+            return decimal.TryParse(input.Trim(), styles, culture, out value);
         }
 
         // Resolve current bookId; if only legacy name exists, create/resolve then save id to Preferences.

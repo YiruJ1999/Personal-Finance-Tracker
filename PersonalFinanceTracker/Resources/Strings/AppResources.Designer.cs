@@ -214,6 +214,60 @@ namespace PersonalFinanceTracker.Resources.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 将记一笔{0}：{1}.
+        /// </summary>
+        public static string Dialog_AdjustmentPreview {
+            get {
+                return ResourceManager.GetString("Dialog_AdjustmentPreview", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 余额已更新！.
+        /// </summary>
+        public static string Dialog_BalanceUpdated {
+            get {
+                return ResourceManager.GetString("Dialog_BalanceUpdated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 取消.
+        /// </summary>
+        public static string Dialog_Cancel {
+            get {
+                return ResourceManager.GetString("Dialog_Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 确认.
+        /// </summary>
+        public static string Dialog_Confirm {
+            get {
+                return ResourceManager.GetString("Dialog_Confirm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 当前：.
+        /// </summary>
+        public static string Dialog_Current {
+            get {
+                return ResourceManager.GetString("Dialog_Current", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 编辑此账户.
+        /// </summary>
+        public static string Dialog_EditAccountTitle {
+            get {
+                return ResourceManager.GetString("Dialog_EditAccountTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 请输入新的用户名。.
         /// </summary>
         public static string Dialog_EditUsernamePrompt {
@@ -228,6 +282,42 @@ namespace PersonalFinanceTracker.Resources.Strings {
         public static string Dialog_EditUsernameTitle {
             get {
                 return ResourceManager.GetString("Dialog_EditUsernameTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 请输入新的余额：.
+        /// </summary>
+        public static string Dialog_EnterNewBalance {
+            get {
+                return ResourceManager.GetString("Dialog_EnterNewBalance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 错误.
+        /// </summary>
+        public static string Dialog_Error {
+            get {
+                return ResourceManager.GetString("Dialog_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 发生未知错误，请稍后重试。.
+        /// </summary>
+        public static string Dialog_GenericError {
+            get {
+                return ResourceManager.GetString("Dialog_GenericError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 请输入有效的金额。.
+        /// </summary>
+        public static string Dialog_InvalidAmount {
+            get {
+                return ResourceManager.GetString("Dialog_InvalidAmount", resourceCulture);
             }
         }
         
@@ -250,6 +340,15 @@ namespace PersonalFinanceTracker.Resources.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 保存.
+        /// </summary>
+        public static string Dialog_Save {
+            get {
+                return ResourceManager.GetString("Dialog_Save", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 信息已保存。.
         /// </summary>
         public static string Dialog_SaveSuccessMsg {
@@ -264,6 +363,24 @@ namespace PersonalFinanceTracker.Resources.Strings {
         public static string Dialog_SaveSuccessTitle {
             get {
                 return ResourceManager.GetString("Dialog_SaveSuccessTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 成功.
+        /// </summary>
+        public static string Dialog_Success {
+            get {
+                return ResourceManager.GetString("Dialog_Success", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 提示.
+        /// </summary>
+        public static string Dialog_Tip {
+            get {
+                return ResourceManager.GetString("Dialog_Tip", resourceCulture);
             }
         }
         
@@ -538,6 +655,15 @@ namespace PersonalFinanceTracker.Resources.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 本月还没有记录....
+        /// </summary>
+        public static string Label_NoMonthlyRecords {
+            get {
+                return ResourceManager.GetString("Label_NoMonthlyRecords", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 备注.
         /// </summary>
         public static string Label_Note {
@@ -574,7 +700,7 @@ namespace PersonalFinanceTracker.Resources.Strings {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 总金额.
+        ///   Looks up a localized string similar to 总金额: .
         /// </summary>
         public static string Label_TotalAmount {
             get {
@@ -583,7 +709,7 @@ namespace PersonalFinanceTracker.Resources.Strings {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 总资产.
+        ///   Looks up a localized string similar to 总资产: .
         /// </summary>
         public static string Label_TotalAssets {
             get {

@@ -142,7 +142,7 @@
     <value>Neu</value>
   </data>
   <data name="Label_TotalAssets" xml:space="preserve">
-    <value>Gesamtvermögen</value>
+    <value>Gesamtvermögen: </value>
   </data>
   <data name="Label_Last4MonthsTrend" xml:space="preserve">
     <value>Vermögenstrend der letzten 4 Monate</value>
@@ -154,7 +154,7 @@
     <value>Löschen</value>
   </data>
   <data name="Label_TotalAmount" xml:space="preserve">
-    <value>Gesamtbetrag</value>
+    <value>Gesamtbetrag: </value>
   </data>
   <data name="Btn_EditAccount" xml:space="preserve">
     <value>Konto bearbeiten</value>
@@ -317,5 +317,47 @@
   </data>
   <data name="Dialog_OK" xml:space="preserve">
     <value>OK</value>
+  </data>
+  <data name="Label_NoMonthlyRecords" xml:space="preserve">
+    <value>Keine Aufzeichnungen in diesem Monat...</value>
+  </data>
+  <data name="Dialog_EditAccountTitle" xml:space="preserve">
+    <value>Konto bearbeiten</value>
+  </data>
+  <data name="Dialog_EnterNewBalance" xml:space="preserve">
+    <value>Neuen Kontostand eingeben: </value>
+  </data>
+  <data name="Dialog_Save" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="Dialog_Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="Dialog_Tip" xml:space="preserve">
+    <value>Hinweis</value>
+  </data>
+  <data name="Dialog_InvalidAmount" xml:space="preserve">
+    <value>Bitte geben Sie einen gültigen Betrag ein.</value>
+  </data>
+  <data name="Dialog_BalanceUpdated" xml:space="preserve">
+    <value>Kontostand aktualisiert!</value>
+  </data>
+  <data name="Dialog_Current" xml:space="preserve">
+    <value>Aktuell: </value>
+  </data>
+  <data name="Dialog_Confirm" xml:space="preserve">
+    <value>Bestätigen</value>
+  </data>
+  <data name="Dialog_Success" xml:space="preserve">
+    <value>Erfolg</value>
+  </data>
+  <data name="Dialog_Error" xml:space="preserve">
+    <value>Fehler</value>
+  </data>
+  <data name="Dialog_GenericError" xml:space="preserve">
+    <value>Ein unerwarteter Fehler ist aufgetreten. Bitte später erneut versuchen.</value>
+  </data>
+  <data name="Dialog_AdjustmentPreview" xml:space="preserve">
+    <value>Es wird eine {0} gebucht: {1}</value>
   </data>
 </root>

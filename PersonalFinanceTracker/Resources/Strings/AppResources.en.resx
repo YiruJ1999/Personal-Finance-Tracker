@@ -142,7 +142,7 @@
     <value>Add</value>
   </data>
   <data name="Label_TotalAssets" xml:space="preserve">
-    <value>Total Assets</value>
+    <value>Total Assets: </value>
   </data>
   <data name="Label_Last4MonthsTrend" xml:space="preserve">
     <value>Assets trend of last 4 months</value>
@@ -154,7 +154,7 @@
     <value>Delete</value>
   </data>
   <data name="Label_TotalAmount" xml:space="preserve">
-    <value>Total Amount</value>
+    <value>Total Amount: </value>
   </data>
   <data name="Btn_EditAccount" xml:space="preserve">
     <value>Edit Account</value>
@@ -317,5 +317,47 @@
   </data>
   <data name="Dialog_OK" xml:space="preserve">
     <value>OK</value>
+  </data>
+  <data name="Label_NoMonthlyRecords" xml:space="preserve">
+    <value>No records this month...</value>
+  </data>
+  <data name="Dialog_EditAccountTitle" xml:space="preserve">
+    <value>Edit Account</value>
+  </data>
+  <data name="Dialog_EnterNewBalance" xml:space="preserve">
+    <value>Enter new balance: </value>
+  </data>
+  <data name="Dialog_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Dialog_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Dialog_Tip" xml:space="preserve">
+    <value>Notice</value>
+  </data>
+  <data name="Dialog_InvalidAmount" xml:space="preserve">
+    <value>Please enter a valid amount.</value>
+  </data>
+  <data name="Dialog_BalanceUpdated" xml:space="preserve">
+    <value>Balance updated!</value>
+  </data>
+  <data name="Dialog_Current" xml:space="preserve">
+    <value>Current: </value>
+  </data>
+  <data name="Dialog_Confirm" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="Dialog_Success" xml:space="preserve">
+    <value>Success</value>
+  </data>
+  <data name="Dialog_Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="Dialog_GenericError" xml:space="preserve">
+    <value>An unexpected error occurred. Please try again later.</value>
+  </data>
+  <data name="Dialog_AdjustmentPreview" xml:space="preserve">
+    <value>This will add a {0}: {1}</value>
   </data>
 </root>

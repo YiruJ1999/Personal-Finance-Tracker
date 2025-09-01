@@ -142,7 +142,7 @@
     <value>添加</value>
   </data>
   <data name="Label_TotalAssets" xml:space="preserve">
-    <value>总资产</value>
+    <value>总资产: </value>
   </data>
   <data name="Label_Last4MonthsTrend" xml:space="preserve">
     <value>过去4个月的总资产趋势</value>
@@ -154,7 +154,7 @@
     <value>删除</value>
   </data>
   <data name="Label_TotalAmount" xml:space="preserve">
-    <value>总金额</value>
+    <value>总金额: </value>
   </data>
   <data name="Btn_EditAccount" xml:space="preserve">
     <value>编辑此账户</value>
@@ -317,5 +317,47 @@
   </data>
   <data name="Dialog_OK" xml:space="preserve">
     <value>确定</value>
+  </data>
+  <data name="Label_NoMonthlyRecords" xml:space="preserve">
+    <value>本月还没有记录...</value>
+  </data>
+  <data name="Dialog_EditAccountTitle" xml:space="preserve">
+    <value>编辑此账户</value>
+  </data>
+  <data name="Dialog_EnterNewBalance" xml:space="preserve">
+    <value>请输入新的余额：</value>
+  </data>
+  <data name="Dialog_Save" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="Dialog_Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="Dialog_Tip" xml:space="preserve">
+    <value>提示</value>
+  </data>
+  <data name="Dialog_InvalidAmount" xml:space="preserve">
+    <value>请输入有效的金额。</value>
+  </data>
+  <data name="Dialog_BalanceUpdated" xml:space="preserve">
+    <value>余额已更新！</value>
+  </data>
+  <data name="Dialog_Current" xml:space="preserve">
+    <value>当前：</value>
+  </data>
+  <data name="Dialog_Confirm" xml:space="preserve">
+    <value>确认</value>
+  </data>
+  <data name="Dialog_Success" xml:space="preserve">
+    <value>成功</value>
+  </data>
+  <data name="Dialog_Error" xml:space="preserve">
+    <value>错误</value>
+  </data>
+  <data name="Dialog_GenericError" xml:space="preserve">
+    <value>发生未知错误，请稍后重试。</value>
+  </data>
+  <data name="Dialog_AdjustmentPreview" xml:space="preserve">
+    <value>将记一笔{0}：{1}</value>
   </data>
 </root>
