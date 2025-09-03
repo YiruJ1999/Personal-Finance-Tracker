@@ -32,14 +32,14 @@
                     HorizontalOptions="Start">
                     <Label
                         Text="{Binding CurrentBookText}"
-                        FontSize="16"
+                        FontSize="15"
                         FontAttributes="Bold"
                         TextColor="{StaticResource PrimaryDark}" />
                 </Border>
 
                 <!-- Monthly Summary -->
                 <Label Text="{loc:Translate Label_MonthlySummary}"
-                       Style="{StaticResource Title2}"
+                       Style="{StaticResource Title3}"
                        HorizontalOptions="Center"
                        Margin="0,10"/>
 
@@ -49,29 +49,33 @@
                       RowSpacing="8">
 
                     <!-- Summary Labels -->
-                    <Label Text="{Binding MonthlySummaryData[0].Label}" Grid.Row="0" Grid.Column="0" HorizontalOptions="Center"/>
-                    <Label Text="{Binding MonthlySummaryData[1].Label}" Grid.Row="0" Grid.Column="1" HorizontalOptions="Center"/>
-                    <Label Text="{Binding MonthlySummaryData[2].Label}" Grid.Row="0" Grid.Column="2" HorizontalOptions="Center"/>
-                    <Label Text="{Binding MonthlySummaryData[3].Label}" Grid.Row="0" Grid.Column="3" HorizontalOptions="Center"/>
+                    <Label Text="{Binding MonthlySummaryData[0].Label}" Grid.Row="0" Grid.Column="0" HorizontalOptions="Center" Style="{StaticResource Caption1Strong}"/>
+                    <Label Text="{Binding MonthlySummaryData[1].Label}" Grid.Row="0" Grid.Column="1" HorizontalOptions="Center" Style="{StaticResource Caption1Strong}"/>
+                    <Label Text="{Binding MonthlySummaryData[2].Label}" Grid.Row="0" Grid.Column="2" HorizontalOptions="Center" Style="{StaticResource Caption1Strong}"/>
+                    <Label Text="{Binding MonthlySummaryData[3].Label}" Grid.Row="0" Grid.Column="3" HorizontalOptions="Center" Style="{StaticResource Caption1Strong}"/>
 
                     <!-- Values -->
                     <Label Text="{Binding MonthlySummaryData[0].Amount, StringFormat='{}{0:C}'}"
-                           Grid.Row="1" Grid.Column="0" HorizontalOptions="Center"/>
+                           Grid.Row="1" Grid.Column="0" HorizontalOptions="Center" Style="{StaticResource Caption1}"/>
                     <Label Text="{Binding MonthlySummaryData[1].Amount, StringFormat='{}{0:C}'}"
-                           Grid.Row="1" Grid.Column="1" HorizontalOptions="Center"/>
+                           Grid.Row="1" Grid.Column="1" HorizontalOptions="Center" Style="{StaticResource Caption1}"/>
                     <Label Text="{Binding MonthlySummaryData[2].Amount, StringFormat='{}{0:C}'}"
-                           Grid.Row="1" Grid.Column="2" HorizontalOptions="Center"/>
+                           Grid.Row="1" Grid.Column="2" HorizontalOptions="Center" Style="{StaticResource Caption1}"/>
 
                     <!-- Budget with Edit Icon -->
-                    <HorizontalStackLayout Grid.Row="1" Grid.Column="3" Spacing="5" HorizontalOptions="Center">
+                    <HorizontalStackLayout Grid.Row="1" 
+                                           Grid.Column="3" 
+                                           Spacing="5" 
+                                           HorizontalOptions="Center" 
+                                           VerticalOptions="Start">
                         <Label Text="{Binding MonthlySummaryData[3].Amount, StringFormat='{}{0:C}'}"
-                               VerticalOptions="Center"/>
+                               VerticalOptions="Center" Style="{StaticResource Caption1}"/>
                         <ImageButton Source="pencil.png"
-                                     HeightRequest="20"
-                                     WidthRequest="20"
+                                     HeightRequest="10"
+                                     WidthRequest="10"
                                      BackgroundColor="Transparent"
                                      Command="{Binding BuggetTappedCommand}"
-                                     VerticalOptions="Center"/>
+                                     VerticalOptions="Start"/>
                     </HorizontalStackLayout>
                 </Grid>
 
@@ -94,7 +98,7 @@
 
                 <!-- Today's list -->
                 <Label Text="{loc:Translate Label_TodayList}"
-                       Style="{StaticResource Title2}"
+                       Style="{StaticResource Title3}"
                        HorizontalOptions="Center"
                        Margin="0,10"/>
 
@@ -103,8 +107,9 @@
                         <DataTemplate x:DataType="models:Record">
                             <Border Style="{StaticResource CardStyle}" Margin="5">
                                 <VerticalStackLayout>
-                                    <Label Text="{Binding Category, Converter={StaticResource CategoryLocalizeConverter}}" FontSize="16" FontAttributes="Bold"/>
-                                    <Label FontSize="14">
+                                    <Label Text="{Binding Category, Converter={StaticResource CategoryLocalizeConverter}}" 
+                                           Style="{StaticResource Caption1Strong}"/>
+                                    <Label Style="{StaticResource Caption1}">
                                         <Label.Text>
                                             <MultiBinding Converter="{StaticResource AmountWithSignConverter}">
                                                 <Binding Path="Amount" />
@@ -121,7 +126,7 @@
                         <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center">
                             <Label Text="{loc:Translate Label_EmptyList}"
                                    HorizontalOptions="Center"
-                                   TextColor="Gray"
+                                   Style="{StaticResource Caption1Strong}"
                                    Margin="0,10"/>
                             <Image Source="norecord.png"
                                    WidthRequest="120"
