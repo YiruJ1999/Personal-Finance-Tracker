@@ -25,7 +25,7 @@ namespace PersonalFinanceTracker.Pages
 
             if (BindingContext is MainPageModel vm)
             {
-                await vm.Appearing(); 
+                await vm.AppearingCommand.ExecuteAsync(null); 
             }
         }
 

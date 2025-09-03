@@ -68,6 +68,7 @@ namespace PersonalFinanceTracker.Data
 
             if (record.Timestamp.Kind == DateTimeKind.Unspecified)
                 record.Timestamp = DateTime.SpecifyKind(record.Timestamp, DateTimeKind.Local);
+            record.Timestamp = record.Timestamp.ToUniversalTime();
 
             if (record.Id == 0)
             {

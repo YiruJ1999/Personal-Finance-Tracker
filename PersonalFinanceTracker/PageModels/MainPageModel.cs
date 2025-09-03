@@ -220,20 +220,42 @@ namespace PersonalFinanceTracker.PageModels
         public async Task LoadFinancialData()
         {
             var bookId = await EnsureCurrentBookIdAsync();
-            var allRecords = await _recordRepository.ListAsync(bookId);
+            var allRaw = await _recordRepository.ListAsync(bookId);
 
-            var todayStart = DateTime.Today;
-            var tomorrowStart = todayStart.AddDays(1);
+            // Normalize legacy timestamps to UTC BEFORE filtering
+            var allRecords = allRaw.Select(r =>
+            {
+                // NOTE: Record is a class, so mutate its Timestamp in-place for consistency.
+                // If you prefer immutable, create a shallow copy with the new timestamp.
+                r.Timestamp = NormalizeToUtc(r.Timestamp);
+                return r;
+            }).ToList();
+
+            // --- Build local day boundaries then convert to UTC for querying ---
+            var localTodayStart = DateTime.Today;                // local start of "today"
+            var localTomorrowStart = localTodayStart.AddDays(1); // exclusive
+
+            var utcTodayStart = TimeZoneInfo.ConvertTimeToUtc(
+                DateTime.SpecifyKind(localTodayStart, DateTimeKind.Local));
+            var utcTomorrowStart = TimeZoneInfo.ConvertTimeToUtc(
+                DateTime.SpecifyKind(localTomorrowStart, DateTimeKind.Local));
+
             TodayRecords = allRecords
-                .Where(r => r.Timestamp >= todayStart && r.Timestamp < tomorrowStart) // include local day precisely
+                .Where(r => r.Timestamp >= utcTodayStart && r.Timestamp < utcTomorrowStart)
                 .OrderByDescending(r => r.Timestamp)
                 .ToList();
 
-            var monthStart = new DateTime(todayStart.Year, todayStart.Month, 1);
-            var monthEndExclusive = monthStart.AddDays(1);
+            // --- Month boundaries in local time, then convert to UTC ---
+            var localMonthStart = new DateTime(localTodayStart.Year, localTodayStart.Month, 1);
+            var localMonthEndExclusive = localMonthStart.AddMonths(1);
+
+            var utcMonthStart = TimeZoneInfo.ConvertTimeToUtc(
+                DateTime.SpecifyKind(localMonthStart, DateTimeKind.Local));
+            var utcMonthEndExclusive = TimeZoneInfo.ConvertTimeToUtc(
+                DateTime.SpecifyKind(localMonthEndExclusive, DateTimeKind.Local));
 
             var monthly = allRecords
-                .Where(r => r.Timestamp >= monthStart && r.Timestamp < monthEndExclusive)
+                .Where(r => r.Timestamp >= utcMonthStart && r.Timestamp < utcMonthEndExclusive)
                 .ToList();
 
             var income = monthly.Where(r => r.Type == "ÊÕÈë").Sum(r => r.Amount);
@@ -254,7 +276,14 @@ namespace PersonalFinanceTracker.PageModels
                 })
                 .OrderByDescending(x => Math.Abs(x.Amount))
                 .ToList();
+
+            // Diagnostics: count & sample
+            System.Diagnostics.Debug.WriteLine($"[Main] all={allRecords.Count}, today={TodayRecords.Count}, monthly={monthly.Count}");
+            System.Diagnostics.Debug.WriteLine($"[Main] utcTodayStart={utcTodayStart:o}, utcTomorrowStart={utcTomorrowStart:o}");
+            if (allRecords.Count > 0)
+                System.Diagnostics.Debug.WriteLine($"[Main] sample ts={allRecords[0].Timestamp:o}, kind={allRecords[0].Timestamp.Kind}");
         }
+
 
 
         // Persist MonthlyBugget whenever changed (store by bookId; also update legacy once for backward-compat)
@@ -329,6 +358,19 @@ namespace PersonalFinanceTracker.PageModels
         new(AppResources.Label_BalanceDiff,  _lastIncome - _lastExpense),
         new(AppResources.Label_MonthBudget,  (decimal) _lastBudget),
             };
+        }
+
+        // Normalize DateTime to UTC assuming Unspecified means local wall-clock time.
+        private static DateTime NormalizeToUtc(DateTime dt)
+        {
+            if (dt.Kind == DateTimeKind.Utc)
+                return dt;
+
+            if (dt.Kind == DateTimeKind.Local)
+                return dt.ToUniversalTime();
+
+            // Unspecified: treat as LOCAL first, then convert to UTC.
+            return DateTime.SpecifyKind(dt, DateTimeKind.Local).ToUniversalTime();
         }
 
     }
