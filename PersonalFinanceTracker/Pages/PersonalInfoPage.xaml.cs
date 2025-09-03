@@ -29,7 +29,20 @@ public partial class PersonalInfoPage : ContentPage
 
         if (result != null)
         {
-            pageModel.AvatarPath = result.FullPath;
+            var ext = Path.GetExtension(result.FileName);
+            var name = $"avatar_{DateTime.UtcNow.Ticks}{ext}";
+            var dest = Path.Combine(FileSystem.AppDataDirectory, name);
+
+            using (var src = await result.OpenReadAsync())
+            using (var dst = File.Open(dest, FileMode.Create, FileAccess.Write))
+            {
+                await src.CopyToAsync(dst);
+            }
+
+            if (BindingContext is PersonalInfoPageModel vm)
+            {
+                vm.AvatarPath = dest; 
+            }
         }
     }
 

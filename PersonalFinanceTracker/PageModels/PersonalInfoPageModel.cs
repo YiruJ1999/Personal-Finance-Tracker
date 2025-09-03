@@ -8,7 +8,8 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 
-using System.Linq;                
+using System.Linq;
+using System.IO;
 using PersonalFinanceTracker.Localization; 
 using System;                     
 
@@ -33,7 +34,7 @@ namespace PersonalFinanceTracker.PageModels
             {
                 _avatarPath = value;
                 // Update ImageSource when file path changes
-                Avatar = string.IsNullOrEmpty(value) ? null : ImageSource.FromFile(value);
+                RefreshAvatarImage();
                 OnPropertyChanged();
             }
         }
@@ -45,6 +46,32 @@ namespace PersonalFinanceTracker.PageModels
             get => _avatar;
             set { _avatar = value; OnPropertyChanged(); }
         }
+
+        private void RefreshAvatarImage()
+        {
+            try
+            {
+                // If path is null/empty or file missing => use default avatar
+                if (string.IsNullOrWhiteSpace(_avatarPath) || !File.Exists(_avatarPath))
+                {
+                    // Use app-embedded image as default
+                    Avatar = ImageSource.FromFile("default_avatar.png");
+                    return;
+                }
+
+                // IMPORTANT: Use stream to avoid image caching when the same file path is overwritten
+                // Also, set Avatar to null first so the UI will re-render even if the "new" image
+                // ends up with the same dimensions/metadata.
+                Avatar = null; // force a layout/visual refresh
+                Avatar = ImageSource.FromFile(_avatarPath);
+            }
+            catch
+            {
+                // On any error, fall back to default avatar
+                Avatar = ImageSource.FromFile("default_avatar.png");
+            }
+        }
+
 
         // ---------------- Currency selection ----------------
 
@@ -147,6 +174,8 @@ namespace PersonalFinanceTracker.PageModels
             }
             else
             {
+                AvatarPath = string.Empty;
+
                 // If repository returns null, initialize a safe default
                 CurrencyCode = "EUR";
 

@@ -23,7 +23,10 @@
                         HeightRequest="100"
                         CornerRadius="50"
                         AvatarShape="Circle"
-                        ImageSource="{Binding AvatarPath}"/>
+                        Background="Transparent"
+                        ContentType="Custom">
+                        <Image Source="{Binding Avatar}" Aspect="AspectFill"/>
+                    </sfavatar:SfAvatarView>
                     <ImageButton
                         Source="pencil.png"
                         BackgroundColor="Transparent"
