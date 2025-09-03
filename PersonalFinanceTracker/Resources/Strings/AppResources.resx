@@ -360,4 +360,7 @@
   <data name="Dialog_AdjustmentPreview" xml:space="preserve">
     <value>将记一笔{0}：{1}</value>
   </data>
+  <data name="Category_BalanceAdjust" xml:space="preserve">
+    <value>余额调整</value>
+  </data>
 </root>

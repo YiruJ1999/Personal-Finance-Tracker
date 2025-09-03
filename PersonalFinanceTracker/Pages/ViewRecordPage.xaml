@@ -4,9 +4,15 @@
              xmlns:local="clr-namespace:PersonalFinanceTracker.PageModels"
              xmlns:models="clr-namespace:PersonalFinanceTracker.Models"
              xmlns:loc="clr-namespace:PersonalFinanceTracker.Localization"
+             xmlns:conv="clr-namespace:PersonalFinanceTracker.Converters"
              x:Class="PersonalFinanceTracker.Pages.ViewRecordPage"
              x:DataType="local:ViewRecordPageModel"
              Shell.NavBarIsVisible="False">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <conv:CategoryLocalizeConverter x:Key="CategoryLocalizeConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
 
     <!-- 使用 Grid 实现：上表头固定 + 下区域填充滚动 -->
     <Grid RowDefinitions="Auto,10,*" Padding="10">
@@ -39,7 +45,7 @@
                         <FlexLayout Direction="Row"
                                     JustifyContent="SpaceBetween"
                                     AlignItems="Center">
-                            <Label Text="{Binding Category}" FlexLayout.Grow="1"  />
+                            <Label Text="{Binding Category, Converter={StaticResource CategoryLocalizeConverter}}" FlexLayout.Grow="1"  />
                             <Label Text="{Binding Amount, StringFormat='{}{0:C}'}" FlexLayout.Grow="1"  />
                             <Label Text="{Binding Note}" FlexLayout.Grow="2" />
 

@@ -50,6 +50,8 @@ namespace PersonalFinanceTracker.PageModels
                 OnPropertyChanged(nameof(CurrentBookText));
                 RebuildMonthlySummaryItems();              
                 OnPropertyChanged(nameof(MonthlySummaryData));
+                if (TodayRecords != null)
+                    TodayRecords = TodayRecords.ToList();
             };
         }
 

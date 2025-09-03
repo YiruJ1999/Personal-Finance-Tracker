@@ -360,4 +360,7 @@
   <data name="Dialog_AdjustmentPreview" xml:space="preserve">
     <value>Es wird eine {0} gebucht: {1}</value>
   </data>
+  <data name="Category_BalanceAdjust" xml:space="preserve">
+    <value>Balance Anpassung</value>
+  </data>
 </root>

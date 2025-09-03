@@ -5,10 +5,16 @@
              xmlns:models="clr-namespace:PersonalFinanceTracker.Models"
              xmlns:chart="clr-namespace:Syncfusion.Maui.Charts;assembly=Syncfusion.Maui.Charts"
              xmlns:loc="clr-namespace:PersonalFinanceTracker.Localization"
+             xmlns:conv="clr-namespace:PersonalFinanceTracker.Converters"
              x:Class="PersonalFinanceTracker.Pages.MainPage"
              x:DataType="local:MainPageModel"
              Shell.NavBarIsVisible="False"
              BackgroundColor="{StaticResource LightBackground}">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <conv:CategoryLocalizeConverter x:Key="CategoryLocalizeConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
 
     <Grid RowDefinitions="Auto,*,Auto">
 
@@ -97,7 +103,7 @@
                         <DataTemplate x:DataType="models:Record">
                             <Border Style="{StaticResource CardStyle}" Margin="5">
                                 <VerticalStackLayout>
-                                    <Label Text="{Binding Category}" FontSize="16" FontAttributes="Bold"/>
+                                    <Label Text="{Binding Category, Converter={StaticResource CategoryLocalizeConverter}}" FontSize="16" FontAttributes="Bold"/>
                                     <Label FontSize="14">
                                         <Label.Text>
                                             <MultiBinding Converter="{StaticResource AmountWithSignConverter}">

@@ -133,6 +133,15 @@ namespace PersonalFinanceTracker.Resources.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 余额调整.
+        /// </summary>
+        public static string Category_BalanceAdjust {
+            get {
+                return ResourceManager.GetString("Category_BalanceAdjust", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 奖金.
         /// </summary>
         public static string Category_Bonus {
