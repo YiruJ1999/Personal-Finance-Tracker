@@ -21,14 +21,19 @@ namespace PersonalFinanceTracker.Converters
             var type = (v[1]?.ToString() ?? string.Empty);
             var isExpense = type.Equals("Expense", StringComparison.OrdinalIgnoreCase) || type.Equals("支出");
 
-            var signed = isExpense ? -amount : amount;
+            var abs = Math.Abs(amount);
 
             // Optional: keep your preferred currency patterns
             var nfi = (NumberFormatInfo)culture.NumberFormat.Clone();
             nfi.CurrencyPositivePattern = 3; // "n $"
-            nfi.CurrencyNegativePattern = 8; // "-n $"
+            nfi.CurrencyNegativePattern = 3; // "-n $"
 
-            return signed.ToString("C", nfi);
+            string sign = isExpense ? "-" : "+";
+
+            if (abs == 0m) sign = string.Empty;
+
+
+            return $"{sign}{abs.ToString("C", nfi)}";
         }
 
         public object[] ConvertBack(object v, Type[] ts, object p, CultureInfo c) => throw new NotSupportedException();
