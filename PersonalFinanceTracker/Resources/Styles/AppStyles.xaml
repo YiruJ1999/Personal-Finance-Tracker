@@ -318,6 +318,7 @@
         <Setter Property="Padding" Value="0"/>
         <Setter Property="Margin" Value="3"/>
         <Setter Property="FontSize" Value="{OnIdiom 14, Desktop=16}"/>
+        <Setter Property="FontAutoScalingEnabled" Value="True"/>
         <Setter Property="MinimumHeightRequest" Value="44"/>
 
         <!-- Teal theme -->
