@@ -10,136 +10,170 @@
              x:DataType="local:MainPageModel"
              Shell.NavBarIsVisible="False"
              BackgroundColor="{StaticResource LightBackground}">
+
     <ContentPage.Resources>
         <ResourceDictionary>
             <conv:CategoryLocalizeConverter x:Key="CategoryLocalizeConverter" />
         </ResourceDictionary>
     </ContentPage.Resources>
 
-    <Grid RowDefinitions="Auto,*,Auto">
+    <!-- Use only one scrollable container: CollectionView -->
+    <Grid RowDefinitions="*,Auto">
 
-        <!-- Scrollable Content -->
-        <ScrollView Grid.Row="1">
-            <VerticalStackLayout Spacing="20" Padding="20">
+        <!-- CollectionView is the single scroller. Header holds the non-list content. -->
+        <CollectionView Grid.Row="0"
+                        ItemsSource="{Binding TodayRecords}"
+                        ItemsLayout="VerticalList"
+                        VerticalScrollBarVisibility="Always"
+                        Margin="0">
 
-                <!-- Current Book -->
-                <Border
-                     BackgroundColor="{StaticResource PrimaryLight}"  
-                    Stroke="{StaticResource Primary}"
-                    StrokeThickness="2"
-                    StrokeShape="RoundRectangle 14"
-                    Padding="10,6"
-                    HorizontalOptions="Start">
-                    <Label
-                        Text="{Binding CurrentBookText}"
-                        FontSize="15"
-                        FontAttributes="Bold"
-                        TextColor="{StaticResource PrimaryDark}" />
-                </Border>
+            <!-- ===== HEADER: moved from ScrollView content, unchanged in appearance ===== -->
+            <CollectionView.Header>
+                <VerticalStackLayout Spacing="20" Padding="20">
 
-                <!-- Monthly Summary -->
-                <Label Text="{loc:Translate Label_MonthlySummary}"
-                       Style="{StaticResource Title3}"
-                       HorizontalOptions="Center"
-                       Margin="0,10"/>
+                    <!-- Current Book -->
+                    <Border
+                        BackgroundColor="{StaticResource PrimaryLight}"  
+                        Stroke="{StaticResource Primary}"
+                        StrokeThickness="2"
+                        StrokeShape="RoundRectangle 14"
+                        Padding="10,6"
+                        HorizontalOptions="Start">
+                        <Label
+                            Text="{Binding CurrentBookText}"
+                            Style="{StaticResource Caption1Strong}"
+                            TextColor="{StaticResource PrimaryDark}" />
+                    </Border>
 
-                <Grid ColumnDefinitions="*,*,*,*"
-                      RowDefinitions="Auto,Auto"
-                      ColumnSpacing="10"
-                      RowSpacing="8">
+                    <!-- Monthly Summary -->
+                    <Label Text="{loc:Translate Label_MonthlySummary}"
+                           Style="{StaticResource Title3}"
+                           HorizontalOptions="Center"
+                           Margin="0,10"/>
 
-                    <!-- Summary Labels -->
-                    <Label Text="{Binding MonthlySummaryData[0].Label}" Grid.Row="0" Grid.Column="0" HorizontalOptions="Center" Style="{StaticResource Caption1Strong}"/>
-                    <Label Text="{Binding MonthlySummaryData[1].Label}" Grid.Row="0" Grid.Column="1" HorizontalOptions="Center" Style="{StaticResource Caption1Strong}"/>
-                    <Label Text="{Binding MonthlySummaryData[2].Label}" Grid.Row="0" Grid.Column="2" HorizontalOptions="Center" Style="{StaticResource Caption1Strong}"/>
-                    <Label Text="{Binding MonthlySummaryData[3].Label}" Grid.Row="0" Grid.Column="3" HorizontalOptions="Center" Style="{StaticResource Caption1Strong}"/>
+                    <Grid ColumnDefinitions="*,*,*"
+                          RowDefinitions="Auto,Auto,Auto,Auto"
+                          ColumnSpacing="10"
+                          RowSpacing="8">
 
-                    <!-- Values -->
-                    <Label Text="{Binding MonthlySummaryData[0].Amount, StringFormat='{}{0:C}'}"
-                           Grid.Row="1" Grid.Column="0" HorizontalOptions="Center" Style="{StaticResource Caption1}"/>
-                    <Label Text="{Binding MonthlySummaryData[1].Amount, StringFormat='{}{0:C}'}"
-                           Grid.Row="1" Grid.Column="1" HorizontalOptions="Center" Style="{StaticResource Caption1}"/>
-                    <Label Text="{Binding MonthlySummaryData[2].Amount, StringFormat='{}{0:C}'}"
-                           Grid.Row="1" Grid.Column="2" HorizontalOptions="Center" Style="{StaticResource Caption1}"/>
+                        <!-- row 0: titles (keep first three; remove budget title here) -->
+                        <Label Grid.Row="0" Grid.Column="0" Style="{StaticResource Caption1Strong}"
+                               HorizontalOptions="Center" Text="{Binding MonthlySummaryData[0].Label}"/>
+                        <Label Grid.Row="0" Grid.Column="1" Style="{StaticResource Caption1Strong}"
+                               HorizontalOptions="Center" Text="{Binding MonthlySummaryData[1].Label}"/>
+                        <Label Grid.Row="0" Grid.Column="2" Style="{StaticResource Caption1Strong}"
+                               HorizontalOptions="Center" Text="{Binding MonthlySummaryData[2].Label}"/>
 
-                    <!-- Budget with Edit Icon -->
-                    <HorizontalStackLayout Grid.Row="1" 
-                                           Grid.Column="3" 
-                                           Spacing="5" 
-                                           HorizontalOptions="Center" 
-                                           VerticalOptions="Start">
-                        <Label Text="{Binding MonthlySummaryData[3].Amount, StringFormat='{}{0:C}'}"
-                               VerticalOptions="Center" Style="{StaticResource Caption1}"/>
-                        <ImageButton Source="pencil.png"
-                                     HeightRequest="10"
-                                     WidthRequest="10"
+                        <!-- row 1: values for the first three columns -->
+                        <Label Grid.Row="1" Grid.Column="0" Style="{StaticResource Caption1}"
+                               HorizontalOptions="Center"
+                               Text="{Binding MonthlySummaryData[0].Amount, StringFormat='{}{0:C}'}"/>
+                        <Label Grid.Row="1" Grid.Column="1" Style="{StaticResource Caption1}"
+                               HorizontalOptions="Center"
+                               Text="{Binding MonthlySummaryData[1].Amount, StringFormat='{}{0:C}'}"/>
+                        <Label Grid.Row="1" Grid.Column="2" Style="{StaticResource Caption1}"
+                               HorizontalOptions="Center"
+                               Text="{Binding MonthlySummaryData[2].Amount, StringFormat='{}{0:C}'}"/>
+
+                        <!-- row 2: horizontal divider -->
+                        <BoxView Grid.Row="2" Grid.ColumnSpan="4"
+                                 HeightRequest="1"
+                                 BackgroundColor="{StaticResource Gray300}"
+                                 Opacity="0.6"
+                                 HorizontalOptions="Fill" />
+
+                        <!-- row 3: monthly budget moved here -->
+                        <Label Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"
+                               Style="{StaticResource Caption1Strong}"
+                               HorizontalOptions="Start"
+                               Text="{Binding MonthlySummaryData[3].Label}"/>
+
+                        <!-- budget amount -->
+                        <Label x:Name="BudgetAmountLabel"
+                               Grid.Row="3" Grid.Column="1"
+                               Style="{StaticResource Caption1}"
+                               HorizontalOptions="Center"
+                               Text="{Binding MonthlySummaryData[3].Amount, StringFormat='{}{0:C}'}"/>
+
+                        <!-- edit icon sized to match font size of the amount -->
+                        <ImageButton Grid.Row="3" Grid.Column="3"
+                                     Source="pencil_s.png"
                                      BackgroundColor="Transparent"
-                                     Command="{Binding BuggetTappedCommand}"
-                                     VerticalOptions="Start"/>
-                    </HorizontalStackLayout>
-                </Grid>
+                                     HorizontalOptions="Start" VerticalOptions="Center"
+                                     Command="{Binding BuggetTappedCommand}"/>  
+                    </Grid>
 
-                <!-- Monthly Category Chart -->
-                <chart:SfCartesianChart HeightRequest="280">
-                    <chart:SfCartesianChart.XAxes>
-                        <chart:CategoryAxis />
-                    </chart:SfCartesianChart.XAxes>
-                    <chart:SfCartesianChart.YAxes>
-                        <chart:NumericalAxis />
-                    </chart:SfCartesianChart.YAxes>
-                    <chart:SfCartesianChart.Series>
-                        <chart:ColumnSeries ItemsSource="{Binding MonthlyCategoryChartData}"
-                                            XBindingPath="Category"
-                                            YBindingPath="Amount"
-                                            ShowDataLabels="True" 
-                                            Fill="{StaticResource PrimaryBrush}"/>
-                    </chart:SfCartesianChart.Series>
-                </chart:SfCartesianChart>
+                    <!-- Monthly Category Chart -->
+                    <chart:SfCartesianChart HeightRequest="280">
+                        <chart:SfCartesianChart.XAxes>
+                            <chart:CategoryAxis />
+                        </chart:SfCartesianChart.XAxes>
+                        <chart:SfCartesianChart.YAxes>
+                            <chart:NumericalAxis />
+                        </chart:SfCartesianChart.YAxes>
+                        <chart:SfCartesianChart.Series>
+                            <chart:ColumnSeries ItemsSource="{Binding MonthlyCategoryChartData}"
+                                                XBindingPath="Category"
+                                                YBindingPath="Amount"
+                                                ShowDataLabels="True" 
+                                                Fill="{StaticResource PrimaryBrush}"/>
+                        </chart:SfCartesianChart.Series>
+                    </chart:SfCartesianChart>
 
-                <!-- Today's list -->
-                <Label Text="{loc:Translate Label_TodayList}"
-                       Style="{StaticResource Title3}"
-                       HorizontalOptions="Center"
-                       Margin="0,10"/>
+                    <!-- Today's list title -->
+                    <Label Text="{loc:Translate Label_TodayList}"
+                           Style="{StaticResource Title3}"
+                           HorizontalOptions="Center"
+                           Margin="0,10"/>
+                </VerticalStackLayout>
+            </CollectionView.Header>
 
-                <CollectionView ItemsSource="{Binding TodayRecords}">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="models:Record">
-                            <Border Style="{StaticResource CardStyle}" Margin="5">
-                                <VerticalStackLayout>
-                                    <Label Text="{Binding Category, Converter={StaticResource CategoryLocalizeConverter}}" 
-                                           Style="{StaticResource Caption1Strong}"/>
-                                    <Label Style="{StaticResource Caption1}">
-                                        <Label.Text>
-                                            <MultiBinding Converter="{StaticResource AmountWithSignConverter}">
-                                                <Binding Path="Amount" />
-                                                <Binding Path="Type" />
-                                            </MultiBinding>
-                                        </Label.Text>
-                                    </Label>
-                                    <Label Text="{Binding Note}" FontSize="12" TextColor="Gray"/>
-                                </VerticalStackLayout>
-                            </Border>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                    <CollectionView.EmptyView>
-                        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center">
-                            <Label Text="{loc:Translate Label_EmptyList}"
-                                   HorizontalOptions="Center"
-                                   Style="{StaticResource Caption1Strong}"
-                                   Margin="0,10"/>
-                            <Image Source="norecord.png"
-                                   WidthRequest="120"
-                                   HeightRequest="120"
-                                   HorizontalOptions="Center"/>
+            <!-- ===== ITEMS: unchanged ===== -->
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Record">
+                    <Border Style="{StaticResource CardStyle}" Margin="5">
+                        <VerticalStackLayout>
+                            <Label Text="{Binding Category, Converter={StaticResource CategoryLocalizeConverter}}" 
+                                   Style="{StaticResource Caption1Strong}"/>
+                            <Label Style="{StaticResource Caption1}">
+                                <Label.Text>
+                                    <MultiBinding Converter="{StaticResource AmountWithSignConverter}">
+                                        <Binding Path="Amount" />
+                                        <Binding Path="Type" />
+                                    </MultiBinding>
+                                </Label.Text>
+                            </Label>
+                            <Label Text="{Binding Note}" Style="{StaticResource Caption2}" TextColor="Gray"/>
                         </VerticalStackLayout>
-                    </CollectionView.EmptyView>
-                </CollectionView>
-            </VerticalStackLayout>
-        </ScrollView>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
 
-        <!-- Bottom Navigation Bar -->
-        <Border Grid.Row="2"
+            <!-- ===== EMPTY VIEW: will now render correctly when list is empty ===== -->
+            <CollectionView.EmptyView>
+                <Grid Padding="40" Margin="0,10,0,20"
+              VerticalOptions="FillAndExpand"
+              MinimumHeightRequest="280">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Label Text="{loc:Translate Label_EmptyList}"
+                   HorizontalOptions="Center"
+                   Style="{StaticResource Caption1Strong}"
+                   Margin="0,10"/>
+                    <Image Grid.Row="1"
+                   Source="norecord.png"
+                   WidthRequest="120"
+                   HeightRequest="120"
+                   HorizontalOptions="Center"/>
+                </Grid>
+            </CollectionView.EmptyView>
+        </CollectionView>
+
+        <!-- Bottom Navigation Bar (unchanged) -->
+        <Border Grid.Row="1"
                 Style="{StaticResource BottomBarContainerStyle}">
             <FlexLayout Style="{StaticResource BottomBarFlexStyle}">
                 <Button Text="{loc:Translate Label_Book}" FlexLayout.Grow="1" Command="{Binding GoToBookCommand}" Style="{StaticResource BottomBarButtonStyle}" />

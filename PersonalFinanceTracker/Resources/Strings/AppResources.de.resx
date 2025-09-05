@@ -259,16 +259,16 @@
     <value>Notiz</value>
   </data>
   <data name="Label_MonthIncome" xml:space="preserve">
-    <value>Monatseinkommen</value>
+    <value>Monatliches Einkommen</value>
   </data>
   <data name="Label_MonthExpense" xml:space="preserve">
-    <value>Monatsausgaben</value>
+    <value>Monatliche Ausgaben</value>
   </data>
   <data name="Label_BalanceDiff" xml:space="preserve">
     <value>Saldo</value>
   </data>
   <data name="Label_MonthBudget" xml:space="preserve">
-    <value>Monatsbudget</value>
+    <value>Monatliches Budget</value>
   </data>
   <data name="Label_BookList" xml:space="preserve">
     <value>Buch Liste</value>
