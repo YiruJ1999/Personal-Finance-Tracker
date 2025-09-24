@@ -129,8 +129,25 @@ namespace PersonalFinanceTracker.PageModels
         private async Task ResetAndReloadAsync()
         {
             _currentPage = 1;
-            Records.Clear();
-            await LoadNextPage();
+
+            if (CurrentBookId <= 0)
+                return;
+
+            try
+            {
+                // fetch first page without touching Records
+                var firstPage = await _recordRepository.GetRecordsPagedAsync(CurrentBookId, 1, _pageSize);
+
+                // replace the collection in one shot (no intermediate empty state)
+                Records = new ObservableCollection<Record>(firstPage ?? new List<Record>());
+
+                // advance page index if we did get data
+                _currentPage = (firstPage != null && firstPage.Count > 0) ? 2 : 1;
+            }
+            catch (Exception ex)
+            {
+                await AppShell.DisplaySnackbarAsync($"加载失败：{ex.Message}");
+            }
         }
 
         /// <summary>
