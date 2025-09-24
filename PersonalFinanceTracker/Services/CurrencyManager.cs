@@ -1,14 +1,13 @@
-﻿// Services/CurrencyManager.cs
-using System.Globalization;
+﻿using System.Globalization;
+using System.Threading;                 
+using Microsoft.Maui.ApplicationModel; 
 
 namespace PersonalFinanceTracker.Services
 {
     public static class CurrencyManager
     {
-        // Default to ISO code => symbol map (can be overridden at startup)
         private static Dictionary<string, string> _symbols = new(StringComparer.OrdinalIgnoreCase)
         {
-            // keep a few safe fallbacks; will be replaced by CLDR map on boot
             ["EUR"] = "€",
             ["USD"] = "$",
             ["GBP"] = "£",
@@ -21,33 +20,79 @@ namespace PersonalFinanceTracker.Services
 
         public static event EventHandler? CurrencyChanged;
 
-        /// <summary>Replace the whole symbol map (e.g., with CLDR full dataset).</summary>
+        // Reentrancy guard: 0 = idle, 1 = setting
+        private static int _isSetting = 0;
+
         public static void SetSymbolMap(Dictionary<string, string> map)
         {
             if (map is null || map.Count == 0) return;
             _symbols = map;
         }
 
-        /// <summary>Set current currency and update CultureInfo.NumberFormat.CurrencySymbol.</summary>
-        public static void Set(string isoCode)
+        /// <summary>
+        /// Set the current ISO currency code and update culture currency symbol safely.
+        /// - Avoids deadlocks on Windows by only changing the current thread culture.
+        /// - Uses DefaultThreadCurrent* on non-Windows platforms.
+        /// - Raises CurrencyChanged on the main thread.
+        /// - Guards against reentrancy and no-op updates.
+        /// </summary>
+        public static void Set(string? isoCode)
         {
-            CurrentCode = isoCode?.ToUpperInvariant() ?? "EUR";
+            // Normalize input
+            var normalized = (isoCode ?? "EUR").ToUpperInvariant();
 
-            var culture = (CultureInfo)CultureInfo.CurrentCulture.Clone();
-            culture.NumberFormat.CurrencySymbol = CurrentSymbol;
+            // No change -> no work
+            if (string.Equals(CurrentCode, normalized, StringComparison.Ordinal))
+                return;
 
-            CultureInfo.DefaultThreadCurrentCulture = culture;
-            CultureInfo.DefaultThreadCurrentUICulture = culture;
+            // Reentrancy guard
+            if (Interlocked.Exchange(ref _isSetting, 1) == 1)
+                return;
 
-            CurrencyChanged?.Invoke(null, EventArgs.Empty);
+            try
+            {
+                CurrentCode = normalized;
+
+                // Prepare a cloned culture with the desired currency symbol
+                var culture = (CultureInfo)CultureInfo.CurrentCulture.Clone();
+                culture.NumberFormat.CurrencySymbol = CurrentSymbol;
+
+                if (OperatingSystem.IsWindows())
+                {
+                    // Windows/WinUI: avoid DefaultThreadCurrent* at app startup; set only the current thread.
+                    // This should be called from the UI thread or after the UI is up.
+                    CultureInfo.CurrentCulture = culture;
+                    CultureInfo.CurrentUICulture = culture;
+                }
+                else
+                {
+                    // Mobile platforms: safe to apply as defaults for new threads
+                    CultureInfo.DefaultThreadCurrentCulture = culture;
+                    CultureInfo.DefaultThreadCurrentUICulture = culture;
+                }
+            }
+            finally
+            {
+                Interlocked.Exchange(ref _isSetting, 0);
+            }
+
+            // Raise change event on the main thread (safe for UI subscribers)
+            if (MainThread.IsMainThread)
+            {
+                CurrencyChanged?.Invoke(null, EventArgs.Empty);
+            }
+            else
+            {
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    try { CurrencyChanged?.Invoke(null, EventArgs.Empty); } catch { /* swallow */ }
+                });
+            }
         }
 
         public static IReadOnlyList<string> GetAllCodes()
         {
-            // Return all ISO codes sorted alphabetically
-            return _symbols.Keys
-                .OrderBy(k => k, StringComparer.OrdinalIgnoreCase)
-                .ToList();
+            return _symbols.Keys.OrderBy(k => k, StringComparer.OrdinalIgnoreCase).ToList();
         }
     }
 }
