@@ -363,4 +363,22 @@
   <data name="Category_BalanceAdjust" xml:space="preserve">
     <value>Balance Anpassung</value>
   </data>
+  <data name="Dialog_DeleteAccountTitle" xml:space="preserve">
+    <value>Konto löschen</value>
+  </data>
+  <data name="Dialog_DeleteAccountMsg_WithId" xml:space="preserve">
+    <value>Konto „{0}“ (ID: {1}) wirklich löschen?</value>
+  </data>
+  <data name="Dialog_DeleteAccountMsg_NoId" xml:space="preserve">
+    <value>Konto „{0}“ wirklich löschen?</value>
+  </data>
+  <data name="Dialog_DeleteAccountMsg_Generic" xml:space="preserve">
+    <value>Dieses Konto wirklich löschen?</value>
+  </data>
+  <data name="Dialog_AlsoDeleteRecords" xml:space="preserve">
+    <value>Alle Buchungen dieses Kontos löschen</value>
+  </data>
+  <data name="Dialog_Delete" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
 </root>

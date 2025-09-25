@@ -236,25 +236,6 @@ namespace PersonalFinanceTracker.PageModels
             NewAccountOpeningBalance = 0m;
         }
 
-        // Delete the currently selected account (keeps records unless user chooses otherwise).
-        [RelayCommand]
-        private async Task DeleteAccountAsync()
-        {
-            if (SelectedAccount is null)
-                return;
-
-            // Ask whether to also delete records
-            var choice = await Application.Current.MainPage.DisplayActionSheet(
-                "是否同时删除该账户的所有明细记录？", "取消", null,
-                "仅删除账户（保留明细）",
-                "删除账户并删除全部明细");
-            if (choice is null || choice == "取消") return;
-
-            bool alsoDelete = choice == "删除账户并删除全部明细";
-            await _accountRepository.DeleteAccountAsync(SelectedAccount.Id, alsoDelete);
-            await LoadAsync();
-        }
-
         // Update balance by writing an adjustment record (Id-based).
         [RelayCommand]
         private async Task UpdateBalanceAsync()

@@ -363,4 +363,22 @@
   <data name="Category_BalanceAdjust" xml:space="preserve">
     <value>Balance Adjustment</value>
   </data>
+  <data name="Dialog_DeleteAccountTitle" xml:space="preserve">
+    <value>Delete Account</value>
+  </data>
+  <data name="Dialog_DeleteAccountMsg_WithId" xml:space="preserve">
+    <value>Delete account “{0}” (ID: {1})?</value>
+  </data>
+  <data name="Dialog_DeleteAccountMsg_NoId" xml:space="preserve">
+    <value>Delete account “{0}”?</value>
+  </data>
+  <data name="Dialog_DeleteAccountMsg_Generic" xml:space="preserve">
+    <value>Delete this account?</value>
+  </data>
+  <data name="Dialog_AlsoDeleteRecords" xml:space="preserve">
+    <value>Also delete all records of this account</value>
+  </data>
+  <data name="Dialog_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
 </root>

@@ -363,4 +363,22 @@
   <data name="Category_BalanceAdjust" xml:space="preserve">
     <value>余额调整</value>
   </data>
+  <data name="Dialog_DeleteAccountTitle" xml:space="preserve">
+    <value>删除账户</value>
+  </data>
+  <data name="Dialog_DeleteAccountMsg_WithId" xml:space="preserve">
+    <value>确定要删除账户“{0}”（ID: {1}）？</value>
+  </data>
+  <data name="Dialog_DeleteAccountMsg_NoId" xml:space="preserve">
+    <value>确定要删除账户“{0}”？</value>
+  </data>
+  <data name="Dialog_DeleteAccountMsg_Generic" xml:space="preserve">
+    <value>确定要删除此账户？</value>
+  </data>
+  <data name="Dialog_AlsoDeleteRecords" xml:space="preserve">
+    <value>同时删除该账户所有明细记录</value>
+  </data>
+  <data name="Dialog_Delete" xml:space="preserve">
+    <value>删除</value>
+  </data>
 </root>

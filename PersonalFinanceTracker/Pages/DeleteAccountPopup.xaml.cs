@@ -1,5 +1,7 @@
 using System;
 using CommunityToolkit.Maui.Views;
+using PersonalFinanceTracker.Resources.Strings;
+using PersonalFinanceTracker.Services;
 
 namespace PersonalFinanceTracker.Popups
 {
@@ -9,6 +11,8 @@ namespace PersonalFinanceTracker.Popups
     {
         private readonly int _accountId;
         private readonly string? _accountName;
+
+        private EventHandler? _langHandler;
 
         // accountName optional; pass it if you have it for a nicer message
         public DeleteAccountPopup(int accountId, string? accountName = null)
@@ -20,7 +24,7 @@ namespace PersonalFinanceTracker.Popups
             if (!string.IsNullOrWhiteSpace(_accountName))
             {
                 // Keep text simple; your localization can override if needed
-                MsgLabel.Text = $"确定要删除账户“{_accountName}”（ID: {_accountId}）？";
+                MsgLabel.Text = string.Format(AppResources.Dialog_DeleteAccountMsg_NoId, _accountName);
             }
         }
 

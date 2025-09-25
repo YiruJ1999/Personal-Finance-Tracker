@@ -232,6 +232,15 @@ namespace PersonalFinanceTracker.Resources.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 同时删除该账户所有明细记录.
+        /// </summary>
+        public static string Dialog_AlsoDeleteRecords {
+            get {
+                return ResourceManager.GetString("Dialog_AlsoDeleteRecords", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 余额已更新！.
         /// </summary>
         public static string Dialog_BalanceUpdated {
@@ -264,6 +273,51 @@ namespace PersonalFinanceTracker.Resources.Strings {
         public static string Dialog_Current {
             get {
                 return ResourceManager.GetString("Dialog_Current", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 删除.
+        /// </summary>
+        public static string Dialog_Delete {
+            get {
+                return ResourceManager.GetString("Dialog_Delete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 确定要删除此账户？.
+        /// </summary>
+        public static string Dialog_DeleteAccountMsg_Generic {
+            get {
+                return ResourceManager.GetString("Dialog_DeleteAccountMsg_Generic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 确定要删除账户“{0}”？.
+        /// </summary>
+        public static string Dialog_DeleteAccountMsg_NoId {
+            get {
+                return ResourceManager.GetString("Dialog_DeleteAccountMsg_NoId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 确定要删除账户“{0}”（ID: {1}）？.
+        /// </summary>
+        public static string Dialog_DeleteAccountMsg_WithId {
+            get {
+                return ResourceManager.GetString("Dialog_DeleteAccountMsg_WithId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 删除账户.
+        /// </summary>
+        public static string Dialog_DeleteAccountTitle {
+            get {
+                return ResourceManager.GetString("Dialog_DeleteAccountTitle", resourceCulture);
             }
         }
         

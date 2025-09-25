@@ -94,7 +94,7 @@ namespace PersonalFinanceTracker.PageModels
             if (_isLoading) return;
             if (CurrentBookId <= 0)
             {
-                await AppShell.DisplaySnackbarAsync("未选择有效账本。");
+                await AppShell.DisplaySnackbarAsync("No valid book selected");
                 return;
             }
 
@@ -113,7 +113,7 @@ namespace PersonalFinanceTracker.PageModels
             }
             catch (Exception ex)
             {
-                await AppShell.DisplaySnackbarAsync($"加载更多失败：{ex.Message}");
+                await AppShell.DisplaySnackbarAsync($"Failed to load more:{ex.Message}");
             }
             finally
             {
@@ -146,7 +146,7 @@ namespace PersonalFinanceTracker.PageModels
             }
             catch (Exception ex)
             {
-                await AppShell.DisplaySnackbarAsync($"加载失败：{ex.Message}");
+                await AppShell.DisplaySnackbarAsync($"Failed to load more:{ex.Message}");
             }
         }
 
@@ -159,7 +159,7 @@ namespace PersonalFinanceTracker.PageModels
             {
                 if (CurrentBookId <= 0)
                 {
-                    await AppShell.DisplaySnackbarAsync("未选择有效账本。");
+                    await AppShell.DisplaySnackbarAsync("No valid book was selected.");
                     return;
                 }
 
@@ -168,7 +168,7 @@ namespace PersonalFinanceTracker.PageModels
             }
             catch (Exception ex)
             {
-                await AppShell.DisplaySnackbarAsync($"加载记录失败：{ex.Message}");
+                await AppShell.DisplaySnackbarAsync($"Failed to load more:{ex.Message}");
             }
         }
 
