@@ -113,19 +113,62 @@ namespace PersonalFinanceTracker.Data
             await _dbService.ExecuteAsync($@"DROP TABLE IF EXISTS {Q(table)};");
         }
 
+        // record paging with optional month filter
         public async Task<List<Record>> GetRecordsPagedAsync(int bookId, int pageNumber, int pageSize)
+        {
+            return await GetRecordsPagedAsync(bookId, pageNumber, pageSize, null, null);
+        }
+        public async Task<List<Record>> GetRecordsPagedAsync(int bookId, int pageNumber, int pageSize,
+            DateTime? start,  DateTime? end)
         {
             var table = await _books.GetTableNameByIdAsync(bookId);
             await _books.EnsureBookTableSchemaAsync(table);
 
             int skip = Math.Max(0, (pageNumber - 1) * pageSize);
 
+            var where = "";
+            var args = new List<object>();
+
+            if (start.HasValue && end.HasValue)
+            {
+                where = "WHERE Timestamp >= ? AND Timestamp < ?";
+                args.Add(start.Value);
+                args.Add(end.Value);
+            }
+            else if (start.HasValue)
+            {
+                where = "WHERE Timestamp >= ?";
+                args.Add(start.Value);
+            }
+            else if (end.HasValue)
+            {
+                where = "WHERE Timestamp < ?";
+                args.Add(end.Value);
+            }
+
             var sql = $@"
-                SELECT Id, Type, Amount, Category, Note, Timestamp, AccountId
-                FROM {Q(table)}
-                ORDER BY Timestamp DESC
-                LIMIT ? OFFSET ?;";
-            return await _dbService.QueryAsync<Record>(sql, pageSize, skip);
+                        SELECT Id, Type, Amount, Category, Note, Timestamp, AccountId
+                        FROM {Q(table)}
+                        {where}
+                        ORDER BY Timestamp DESC, Id DESC
+                        LIMIT ? OFFSET ?;";
+
+            // append paging parameters after filter parameters
+            args.Add(pageSize);
+            args.Add(skip);
+
+            return await _dbService.QueryAsync<Record>(sql, args.ToArray());
         }
+
+        // Ensure an index on Timestamp to speed up month filtering + ORDER BY
+        // Call this once when creating/upgrading the book table schema:
+        private async Task EnsureTimestampIndexAsync(string table)
+        {
+            var sql = $"CREATE INDEX IF NOT EXISTS IDX_{Q(table)}_Timestamp ON {Q(table)}(Timestamp DESC);";
+            await _dbService.ExecuteAsync(sql);
+        }
+
+
+
     }
 }

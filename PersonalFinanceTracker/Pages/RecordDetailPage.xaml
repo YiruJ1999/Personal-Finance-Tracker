@@ -1,0 +1,35 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:PersonalFinanceTracker.PageModels"
+             xmlns:models="clr-namespace:PersonalFinanceTracker.Models"
+             xmlns:loc="clr-namespace:PersonalFinanceTracker.Localization"
+             xmlns:conv="clr-namespace:PersonalFinanceTracker.Converters"
+             x:Class="PersonalFinanceTracker.Pages.RecordDetailPage"
+             x:DataType="local:RecordDetailPageModel"
+             Shell.NavBarIsVisible="False">
+    <Grid RowDefinitions="Auto,Auto,*" Padding="12">
+        <!-- Header -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto">
+            <Label Text="{loc:Translate Title_RecordDetail}" Style="{StaticResource Title3}" />
+            <ImageButton Grid.Column="1"
+                         Source="pencil.png"
+                         BackgroundColor="Transparent"
+                         WidthRequest="24" HeightRequest="24"
+                         Command="{Binding EditCommand}" />
+            <ImageButton Grid.Column="2"
+                         Source="bin.png"
+                         BackgroundColor="Transparent"
+                         WidthRequest="24" HeightRequest="24"
+                         Command="{Binding DeleteCommand}" />
+        </Grid>
+
+        <!-- Basic fields preview -->
+        <VerticalStackLayout Grid.Row="2" Spacing="8">
+            <Label Text="{Binding Record.Category}" Style="{StaticResource Caption1Strong}" />
+            <Label Text="{Binding Record.Amount, StringFormat='{}{0:C}'}" />
+            <Label Text="{Binding Record.Type}" />
+            <Label Text="{Binding Record.Timestamp, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" />
+            <Label Text="{Binding Record.Note}" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

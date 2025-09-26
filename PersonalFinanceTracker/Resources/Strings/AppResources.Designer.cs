@@ -835,6 +835,15 @@ namespace PersonalFinanceTracker.Resources.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 账单详情.
+        /// </summary>
+        public static string Title_BillDetails {
+            get {
+                return ResourceManager.GetString("Title_BillDetails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 添加.
         /// </summary>
         public static string Toolbar_Add {

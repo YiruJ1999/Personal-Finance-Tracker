@@ -1,16 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.Maui.Storage;
-using PersonalFinanceTracker.Data;
-using PersonalFinanceTracker.Messages;
-using PersonalFinanceTracker.Models;
-using PersonalFinanceTracker.Services;
-using System;
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
-
-namespace PersonalFinanceTracker.PageModels
+﻿namespace PersonalFinanceTracker.PageModels
 {
     public partial class ViewRecordPageModel : ObservableObject
     {
@@ -48,23 +36,49 @@ namespace PersonalFinanceTracker.PageModels
 
         // -------- Bindable state --------
 
-        /// <summary>
-        /// Display name of the active book (for UI only).
-        /// </summary>
+        // Display name of the active book (for UI only).
         [ObservableProperty]
         private string currentBook = "默认";
 
-        /// <summary>
-        /// ID of the active book (the real key used by repositories).
-        /// </summary>
+        // ID of the active book (the real key used by repositories).
         [ObservableProperty]
         private int currentBookId;
 
-        /// <summary>
-        /// Paged records bound to the UI.
-        /// </summary>
+
+        // Paged records bound to the UI.
         [ObservableProperty]
         private ObservableCollection<Record> records;
+
+        // Months for the picker.
+        [ObservableProperty] private ObservableCollection<MonthOption> months = new();
+        [ObservableProperty] private MonthOption? selectedMonth;
+
+        private void EnsureMonthsInitialized()
+        {
+            if (Months.Count > 0) return;
+
+            var now = DateTime.Now;
+            var firstOfThisMonth = new DateTime(now.Year, now.Month, 1);
+
+            for (int i = 0; i < 24; i++)
+            {
+                var start = firstOfThisMonth.AddMonths(-i);
+                Months.Add(new MonthOption(start.Year, start.Month));
+            }
+
+            SelectedMonth = Months[0]; 
+        }
+        private static void GetMonthRange(MonthOption m, out DateTime start, out DateTime end)
+        {
+            start = new DateTime(m.Year, m.Month, 1, 0, 0, 0, DateTimeKind.Local);
+            end = start.AddMonths(1);
+        }
+
+        partial void OnSelectedMonthChanged(MonthOption? oldValue, MonthOption? newValue)
+        {
+            if (newValue != null)
+                MainThread.BeginInvokeOnMainThread(async () => await ResetAndReloadAsync());
+        }
 
         // -------- Commands / Lifecycle --------
 
@@ -75,6 +89,7 @@ namespace PersonalFinanceTracker.PageModels
         [RelayCommand]
         public async Task Appearing()
         {
+            EnsureMonthsInitialized();
             await _dbService.InitAsync();
 
             // Resolve book id (migrate from legacy name if needed)
@@ -101,7 +116,8 @@ namespace PersonalFinanceTracker.PageModels
             _isLoading = true;
             try
             {
-                var page = await _recordRepository.GetRecordsPagedAsync(CurrentBookId, _currentPage, _pageSize);
+                GetMonthRange(SelectedMonth, out var start, out var end);
+                var page = await _recordRepository.GetRecordsPagedAsync(CurrentBookId, _currentPage, _pageSize, start, end);
                 if (page != null && page.Count > 0)
                 {
                     foreach (var r in page)
@@ -130,13 +146,14 @@ namespace PersonalFinanceTracker.PageModels
         {
             _currentPage = 1;
 
-            if (CurrentBookId <= 0)
+            if (CurrentBookId <= 0 || SelectedMonth == null)
                 return;
 
             try
             {
+                GetMonthRange(SelectedMonth, out var start, out var end);
                 // fetch first page without touching Records
-                var firstPage = await _recordRepository.GetRecordsPagedAsync(CurrentBookId, 1, _pageSize);
+                var firstPage = await _recordRepository.GetRecordsPagedAsync(CurrentBookId, 1, _pageSize, start, end);
 
                 // replace the collection in one shot (no intermediate empty state)
                 Records = new ObservableCollection<Record>(firstPage ?? new List<Record>());
@@ -198,5 +215,22 @@ namespace PersonalFinanceTracker.PageModels
 
             return (book.Id, book.Name);
         }
+
+        [RelayCommand]
+        private async Task OpenRecordDetail(Record? record)
+        {
+            if (record == null) return;
+
+            // comments in English: navigate to record detail with Shell route and query
+            var query = new Dictionary<string, object>
+            {
+                ["recordId"] = record.Id
+            };
+            await Shell.Current.GoToAsync(nameof(RecordDetailPage), true, query);
+        }
+
+
+
     }
+
 }

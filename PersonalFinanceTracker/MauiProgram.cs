@@ -68,6 +68,9 @@ namespace PersonalFinanceTracker
             builder.Services.AddSingleton<BookRepository>();
 
             builder.Services.AddTransient<PersonalFinanceTracker.Pages.CreateNewBookPopup>();
+            
+            builder.Services.AddTransient<RecordDetailPage>();
+            builder.Services.AddTransient<RecordDetailPageModel>();
 
             var app = builder.Build();
 

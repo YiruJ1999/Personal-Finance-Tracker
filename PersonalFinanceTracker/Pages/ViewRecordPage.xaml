@@ -11,13 +11,30 @@
     <ContentPage.Resources>
         <ResourceDictionary>
             <conv:CategoryLocalizeConverter x:Key="CategoryLocalizeConverter" />
+            <conv:AmountWithSignConverter x:Key="AmountWithSignConverter" />
         </ResourceDictionary>
     </ContentPage.Resources>
 
-    <!-- 使用 Grid 实现：上表头固定 + 下区域填充滚动 -->
-    <Grid RowDefinitions="Auto,10,*" Padding="10">
+    <Grid RowDefinitions="Auto,Auto,*" Padding="10">
+        <!-- Header: title + month picker -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Padding="0,0,0,8">
+            <!-- Title (localizable) -->
+            <Label Text="{loc:Translate Title_BillDetails}" 
+               Style="{StaticResource Title2}"/>
 
-        <!-- 数据列表：自动填满剩余空间 -->
+            <!-- Month picker on the right -->
+            <Picker Grid.Column="1"
+                Title="{loc:Translate Picker_ChooseMonth}"
+                ItemsSource="{Binding Months}"                 
+                ItemDisplayBinding="{Binding Display}"
+                SelectedItem="{Binding SelectedMonth}"
+                FontSize="16"
+                TitleColor="{StaticResource PrimaryDark}"/>
+        </Grid>
+
+        <BoxView Grid.Row="1" HeightRequest="1" BackgroundColor="{StaticResource PrimaryDarkText}" />
+
+        <!-- Records list -->
         <CollectionView Grid.Row="2"
                         ItemsSource="{Binding Records}"
                         RemainingItemsThreshold="5"
@@ -26,6 +43,12 @@
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:Record">
                     <Border Style="{StaticResource CardStyle}" Margin="5">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer 
+                                x:DataType="{x:Null}"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=OpenRecordDetailCommand}"
+                                CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
                         <VerticalStackLayout>
                             <Label Text="{Binding Category, Converter={StaticResource CategoryLocalizeConverter}}" 
                                            Style="{StaticResource Caption1Strong}"/>

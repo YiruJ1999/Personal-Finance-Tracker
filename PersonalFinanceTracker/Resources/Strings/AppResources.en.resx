@@ -381,4 +381,7 @@
   <data name="Dialog_Delete" xml:space="preserve">
     <value>Delete</value>
   </data>
+  <data name="Title_BillDetails" xml:space="preserve">
+    <value>Bill Details</value>
+  </data>
 </root>
