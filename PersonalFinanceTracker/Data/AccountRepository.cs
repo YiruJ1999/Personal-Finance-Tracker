@@ -157,6 +157,13 @@ namespace PersonalFinanceTracker.Data
             return all.Sum(a => a.Balance);
         }
 
+        public async Task<Account?> GetAccountByIdAsync(int accountId)
+        {
+            await EnsureDatabaseInitializedAsync();
+            var conn = await ConnAsync();
+            return await conn.FindAsync<Account>(accountId);
+        }
+
         // -------------------- Trend --------------------
 
         public async Task<Dictionary<string, decimal>> GetLast4MonthsTotalAssetsAsync()

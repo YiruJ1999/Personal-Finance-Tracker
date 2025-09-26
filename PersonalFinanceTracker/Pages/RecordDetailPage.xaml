@@ -78,7 +78,7 @@
                        Text="{loc:Translate Label_Book}"
                        Style="{StaticResource DetailLeftLabelStyle}" />
                 <Label Grid.Row="2" Grid.Column="1"
-                       Text="{Binding CurrentBookText}"
+                       Text="{Binding CurrentBook}"
                        Style="{StaticResource DetailRightValueStyle}" />
 
                 <!-- Thin divider -->
@@ -90,7 +90,7 @@
                        Text="{loc:Translate Label_Account}"
                        Style="{StaticResource DetailLeftLabelStyle}" />
                 <Label Grid.Row="4" Grid.Column="1"
-                       Text="{Binding Record.AccountId}"
+                       Text="{Binding AccountName}"
                        Style="{StaticResource DetailRightValueStyle}" />
 
                 <BoxView Grid.Row="5" Grid.ColumnSpan="2" HeightRequest="1"
@@ -101,7 +101,7 @@
                        Text="{loc:Translate Label_CreateTime}"
                        Style="{StaticResource DetailLeftLabelStyle}" />
                 <Label Grid.Row="6" Grid.Column="1"
-                       Text="{Binding Record.Timestamp, StringFormat='{}{0:yyyy年MM月dd日 HH:mm}'}"
+                       Text="{Binding Record.Timestamp, StringFormat='{}{0}{1:yyyy-MM-dd HH:mm}' }"
                        Style="{StaticResource DetailRightValueStyle}" />
 
                 <BoxView Grid.Row="7" Grid.ColumnSpan="2" HeightRequest="1"
@@ -125,7 +125,7 @@
             <Button Text="{loc:Translate Btn_Edit}"
                     Grid.Column="1"
                     Command="{Binding EditCommand}"
-                    Style="{StaticResource BottomBarPrimaryButtonStyle}" />
+                    Style="{StaticResource BottomBarButtonStyle}" />
         </Grid>
     </Grid>
 </ContentPage>

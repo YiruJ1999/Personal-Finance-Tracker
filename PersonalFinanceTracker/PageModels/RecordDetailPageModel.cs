@@ -5,6 +5,7 @@ public partial class RecordDetailPageModel : ObservableObject, IQueryAttributabl
     private readonly DatabaseService _dbService;
     private readonly RecordRepository _recordRepository;
     private readonly BookRepository _bookRepository;
+    private readonly AccountRepository _accountRepository;
 
     // Legacy name-based preference key (kept for backward compatibility)
     private const string PrefKeyCurrentBookName = "current_book";
@@ -14,35 +15,26 @@ public partial class RecordDetailPageModel : ObservableObject, IQueryAttributabl
     public RecordDetailPageModel(
         DatabaseService dbService,
         RecordRepository recordRepository,
-        BookRepository bookRepository)
+        BookRepository bookRepository,
+        AccountRepository accountRepository)
     {
         _dbService = dbService;
         _recordRepository = recordRepository;
         _bookRepository = bookRepository;
-
-        // keep Record non-null so compiled bindings do not see 'Record?'
+        _accountRepository = accountRepository;
         Record = new();
+        
     }
 
     // -------- Bindable state --------
 
-    /// <summary>
-    /// Active book id (table context for repository).
-    /// </summary>
-    [ObservableProperty]
-    private int bookId;
+    [ObservableProperty] private int bookId;
 
-    /// <summary>
-    /// Display name of the active book (optional, for header UI).
-    /// </summary>
-    [ObservableProperty]
-    private string currentBook = "默认";
+    [ObservableProperty] private string currentBook = "默认";
 
-    /// <summary>
-    /// The record currently shown on the detail page (non-null for compiled bindings).
-    /// </summary>
-    [ObservableProperty]
-    private Record record = new();
+    [ObservableProperty] private Record record = new();
+
+    [ObservableProperty] private string ? accountName;
 
     // -------- Navigation / Lifecycle --------
 
@@ -71,8 +63,8 @@ public partial class RecordDetailPageModel : ObservableObject, IQueryAttributabl
             BookId = Preferences.Default.Get(PrefKeyCurrentBookId, 0);
         }
 
-        // optional: show current book name if you want in the header (use literal default to avoid self-reference)
-        CurrentBook = Preferences.Default.Get(PrefKeyCurrentBookName, "默认");
+        var book = await _bookRepository.GetBookByIdAsync(BookId);
+        CurrentBook = book?.Name ?? "默认";
 
         await LoadAsync(BookId, recordId);
     }
@@ -83,6 +75,20 @@ public partial class RecordDetailPageModel : ObservableObject, IQueryAttributabl
     private async Task LoadAsync(int bookId, int id)
     {
         Record = await _recordRepository.GetByIdAsync(bookId, id) ?? new Record();
+
+        var book = await _bookRepository.GetBookByIdAsync(bookId);
+        CurrentBook = book?.Name ?? "默认";
+
+        if (Record.AccountId > 0)
+        {
+            var account = await _accountRepository.GetAccountByIdAsync(Record.AccountId);
+            AccountName = account?.Name ?? $"#{Record.AccountId}";
+        }
+        else
+        {
+            AccountName = "/";
+        }
+
     }
 
     // -------- Commands --------
