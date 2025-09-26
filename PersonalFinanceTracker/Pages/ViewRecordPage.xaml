@@ -7,6 +7,7 @@
              xmlns:conv="clr-namespace:PersonalFinanceTracker.Converters"
              x:Class="PersonalFinanceTracker.Pages.ViewRecordPage"
              x:DataType="local:ViewRecordPageModel"
+             x:Name="ThisPage"
              Shell.NavBarIsVisible="False">
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -44,9 +45,9 @@
                 <DataTemplate x:DataType="models:Record">
                     <Border Style="{StaticResource CardStyle}" Margin="5">
                         <Border.GestureRecognizers>
-                            <TapGestureRecognizer 
-                                x:DataType="{x:Null}"
-                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=OpenRecordDetailCommand}"
+                            <TapGestureRecognizer
+                                x:DataType="{x:Null}" 
+                                Command="{Binding BindingContext.OpenRecordDetailCommand, Source={x:Reference ThisPage}}"
                                 CommandParameter="{Binding .}" />
                         </Border.GestureRecognizers>
                         <VerticalStackLayout>

@@ -1,14 +1,3 @@
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.Maui.Storage;
-using Microsoft.Maui.ApplicationModel;              // for Application.Current
-using PersonalFinanceTracker.Data;
-using PersonalFinanceTracker.Messages;              // for RecordSavedMessage / RecordDeletedMessage
-using PersonalFinanceTracker.Models;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
 namespace PersonalFinanceTracker.PageModels;
 
 public partial class RecordDetailPageModel : ObservableObject, IQueryAttributable

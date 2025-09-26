@@ -221,10 +221,11 @@
         {
             if (record == null) return;
 
-            // comments in English: navigate to record detail with Shell route and query
+            // navigate to record detail with Shell route and query
             var query = new Dictionary<string, object>
             {
-                ["recordId"] = record.Id
+                ["recordId"] = record.Id,
+                ["bookId"] = CurrentBookId
             };
             await Shell.Current.GoToAsync(nameof(RecordDetailPage), true, query);
         }
