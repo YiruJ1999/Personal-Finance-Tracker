@@ -1,35 +1,131 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:PersonalFinanceTracker.PageModels"
-             xmlns:models="clr-namespace:PersonalFinanceTracker.Models"
              xmlns:loc="clr-namespace:PersonalFinanceTracker.Localization"
              xmlns:conv="clr-namespace:PersonalFinanceTracker.Converters"
              x:Class="PersonalFinanceTracker.Pages.RecordDetailPage"
              x:DataType="local:RecordDetailPageModel"
-             Shell.NavBarIsVisible="False">
-    <Grid RowDefinitions="Auto,Auto,*" Padding="12">
-        <!-- Header -->
-        <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto">
-            <Label Text="{loc:Translate Title_RecordDetail}" Style="{StaticResource Title3}" />
-            <ImageButton Grid.Column="1"
-                         Source="pencil.png"
-                         BackgroundColor="Transparent"
-                         WidthRequest="24" HeightRequest="24"
-                         Command="{Binding EditCommand}" />
-            <ImageButton Grid.Column="2"
-                         Source="bin.png"
-                         BackgroundColor="Transparent"
-                         WidthRequest="24" HeightRequest="24"
-                         Command="{Binding DeleteCommand}" />
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource LightBackground}">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <conv:CategoryLocalizeConverter x:Key="CategoryLocalizeConverter" />
+            <conv:AmountWithSignConverter x:Key="AmountWithSignConverter" />
+
+            <!-- Uniform row styles: keep font size consistent -->
+            <Style x:Key="DetailLeftLabelStyle" TargetType="Label" BasedOn="{StaticResource Caption1Strong}">
+                <!-- Keep all row titles the same size and vertically centered -->
+                <Setter Property="FontSize" Value="16" />
+                <Setter Property="VerticalOptions" Value="Center" />
+                <Setter Property="LineBreakMode" Value="TailTruncation" />
+            </Style>
+
+            <Style x:Key="DetailRightValueStyle" TargetType="Label" BasedOn="{StaticResource Caption1}">
+                <!-- All right-side values share the same size and alignment -->
+                <Setter Property="FontSize" Value="16" />
+                <Setter Property="HorizontalTextAlignment" Value="End" />
+                <Setter Property="VerticalOptions" Value="Center" />
+                <Setter Property="LineBreakMode" Value="TailTruncation" />
+            </Style>
+
+            <!-- Amount uses the same size but bold + theme color -->
+            <Style x:Key="DetailAmountStyle" TargetType="Label" BasedOn="{StaticResource DetailRightValueStyle}">
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="TextColor" Value="{StaticResource PrimaryDark}" />
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,*,Auto" Padding="16">
+        <!-- Top bar -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*">
+            <ImageButton Grid.Column="0" Source="back.png"
+                         BackgroundColor="Transparent" Padding="0"
+                         Command="{Binding BackCommand}" />
+            <Label Grid.Column="1" Text="{loc:Translate Title_RecordDetail}"
+                   Style="{StaticResource Title3}" HorizontalOptions="Center" />
         </Grid>
 
-        <!-- Basic fields preview -->
-        <VerticalStackLayout Grid.Row="2" Spacing="8">
-            <Label Text="{Binding Record.Category}" Style="{StaticResource Caption1Strong}" />
-            <Label Text="{Binding Record.Amount, StringFormat='{}{0:C}'}" />
-            <Label Text="{Binding Record.Type}" />
-            <Label Text="{Binding Record.Timestamp, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" />
-            <Label Text="{Binding Record.Note}" />
-        </VerticalStackLayout>
+        <!-- Detail card -->
+        <Border Grid.Row="1"
+                BackgroundColor="White"
+                Stroke="{StaticResource Primary}"
+                StrokeThickness="2"
+                StrokeShape="RoundRectangle 24"
+                Padding="16"
+                Style="{StaticResource CardStyle}">
+            <!-- Two columns: left label, right value -->
+            <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                  ColumnDefinitions="*,Auto">
+
+                <!-- Row 0: Category (left) | Amount (right). Use parent grid columns so the right edge lines up. -->
+                <Label Grid.Row="0" Grid.Column="0"
+                       Text="{Binding Record.Category, Converter={StaticResource CategoryLocalizeConverter}}"
+                       Style="{StaticResource DetailLeftLabelStyle}" />
+                <Label Grid.Row="0" Grid.Column="1"
+                       Text="{Binding Record.Amount, StringFormat='{}{0:C}'}"
+                       Style="{StaticResource DetailAmountStyle}" />
+
+                <!-- Divider -->
+                <BoxView Grid.Row="1" Grid.ColumnSpan="2"
+                         HeightRequest="1.5" Margin="0,12"
+                         BackgroundColor="{StaticResource Primary}" Opacity="0.35" />
+
+                <!-- Row 2: Book -->
+                <Label Grid.Row="2" Grid.Column="0"
+                       Text="{loc:Translate Label_Book}"
+                       Style="{StaticResource DetailLeftLabelStyle}" />
+                <Label Grid.Row="2" Grid.Column="1"
+                       Text="{Binding CurrentBookText}"
+                       Style="{StaticResource DetailRightValueStyle}" />
+
+                <!-- Thin divider -->
+                <BoxView Grid.Row="3" Grid.ColumnSpan="2" HeightRequest="1"
+                         BackgroundColor="{StaticResource LightBackground}" Opacity="0.8" Margin="0,8"/>
+
+                <!-- Row 4: Account -->
+                <Label Grid.Row="4" Grid.Column="0"
+                       Text="{loc:Translate Label_Account}"
+                       Style="{StaticResource DetailLeftLabelStyle}" />
+                <Label Grid.Row="4" Grid.Column="1"
+                       Text="{Binding Record.AccountId}"
+                       Style="{StaticResource DetailRightValueStyle}" />
+
+                <BoxView Grid.Row="5" Grid.ColumnSpan="2" HeightRequest="1"
+                         BackgroundColor="{StaticResource LightBackground}" Opacity="0.8" Margin="0,8"/>
+
+                <!-- Row 6: Time -->
+                <Label Grid.Row="6" Grid.Column="0"
+                       Text="{loc:Translate Label_CreateTime}"
+                       Style="{StaticResource DetailLeftLabelStyle}" />
+                <Label Grid.Row="6" Grid.Column="1"
+                       Text="{Binding Record.Timestamp, StringFormat='{}{0:yyyy年MM月dd日 HH:mm}'}"
+                       Style="{StaticResource DetailRightValueStyle}" />
+
+                <BoxView Grid.Row="7" Grid.ColumnSpan="2" HeightRequest="1"
+                         BackgroundColor="{StaticResource LightBackground}" Opacity="0.8" Margin="0,8"/>
+                <!-- Row 7: Note -->
+                <Label Grid.Row="8" Grid.Column="0"
+                       Text="{loc:Translate Label_Note}"
+                       Style="{StaticResource DetailLeftLabelStyle}" />
+                <Label Grid.Row="8" Grid.Column="1"
+                       Text="{Binding Record.Note, TargetNullValue=/}"
+                       Style="{StaticResource DetailRightValueStyle}" />
+            </Grid>
+        </Border>
+
+        <!-- Bottom actions -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="0" Margin="0,14,0,0">
+            <Button Text="{loc:Translate Btn_Delete}"
+                    Grid.Column="0"
+                    Command="{Binding DeleteCommand}"
+                    Style="{StaticResource BottomBarButtonStyle}" />
+            <Button Text="{loc:Translate Btn_Edit}"
+                    Grid.Column="1"
+                    Command="{Binding EditCommand}"
+                    Style="{StaticResource BottomBarPrimaryButtonStyle}" />
+        </Grid>
     </Grid>
 </ContentPage>

@@ -119,4 +119,10 @@ public partial class RecordDetailPageModel : ObservableObject, IQueryAttributabl
         WeakReferenceMessenger.Default.Send(new RecordDeletedMessage());
         await Shell.Current.GoToAsync("..", true);
     }
+
+    [RelayCommand]
+    private async Task Back()
+    {
+        
+    }
 }

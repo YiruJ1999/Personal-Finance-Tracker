@@ -384,4 +384,13 @@
   <data name="Title_BillDetails" xml:space="preserve">
     <value>Rechnungsdetails</value>
   </data>
+  <data name="Title_RecordDetail" xml:space="preserve">
+    <value>Transaktionsdetails</value>
+  </data>
+  <data name="Label_CreateTime" xml:space="preserve">
+    <value>Erstellt am: </value>
+  </data>
+  <data name="Btn_Edit" xml:space="preserve">
+    <value>Bearbeiten</value>
+  </data>
 </root>

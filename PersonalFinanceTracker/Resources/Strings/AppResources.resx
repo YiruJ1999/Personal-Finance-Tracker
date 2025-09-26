@@ -384,4 +384,13 @@
   <data name="Title_BillDetails" xml:space="preserve">
     <value>账单详情</value>
   </data>
+  <data name="Title_RecordDetail" xml:space="preserve">
+    <value>流水详情</value>
+  </data>
+  <data name="Label_CreateTime" xml:space="preserve">
+    <value>创建时间：</value>
+  </data>
+  <data name="Btn_Edit" xml:space="preserve">
+    <value>编辑</value>
+  </data>
 </root>

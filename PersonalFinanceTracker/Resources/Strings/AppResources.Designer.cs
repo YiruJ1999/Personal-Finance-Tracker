@@ -97,6 +97,15 @@ namespace PersonalFinanceTracker.Resources.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 编辑.
+        /// </summary>
+        public static string Btn_Edit {
+            get {
+                return ResourceManager.GetString("Btn_Edit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 编辑此账户.
         /// </summary>
         public static string Btn_EditAccount {
@@ -592,6 +601,15 @@ namespace PersonalFinanceTracker.Resources.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 创建时间：.
+        /// </summary>
+        public static string Label_CreateTime {
+            get {
+                return ResourceManager.GetString("Label_CreateTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 当前账本：.
         /// </summary>
         public static string Label_CurrentBook {
@@ -840,6 +858,15 @@ namespace PersonalFinanceTracker.Resources.Strings {
         public static string Title_BillDetails {
             get {
                 return ResourceManager.GetString("Title_BillDetails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 流水详情.
+        /// </summary>
+        public static string Title_RecordDetail {
+            get {
+                return ResourceManager.GetString("Title_RecordDetail", resourceCulture);
             }
         }
         
