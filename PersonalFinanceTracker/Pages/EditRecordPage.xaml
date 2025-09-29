@@ -4,6 +4,7 @@
              xmlns:services="clr-namespace:PersonalFinanceTracker.Services"
              xmlns:local="clr-namespace:PersonalFinanceTracker.PageModels"
              xmlns:loc="clr-namespace:PersonalFinanceTracker.Localization"
+             xmlns:models="clr-namespace:PersonalFinanceTracker.Models"
              x:Class="PersonalFinanceTracker.Pages.EditRecordPage"
              x:DataType="local:EditRecordPageModel"
              Shell.NavBarIsVisible="False">
@@ -65,7 +66,7 @@
                     </CollectionView.ItemsLayout>
 
                     <CollectionView.ItemTemplate>
-                        <DataTemplate>
+                        <DataTemplate x:DataType="models:CategoryModel">
                             <Border x:Name="Tile"
                                     Padding="6"
                                     Margin="4"
@@ -78,7 +79,6 @@
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
                                         </Grid.RowDefinitions>
-
                                         <Image Grid.Row="0"
                                                Source="{Binding Icon}"
                                                HeightRequest="40" WidthRequest="40"

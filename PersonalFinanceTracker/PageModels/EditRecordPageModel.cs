@@ -66,6 +66,9 @@ namespace PersonalFinanceTracker.PageModels
             // 4) select category by name (fallback to first)
             SelectedCategory = Categories.FirstOrDefault(c => string.Equals(c.Name, rec.Category, StringComparison.OrdinalIgnoreCase))
                                ?? Categories.FirstOrDefault();
+            System.Diagnostics.Debug.WriteLine($"[EditVM] Categories.Count = {Categories?.Count}");
+            foreach (var c in Categories?.Take(3) ?? Enumerable.Empty<CategoryModel>())
+                System.Diagnostics.Debug.WriteLine($"[EditVM] Cat: {c?.Name}, Icon={c?.Icon}");
 
             // 5) load accounts and select
             await LoadAccountsAsync();

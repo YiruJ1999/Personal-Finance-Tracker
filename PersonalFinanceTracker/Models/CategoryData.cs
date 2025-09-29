@@ -1,5 +1,4 @@
-﻿using PersonalFinanceTracker.Models;
-using PersonalFinanceTracker.Resources.Strings; 
+﻿using PersonalFinanceTracker.Resources.Strings; 
 
 public static class CategoryData
 {
