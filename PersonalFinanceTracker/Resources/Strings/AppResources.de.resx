@@ -393,4 +393,7 @@
   <data name="Btn_Edit" xml:space="preserve">
     <value>Bearbeiten</value>
   </data>
+  <data name="Dialog_DeleteRecordMsg" xml:space="preserve">
+    <value>Möchten Sie diese Transaktion wirklich löschen?</value>
+  </data>
 </root>

@@ -393,4 +393,7 @@
   <data name="Btn_Edit" xml:space="preserve">
     <value>编辑</value>
   </data>
+  <data name="Dialog_DeleteRecordMsg" xml:space="preserve">
+    <value>确定要删除这条流水吗？</value>
+  </data>
 </root>

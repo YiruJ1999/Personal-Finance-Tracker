@@ -331,6 +331,15 @@ namespace PersonalFinanceTracker.Resources.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 确定要删除这条流水吗？.
+        /// </summary>
+        public static string Dialog_DeleteRecordMsg {
+            get {
+                return ResourceManager.GetString("Dialog_DeleteRecordMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 编辑此账户.
         /// </summary>
         public static string Dialog_EditAccountTitle {

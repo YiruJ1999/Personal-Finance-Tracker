@@ -1,3 +1,5 @@
+using CommunityToolkit.Maui.Views;
+
 namespace PersonalFinanceTracker.PageModels;
 
 public partial class RecordDetailPageModel : ObservableObject, IQueryAttributable
@@ -99,25 +101,23 @@ public partial class RecordDetailPageModel : ObservableObject, IQueryAttributabl
         // guard if not loaded
         if (Record is null || Record.Id <= 0) return;
 
-        // TODO: open an edit page/sheet; after saving, notify list pages to refresh
-        // NOTE: your RecordSavedMessage in ViewModel registration looks like a marker message (no payload),
-        // so send it without arguments.
-        WeakReferenceMessenger.Default.Send(new RecordSavedMessage());
+        // Show the edit popup and wait for result
+        
     }
 
     [RelayCommand]
     private async Task Delete()
     {
-        if (Record is null || Record.Id <= 0) return;
+        if (Record?.Id <= 0) return;
 
-        var confirm = await Application.Current!.MainPage!.DisplayAlert(
-            "Confirm", "Delete this record?", "Yes", "No");
+        // Open confirm popup; expect a bool? result
+        var confirmObj = await Application.Current!.MainPage!.ShowPopupAsync(
+            new DeleteRecordPopup(Record.Id)          // adapt to your popup ctor
+        );
 
-        if (!confirm) return;
-
+        if (confirmObj is not bool confirmed || !confirmed) return;
 
         await _recordRepository.DeleteAsync(BookId, Record);
-        // var rows = await _recordRepository.DeleteAsync(Record.Id);
 
         try { await AppShell.DisplaySnackbarAsync("Record deleted"); }
         catch { await Application.Current!.MainPage!.DisplayAlert("Info", "Record deleted", "OK"); }
