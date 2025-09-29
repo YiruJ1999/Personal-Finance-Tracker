@@ -1,18 +1,14 @@
-Ôªøusing System.Globalization;
+using System.Globalization;
 
 namespace PersonalFinanceTracker.PageModels
 {
-    public partial class AddRecordPageModel : ObservableObject
+    public partial class EditRecordPageModel : ObservableObject
     {
         private readonly DatabaseService _dbService;
         private readonly RecordRepository _recordRepository;
         private readonly AccountRepository _accountRepository;
         private readonly BookRepository _bookRepository;
-
-        private const string PrefKeyCurrentBookId = "current_book_id"; // new Id-based
-        private const string PrefKeyCurrentBook = "current_book";    // legacy (for migration)
-
-        public AddRecordPageModel(
+        public EditRecordPageModel(
             DatabaseService dbService,
             RecordRepository recordRepository,
             AccountRepository accountRepository,
@@ -41,32 +37,71 @@ namespace PersonalFinanceTracker.PageModels
             };
         }
 
-        // ----- state -----
+        // ---------- shared bindable states ----------
         [ObservableProperty] private bool isExpenseSelected;
         [ObservableProperty] private ObservableCollection<CategoryModel> categories;
         [ObservableProperty] private CategoryModel selectedCategory;
-        [ObservableProperty] private string amount;      // user input string
-        [ObservableProperty] private string note;        // optional
+        [ObservableProperty] private string amount;
+        [ObservableProperty] private string note;
         [ObservableProperty] private DateTime selectedDate;
-
+        [ObservableProperty] private ObservableCollection<Account> accounts;
+        [ObservableProperty] private Account selectedAccount;
         public bool IsIncomeSelected => !IsExpenseSelected;
+        private int _categoryColumns = 4;
+        public int CategoryColumns { get => _categoryColumns; set { _categoryColumns = value; OnPropertyChanged(); } }
+
+        // Track current ids
+        private int _bookId;
+        private int _recordId;
+        private const string PrefKeyCurrentBookId = "current_book_id"; // new Id-based
+        private const string PrefKeyCurrentBook = "current_book";    // legacy (for migration)
+
         partial void OnIsExpenseSelectedChanged(bool value)
         {
             OnPropertyChanged(nameof(IsIncomeSelected));
         }
 
-        // accounts
-        [ObservableProperty] private ObservableCollection<Account> accounts;
-        [ObservableProperty] private Account selectedAccount;
-
-        // layout
-        private int _categoryColumns = 4;
-        public int CategoryColumns
+        // Receive route parameters and preload record content.
+        public async void ApplyQueryAttributes(IDictionary<string, object> query)
         {
-            get => _categoryColumns;
-            set { if (_categoryColumns != value) { _categoryColumns = value; OnPropertyChanged(); } }
-        }
+            await _dbService.InitAsync();
 
+            // Parse ids from query
+            _bookId = query.TryGetValue("bookId", out var b) && int.TryParse(b?.ToString(), out var bid) ? bid : 0;
+            _recordId = query.TryGetValue("recordId", out var r) && int.TryParse(r?.ToString(), out var rid) ? rid : 0;
+            if (_recordId <= 0)
+            {
+                await Shell.Current.DisplayAlert("Error", "recordId is missing.", "OK");
+                await Shell.Current.GoToAsync("..");
+                return;
+            }
+
+            // Load target record
+            var rec = await _recordRepository.GetByIdAsync(_bookId, _recordId);
+            if (rec is null)
+            {
+                await Shell.Current.DisplayAlert("Error", "Record not found.", "OK");
+                await Shell.Current.GoToAsync("..");
+                return;
+            }
+
+            // Prefill type -> categories
+            IsExpenseSelected = string.Equals(rec.Type, "÷ß≥ˆ", StringComparison.OrdinalIgnoreCase);
+            RefreshCategories(preserveSelection: false);
+
+            // Prefill category selection by name (or by icon if you prefer)
+            SelectedCategory = Categories.FirstOrDefault(c => c.Name == rec.Category)
+                               ?? Categories.FirstOrDefault();
+
+            // Prefill account list and selection
+            await LoadAccountsAsync();
+            SelectedAccount = Accounts?.FirstOrDefault(a => a.Id == rec.AccountId) ?? Accounts?.FirstOrDefault();
+
+            // Prefill amount / note / date
+            Amount = rec.Amount.ToString("0.##");
+            Note = rec.Note ?? string.Empty;
+            SelectedDate = DateTime.SpecifyKind(rec.Timestamp, DateTimeKind.Local);
+        }
 
         [RelayCommand]
         public async Task Appearing()
@@ -75,13 +110,10 @@ namespace PersonalFinanceTracker.PageModels
             await EnsureDefaultAccountsAndReloadAsync();
         }
 
-        /// <summary>
-        /// Rebuild Categories from CategoryData based on IsExpenseSelected.
-        /// Optionally preserve current selection (matched by Icon).
-        /// </summary>
+
+        // Rebuild Categories from CategoryData based on IsExpenseSelected.
         private void RefreshCategories(bool preserveSelection)
         {
-            // Remember current selection (by Icon) to restore after rebuilding names
             var prevIcon = preserveSelection ? SelectedCategory?.Icon : null;
 
             if (IsExpenseSelected)
@@ -116,7 +148,7 @@ namespace PersonalFinanceTracker.PageModels
         private async Task AddAccount(string? name)
         {
             // Fallback default name when user leaves it empty
-            var finalName = string.IsNullOrWhiteSpace(name) ? "ÈªòËÆ§" : name.Trim();
+            var finalName = string.IsNullOrWhiteSpace(name) ? "ƒ¨»œ" : name.Trim();
 
             await _accountRepository.AddAccountAsync(finalName);
             await LoadAccountsAsync();
@@ -126,67 +158,46 @@ namespace PersonalFinanceTracker.PageModels
                 string.Equals(a.Name?.Trim(), finalName, StringComparison.OrdinalIgnoreCase));
         }
 
-        // ----- save -----
+        // ----- Update -----
         [RelayCommand]
-        private async Task Save()
+        private async Task Update()
         {
             await _dbService.InitAsync();
 
-            // 1) Amount: default to 0 when empty/invalid, using current culture
-            var amountText = (Amount ?? string.Empty).Trim();
-            if (!decimal.TryParse(amountText, NumberStyles.Number, CultureInfo.CurrentCulture, out var amt))
-                amt = 0m;
+            // Parse amount; default 0 if invalid
+            var amt = 0m;
+            if (!decimal.TryParse(Amount?.Trim() ?? string.Empty, out amt)) amt = 0m;
 
-            // 2) Category: if not selected, pick the first available in current list
-            if (SelectedCategory == null && Categories != null && Categories.Count > 0)
-                SelectedCategory = Categories[0];
-
-            // 3) Note: never null
-            var finalNote = Note ?? string.Empty;
-
-            // 4) Date: if not set, fallback to now (local)
-            var ts = SelectedDate == default
-                ? DateTime.Now
-                : DateTime.SpecifyKind(SelectedDate, DateTimeKind.Local);
-
-            // 5) Account: ensure at least one exists
-            if (SelectedAccount == null && Accounts?.Count > 0)
-                SelectedAccount = Accounts[0];
+            // Ensure category & account
+            if (SelectedCategory == null) SelectedCategory = Categories?.FirstOrDefault();
+            if (SelectedAccount == null && Accounts?.Count > 0) SelectedAccount = Accounts[0];
             if (SelectedAccount == null)
             {
-                await Shell.Current.DisplayAlert("ÊèêÁ§∫", "ËØ∑ÂÖàÂàõÂª∫‰∏Ä‰∏™Ë¥¶Êà∑„ÄÇ", "Â•ΩÁöÑ");
+                await Shell.Current.DisplayAlert("Ã· æ", "«Îœ»¥¥Ω®“ª∏ˆ’Àªß°£", "∫√µƒ");
                 return;
             }
 
-            // 6) BookId: resolve (migrate legacy name if needed)
-            var bookId = await GetOrCreateCurrentBookIdAsync();
-
-            var finalType = IsExpenseSelected ? "ÊîØÂá∫" : "Êî∂ÂÖ•";
-
-            // Build record (Id-based; Account name optional for display)
-            var record = new Record
+            // Record to update
+            var rec = await _recordRepository.GetByIdAsync(_bookId, _recordId);
+            if (rec is null)
             {
-                Amount = amt,
-                Category = SelectedCategory?.Name ?? "Êú™ÂàÜÁ±ª",
-                Note = finalNote,
-                Timestamp = ts,
-                Type = finalType,
-                AccountId = SelectedAccount.Id
-            };
+                await Shell.Current.DisplayAlert("Error", "Record not found.", "OK");
+                return;
+            }
 
-            await _recordRepository.SaveAsync(bookId, record);
+            // Map back
+            rec.Amount = amt;
+            rec.Category = SelectedCategory?.Name ?? "Œ¥∑÷¿‡";
+            rec.Note = string.IsNullOrWhiteSpace(Note) ? null : Note.Trim();
+            rec.Type = IsExpenseSelected ? "÷ß≥ˆ" : " ’»Î";
+            rec.AccountId = SelectedAccount.Id;
+            rec.Timestamp = DateTime.SpecifyKind(SelectedDate == default ? DateTime.Now : SelectedDate, DateTimeKind.Local);
 
-            // Notify and navigate back
+            await _recordRepository.SaveAsync(_bookId, rec);
+
+            // Notify list/detail and go back
             WeakReferenceMessenger.Default.Send(new RecordSavedMessage());
             await Shell.Current.GoToAsync("..");
-
-            // Reset UI
-            Amount = string.Empty;
-            Note = string.Empty;
-            SelectedCategory = null;
-            IsExpenseSelected = true;
-            Categories = new ObservableCollection<CategoryModel>(CategoryData.GetExpenseCategories());
-            SelectedDate = DateTime.Now;
         }
 
 
@@ -219,9 +230,9 @@ namespace PersonalFinanceTracker.PageModels
             if (list == null || list.Count == 0)
             {
                 // Seed three common accounts (you can adjust as needed)
-                await _accountRepository.AddAccountAsync("Áé∞Èáë");
-                await _accountRepository.AddAccountAsync("ÂÇ®ËìÑÂç°");
-                await _accountRepository.AddAccountAsync("‰ø°Áî®Âç°");
+                await _accountRepository.AddAccountAsync("œ÷Ω");
+                await _accountRepository.AddAccountAsync("¥¢–Óø®");
+                await _accountRepository.AddAccountAsync("–≈”√ø®");
             }
 
             await LoadAccountsAsync(SelectedAccount?.Name);
@@ -235,8 +246,8 @@ namespace PersonalFinanceTracker.PageModels
                 if (id > 0) return id;
             }
 
-            var legacyName = Preferences.Default.Get(PrefKeyCurrentBook, "ÈªòËÆ§");
-            var book = await _bookRepository.EnsureBookAsync(string.IsNullOrWhiteSpace(legacyName) ? "ÈªòËÆ§" : legacyName.Trim());
+            var legacyName = Preferences.Default.Get(PrefKeyCurrentBook, "ƒ¨»œ");
+            var book = await _bookRepository.EnsureBookAsync(string.IsNullOrWhiteSpace(legacyName) ? "ƒ¨»œ" : legacyName.Trim());
             Preferences.Default.Set(PrefKeyCurrentBookId, book.Id);
             return book.Id;
         }

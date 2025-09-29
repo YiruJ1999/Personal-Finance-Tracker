@@ -72,6 +72,9 @@ namespace PersonalFinanceTracker
             builder.Services.AddTransient<RecordDetailPage>();
             builder.Services.AddTransient<RecordDetailPageModel>();
 
+            builder.Services.AddTransient<EditRecordPage>();
+            builder.Services.AddTransient<EditRecordPageModel>();
+
             var app = builder.Build();
 
             CurrencyManager.SetSymbolMap(CurrencySymbolLoader.LoadAllSymbols());

@@ -17,6 +17,8 @@ namespace PersonalFinanceTracker
             Routing.RegisterRoute("bookpage", typeof(BookPage));
             Routing.RegisterRoute("accountDetail", typeof(AccountDetailPage));
             Routing.RegisterRoute(nameof(RecordDetailPage), typeof(RecordDetailPage));
+            Routing.RegisterRoute(nameof(EditRecordPage), typeof(EditRecordPage));
+
 
         }
 

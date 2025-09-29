@@ -396,4 +396,7 @@
   <data name="Dialog_DeleteRecordMsg" xml:space="preserve">
     <value>Are you sure you want to delete this transaction?</value>
   </data>
+  <data name="Btn_Update" xml:space="preserve">
+    <value>Update</value>
+  </data>
 </root>

@@ -98,11 +98,15 @@ public partial class RecordDetailPageModel : ObservableObject, IQueryAttributabl
     [RelayCommand]
     private async Task Edit()
     {
-        // guard if not loaded
-        if (Record is null || Record.Id <= 0) return;
+        if (Record?.Id <= 0) return;
 
-        // Show the edit popup and wait for result
-        
+        // Navigate to EditRecordPage with bookId + recordId
+        var query = new Dictionary<string, object>
+        {
+            ["bookId"] = BookId,
+            ["recordId"] = Record.Id
+        };
+        await Shell.Current.GoToAsync(nameof(EditRecordPage), true, query);
     }
 
     [RelayCommand]
@@ -112,7 +116,7 @@ public partial class RecordDetailPageModel : ObservableObject, IQueryAttributabl
 
         // Open confirm popup; expect a bool? result
         var confirmObj = await Application.Current!.MainPage!.ShowPopupAsync(
-            new DeleteRecordPopup(Record.Id)          // adapt to your popup ctor
+            new DeleteRecordPopup(Record.Id)          
         );
 
         if (confirmObj is not bool confirmed || !confirmed) return;

@@ -142,6 +142,15 @@ namespace PersonalFinanceTracker.Resources.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 更新.
+        /// </summary>
+        public static string Btn_Update {
+            get {
+                return ResourceManager.GetString("Btn_Update", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 余额调整.
         /// </summary>
         public static string Category_BalanceAdjust {
