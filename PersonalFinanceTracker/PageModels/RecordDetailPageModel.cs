@@ -101,12 +101,8 @@ public partial class RecordDetailPageModel : ObservableObject, IQueryAttributabl
         if (Record?.Id <= 0) return;
 
         // Navigate to EditRecordPage with bookId + recordId
-        var query = new Dictionary<string, object>
-        {
-            ["bookId"] = BookId,
-            ["recordId"] = Record.Id
-        };
-        await Shell.Current.GoToAsync(nameof(EditRecordPage), true, query);
+        var route = $"{nameof(EditRecordPage)}?bookId={BookId}&recordId={Record.Id}";
+        await Shell.Current.GoToAsync(route, true);
     }
 
     [RelayCommand]

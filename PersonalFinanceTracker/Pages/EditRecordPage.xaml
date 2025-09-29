@@ -5,6 +5,7 @@
              xmlns:local="clr-namespace:PersonalFinanceTracker.PageModels"
              xmlns:loc="clr-namespace:PersonalFinanceTracker.Localization"
              x:Class="PersonalFinanceTracker.Pages.EditRecordPage"
+             x:DataType="local:EditRecordPageModel"
              Shell.NavBarIsVisible="False">
     <Grid RowDefinitions="*,Auto">
 

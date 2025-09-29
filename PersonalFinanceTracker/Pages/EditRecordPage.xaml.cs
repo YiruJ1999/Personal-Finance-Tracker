@@ -21,6 +21,7 @@ public partial class EditRecordPage : ContentPage
     {
         base.OnDisappearing();
         this.SizeChanged -= EditRecordPage_SizeChanged;
+        if (BindingContext is EditRecordPageModel vm) vm.Detach();
     }
 
     private void EditRecordPage_SizeChanged(object? sender, EventArgs e) => UpdateCategoryColumns();
