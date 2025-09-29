@@ -13,8 +13,10 @@
 
         // Paging state
         private int _currentPage = 1;
-        private bool _isLoading = false;
         private int _pageSize = 15; // default page size
+        private bool _isInitializingMonths;
+        private bool _isLoading = false;
+        private readonly HashSet<int> _seenIds = new();
 
         public ViewRecordPageModel(
             DatabaseService dbService,
@@ -37,17 +39,14 @@
         // -------- Bindable state --------
 
         // Display name of the active book (for UI only).
-        [ObservableProperty]
-        private string currentBook = "默认";
+        [ObservableProperty] private string currentBook = "默认";
 
         // ID of the active book (the real key used by repositories).
-        [ObservableProperty]
-        private int currentBookId;
+        [ObservableProperty] private int currentBookId;
 
 
         // Paged records bound to the UI.
-        [ObservableProperty]
-        private ObservableCollection<Record> records;
+        [ObservableProperty] private ObservableCollection<Record> records;
 
         // Months for the picker.
         [ObservableProperty] private ObservableCollection<MonthOption> months = new();
@@ -57,6 +56,7 @@
         {
             if (Months.Count > 0) return;
 
+            _isInitializingMonths = true;
             var now = DateTime.Now;
             var firstOfThisMonth = new DateTime(now.Year, now.Month, 1);
 
@@ -67,6 +67,7 @@
             }
 
             SelectedMonth = Months[0]; 
+            _isInitializingMonths = false;
         }
         private static void GetMonthRange(MonthOption m, out DateTime start, out DateTime end)
         {
@@ -76,8 +77,9 @@
 
         partial void OnSelectedMonthChanged(MonthOption? oldValue, MonthOption? newValue)
         {
-            if (newValue != null)
-                MainThread.BeginInvokeOnMainThread(async () => await ResetAndReloadAsync());
+            if (_isInitializingMonths || newValue == null) return;
+
+            MainThread.BeginInvokeOnMainThread(async () => await ResetAndReloadAsync());
         }
 
         // -------- Commands / Lifecycle --------
@@ -121,7 +123,10 @@
                 if (page != null && page.Count > 0)
                 {
                     foreach (var r in page)
-                        Records.Add(r);
+                    {
+                        if (_seenIds.Add(r.Id))
+                            Records.Add(r);
+                    }
 
                     // Advance page only when we received some data
                     _currentPage++;
@@ -144,26 +149,34 @@
         /// </summary>
         private async Task ResetAndReloadAsync()
         {
-            _currentPage = 1;
-
-            if (CurrentBookId <= 0 || SelectedMonth == null)
-                return;
+            if (_isLoading) return;          
+            _isLoading = true;
 
             try
             {
+                _currentPage = 1;
+                if (CurrentBookId <= 0 || SelectedMonth == null) return;
+
                 GetMonthRange(SelectedMonth, out var start, out var end);
-                // fetch first page without touching Records
                 var firstPage = await _recordRepository.GetRecordsPagedAsync(CurrentBookId, 1, _pageSize, start, end);
 
-                // replace the collection in one shot (no intermediate empty state)
-                Records = new ObservableCollection<Record>(firstPage ?? new List<Record>());
+                // defensive de-dup (see section C)
+                _seenIds.Clear();
+                var unique = (firstPage ?? new List<Record>()).Where(r => _seenIds.Add(r.Id)).ToList();
 
-                // advance page index if we did get data
-                _currentPage = (firstPage != null && firstPage.Count > 0) ? 2 : 1;
+                // Replace the collection in one shot
+                Records = new ObservableCollection<Record>(unique);
+
+                // Advance page index if there is data
+                _currentPage = unique.Count > 0 ? 2 : 1;
             }
             catch (Exception ex)
             {
-                await AppShell.DisplaySnackbarAsync($"Failed to load more:{ex.Message}");
+                await AppShell.DisplaySnackbarAsync($"Failed to reload: {ex.Message}");
+            }
+            finally
+            {
+                _isLoading = false;
             }
         }
 
