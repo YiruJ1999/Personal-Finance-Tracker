@@ -154,13 +154,6 @@ PersonalFinanceTracker/
 
 ---
 
-## 🧩 Optional Features
-- Export monthly/annual reports (PDF / Excel)
-- Cloud synchronization (Firebase / Supabase)
-- More theme customization options
-
----
-
 ## 👨‍💻 Author
 
 **YiruJ**  
