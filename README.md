@@ -167,20 +167,8 @@ This repository demonstrates:
 - Chart-driven account and finance insights.
 - A user-friendly visual direction beyond a default template app.
 
-<<<<<<< Updated upstream
-## 👨‍💻 Author
-=======
-## Roadmap Ideas
-
-- Export monthly or yearly reports as PDF or Excel files.
-- Add budget goals and spending warnings.
-- Add optional encrypted backups.
-- Add richer category customization.
-- Add automated tests for repositories and page models.
 
 ## Author
->>>>>>> Stashed changes
-
 **YiruJ**
 
 Developer of Personal Finance Tracker.
