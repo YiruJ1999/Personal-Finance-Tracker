@@ -1,166 +1,190 @@
-# 💰 Personal Finance Tracker
+﻿# Personal Finance Tracker
 
-A cross-platform **.NET MAUI** personal finance app that helps users manage multiple books, accounts, and transactions with visual insights.  
-It features a **hand-drawn guinea pig theme**, supports **multiple languages (Chinese / English / German)**, and allows **currency selection** for global users.
+A cross-platform personal finance app built with **.NET MAUI**, designed to help users manage books, accounts, and daily transactions with clear local-first data ownership.
 
----
+The app combines practical bookkeeping workflows with a warm hand-drawn visual style, multilingual UI support, currency selection, and chart-based financial insight.
 
-## 🧩 Overview
+## Highlights
 
-**Personal Finance Tracker** enables users to create and manage multiple books, track account balances, record daily transactions, and visualize their financial trends.  
-All data is securely stored locally in SQLite — no internet connection required.
+- **Cross-platform .NET MAUI app** targeting Android, iOS, macOS Catalyst, and Windows.
+- **Local-first SQLite storage** so finance data stays on the device.
+- **Multiple finance books** for separating personal budgets, family expenses, travel funds, or other accounting contexts.
+- **Account management** with balances, account detail views, and account-level history.
+- **Transaction workflow** for creating, editing, deleting, and browsing income and expense records.
+- **Visual analytics** powered by Syncfusion charts and toolkit components.
+- **Multilingual interface** with Chinese, English, and German resource files.
+- **Currency support** backed by CLDR currency symbol data.
+- **Custom illustrated UI assets** for a more personal, approachable experience.
 
----
+## What The App Does
 
-## ✨ Features
+Personal Finance Tracker helps users record everyday financial activity and understand their money flow over time. Users can create separate books, add accounts, enter transactions, review monthly records, inspect account balances, and switch language or currency settings from inside the app.
 
-### 📘 Book Management
-- Manage multiple books (create, edit, delete)
-- Each book has its own transaction table (`book_*`)
-- Switch between different books easily
+The project is built as a single .NET MAUI application with an MVVM-oriented structure. SQLite is used for local persistence, repositories encapsulate data access, and page models keep UI state and interaction logic separated from XAML pages.
 
-### 📄 Transaction Records
-- View monthly transaction lists
-- Edit or delete any record
-- Pagination for smooth scrolling performance
+## Core Features
 
-### 🏠 Home Dashboard
-- Display monthly trends, income, expenses, and balance
-- Show today's transactions
-- Bottom navigation bar for quick access to all features
+### Book Management
 
-### ➕ Add Record
-- Enter amount, category, account, date, and notes
-- Icon-based category selection (e.g., 🍔 Food, 🚌 Transport, 🛍️ Shopping)
-- Automatically detects income/expense type
+- Create and manage multiple books.
+- Store each book in its own physical SQLite transaction table.
+- Switch the active book through persisted preferences.
+- Import or initialize existing physical book tables when needed.
 
-### 💳 Account Management
-- View all accounts and balances
-- Add or delete accounts
-- Account details page includes:
-  - Editable balance
-  - Transaction trend chart
-  - Monthly account history view
-- Aggregate data across all books
+### Transaction Management
 
-### 🎨 Hand-Drawn Guinea Pig Theme
-- Unique hand-drawn icons and illustrations
-- Warm, cartoon-style UI for an engaging experience
+- Add income and expense records with amount, category, account, note, and timestamp.
+- Edit existing records and delete records through confirmation popups.
+- Browse records with paging support for smoother monthly views.
+- Link every transaction to an account for balance aggregation.
 
-### 🌍 Multilingual & Currency Support
-- Supports **Chinese, English, and German**
-- Users can switch languages in-app
-- Choose preferred currency (€, $, ¥, etc.)
+### Account Management
 
----
+- Create and delete accounts.
+- Maintain account balances.
+- Review account detail pages with related transaction history.
+- Aggregate balances across all books.
+- Recalculate account totals from stored book records.
 
-## 🧮 Data Structure
+### Dashboard And Insights
+
+- Display high-level financial information on the main page.
+- Show recent records and monthly context.
+- Use Syncfusion chart components for account and finance trend views.
+- Support pull-to-refresh and responsive UI behavior.
+
+### Localization And Currency
+
+- Resource-based localization for Simplified Chinese, English, and German.
+- Runtime language switching through a dedicated language manager.
+- Currency code and symbol selection through a dedicated currency manager.
+- CLDR-based currency symbol loading from packaged raw assets.
+
+### Data Privacy
+
+- Data is stored locally in SQLite.
+- The app does not require an internet connection for the core finance workflow.
+- No cloud account is required for normal use.
+
+## Tech Stack
+
+| Area | Technology |
+| --- | --- |
+| Framework | .NET 9, .NET MAUI |
+| Language | C# |
+| UI | XAML, MAUI Shell |
+| Architecture | MVVM-style page models, dependency injection |
+| Local Database | SQLite, sqlite-net-pcl, Microsoft.Data.Sqlite.Core |
+| UI Toolkit | CommunityToolkit.Maui, Syncfusion.Maui.Toolkit |
+| Charts | Syncfusion.Maui.Charts |
+| MVVM Helpers | CommunityToolkit.Mvvm |
+| Localization | RESX resource files |
+| Assets | MAUI images, raw assets, custom fonts |
+
+## Project Structure
+
+```text
+PersonalFinanceTracker/
+  Behaviors/             Responsive font and icon sizing behaviors
+  Controls/              Reusable custom UI controls
+  Converters/            XAML value converters
+  Data/                  Repositories, constants, and seed-data loading
+  Localization/          XAML translation extension
+  Messages/              Weak-reference messenger event payloads
+  Models/                SQLite-backed domain models and category data
+  PageModels/            View models / page state and commands
+  Pages/                 XAML pages and popups
+  Platforms/             Platform-specific MAUI bootstrap code
+  Resources/
+    AppIcon/             Application icons
+    Fonts/               Custom fonts and icon font metadata
+    Images/              Illustrated app images and category icons
+    Raw/                 Seed data and CLDR currency data
+    Splash/              Splash screen assets
+    Strings/             Localized RESX resources
+    Styles/              Shared colors and UI styles
+  Services/              Database, language, currency, and error services
+  Utilities/             Shared utility helpers
+```
+
+## Data Model Overview
 
 ### Book
-- Each book corresponds to a physical SQLite table (`book_xxx`)
-- Dynamic creation and deletion supported
+
+Represents a bookkeeping space. Each book has a display name and a physical SQLite table name used to store that book's records.
 
 ### Record
-- Stores each transaction (income/expense)
-- Includes account, type, amount, category, note, and timestamp
+
+Represents one transaction. A record stores its account, type, amount, category, note, and timestamp.
 
 ### Account
-- Aggregates balance data from all books
-- Provides total assets and monthly trend calculation
+
+Represents a financial account. Account balances can be updated directly and also synchronized from transactions stored across books.
 
 ### PersonalInfo
-- Stores user name and avatar info
-- Generates a default user on first run
 
----
+Stores basic profile information such as display name and avatar path.
 
-## 🧱 Project Structure
+## Getting Started
 
-```
-PersonalFinanceTracker/
-├── Pages/                     # UI Pages (XAML)
-│   ├── HomePage.xaml
-│   ├── BookPage.xaml
-│   ├── RecordPage.xaml
-│   ├── AddRecordPage.xaml
-│   ├── AccountPage.xaml
-│   ├── AccountDetailPage.xaml
-│   └── StatsPage.xaml
-│
-├── PageModels/                # MVVM ViewModels
-│   ├── HomePageModel.cs
-│   ├── BookPageModel.cs
-│   ├── RecordPageModel.cs
-│   ├── AddRecordPageModel.cs
-│   ├── AccountPageModel.cs
-│   ├── AccountDetailPageModel.cs
-│   └── StatsPageModel.cs
-│
-├── Data/                      # Database Repositories
-│   ├── DatabaseService.cs
-│   ├── BookRepository.cs
-│   ├── RecordRepository.cs
-│   └── AccountRepository.cs
-│
-├── Models/                    # Data Models
-│   ├── Book.cs
-│   ├── Record.cs
-│   ├── Account.cs
-│   └── PersonalInfo.cs
-│
-├── Resources/
-│   └── Images/                # Hand-drawn icons and illustrations
-│
-├── Utilities/                 # Utility Classes
-│
-├── App.xaml / App.xaml.cs     # App Entry Point
-├── GlobalUsings.cs            # Global using declarations
-└── MauiProgram.cs             # Dependency Injection setup
+### Prerequisites
+
+- Visual Studio 2022 with the .NET MAUI workload, or a compatible .NET SDK setup.
+- .NET 9 SDK.
+- Android SDK / emulator for Android builds, or the required Apple tooling for iOS and Mac Catalyst builds.
+
+### Restore Dependencies
+
+```bash
+cd PersonalFinanceTracker
+dotnet restore
 ```
 
----
+### Build
 
-## ⚙️ Tech Stack
+```bash
+dotnet build PersonalFinanceTracker.sln
+```
 
-- **Framework**: .NET MAUI (C# + XAML)
-- **Architecture**: MVVM (via CommunityToolkit.Mvvm)
-- **Database**: SQLite (sqlite-net-pcl)
-- **Charts**: Microcharts or Syncfusion.Maui.Charts
-- **Dependency Injection**: Microsoft.Extensions.DependencyInjection
-- **Async Programming**: `async/await`
-- **UI Style**: Hand-drawn, guinea pig theme with cross-platform support
+### Run
 
----
+Open `PersonalFinanceTracker/PersonalFinanceTracker.sln` in Visual Studio and run the target platform you want to test.
 
-## 🚀 Getting Started
+For command-line Android development, use a MAUI-compatible target and connected emulator/device, for example:
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/<your-username>/PersonalFinanceTracker.git
-   cd PersonalFinanceTracker
-   ```
+```bash
+dotnet build -f net9.0-android
+```
 
-2. Restore dependencies:
-   ```bash
-   dotnet restore
-   ```
+## Notes For Reviewers
 
-3. Run the app:
-   ```bash
-   dotnet build
-   dotnet maui run -t Android
-   ```
-   *(Or open the `.sln` file in Visual Studio and run directly.)*
+This repository demonstrates:
 
----
+- Practical MAUI application structure.
+- Local SQLite persistence with repository abstractions.
+- Runtime localization and currency configuration.
+- Multi-page finance workflows with modal popups.
+- Chart-driven account and finance insights.
+- A user-friendly visual direction beyond a default template app.
 
+<<<<<<< Updated upstream
 ## 👨‍💻 Author
+=======
+## Roadmap Ideas
 
-**YiruJ**  
-💡 Developer of Personal Finance Tracker  
+- Export monthly or yearly reports as PDF or Excel files.
+- Add budget goals and spending warnings.
+- Add optional encrypted backups.
+- Add richer category customization.
+- Add automated tests for repositories and page models.
 
----
+## Author
+>>>>>>> Stashed changes
 
-## 🪪 License
+**YiruJ**
 
-This project is not open source and may not be redistributed or modified without permission.
+Developer of Personal Finance Tracker.
+
+## License
+
+This project is not open source. Redistribution or modification is not permitted without explicit permission.
