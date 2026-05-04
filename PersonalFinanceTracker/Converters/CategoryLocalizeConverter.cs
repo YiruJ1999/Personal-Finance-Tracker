@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Converters/CategoryLocalizeConverter.cs
+// Purpose: Converts bound values into display-ready values for XAML views.
+
+using System;
 using System.Globalization;
 using Microsoft.Maui.Controls;
 using PersonalFinanceTracker.Resources.Strings;

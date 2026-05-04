@@ -1,3 +1,7 @@
+ï»¿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Data/SeedDataService.cs
+// Purpose: Encapsulates persistence and data-access behavior for the finance domain.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -59,7 +63,7 @@ namespace PersonalFinanceTracker.Data
         /// This does NOT rely on Record.Account (removed). It maps seed AccountId -> real DB Account.Id.
         /// Supported JSON layouts:
         /// 1) Object with "Accounts" (optional) and "Records" arrays.
-        /// 2) Legacy root array of records only (will create placeholder accounts "ÕË»§{seedId}").
+        /// 2) Legacy root array of records only (will create placeholder accounts "è´¦æˆ·{seedId}").
         /// </summary>
         public async Task LoadSeedDataAsync(int bookId)
         {
@@ -114,7 +118,7 @@ namespace PersonalFinanceTracker.Data
                     // If the account is not in the map (e.g., legacy file without Accounts), create a placeholder.
                     if (!seedToReal.TryGetValue(seedAccId, out var realAccId))
                     {
-                        var placeholderName = $"ÕË»§{seedAccId}";
+                        var placeholderName = $"è´¦æˆ·{seedAccId}";
                         var acc = await _accountRepository.AddAccountAsync(placeholderName);
                         realAccId = acc.Id;
                         seedToReal[seedAccId] = realAccId;
@@ -206,7 +210,7 @@ namespace PersonalFinanceTracker.Data
                     var name = acc.TryGetProperty("Name", out var nameElem)
                         ? (nameElem.GetString() ?? string.Empty).Trim()
                         : string.Empty;
-                    if (string.IsNullOrWhiteSpace(name)) name = $"ÕË»§{seedId}";
+                    if (string.IsNullOrWhiteSpace(name)) name = $"è´¦æˆ·{seedId}";
 
                     // Optional opening balance support: use repository overload if present
                     decimal opening = 0m;
@@ -255,7 +259,7 @@ namespace PersonalFinanceTracker.Data
                 var seedAccId = ParseFlexibleInt(accElem);
                 if (seedAccId > 0 && seen.Add(seedAccId))
                 {
-                    var name = $"ÕË»§{seedAccId}";
+                    var name = $"è´¦æˆ·{seedAccId}";
                     var real = await _accountRepository.AddAccountAsync(name);
                     map[seedAccId] = real.Id;
                 }
@@ -294,3 +298,4 @@ namespace PersonalFinanceTracker.Data
         }
     }
 }
+

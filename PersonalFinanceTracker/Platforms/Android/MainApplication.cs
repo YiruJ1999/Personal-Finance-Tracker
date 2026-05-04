@@ -1,4 +1,8 @@
-﻿using Android.App;
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Platforms/Android/MainApplication.cs
+// Purpose: Contains platform-specific MAUI startup code.
+
+using Android.App;
 using Android.Runtime;
 
 namespace PersonalFinanceTracker
@@ -14,3 +18,4 @@ namespace PersonalFinanceTracker
         protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
     }
 }
+

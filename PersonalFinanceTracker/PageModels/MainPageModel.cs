@@ -1,3 +1,7 @@
+ï»¿// Personal Finance Tracker
+// File: PersonalFinanceTracker/PageModels/MainPageModel.cs
+// Purpose: Coordinates page state, commands, navigation, and data loading for a MAUI page.
+
 using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -26,7 +30,7 @@ namespace PersonalFinanceTracker.PageModels
         private const string PrefKeyCurrentBookName = "current_book";
         // New id-based preference key
         private const string PrefKeyCurrentBookId = "current_book_id";
-        private const string DefaultBookDisplayName = "Ä¬ÈÏ";
+        private const string DefaultBookDisplayName = "é»˜è®¤";
 
         private decimal _lastIncome;
         private decimal _lastExpense;
@@ -258,8 +262,8 @@ namespace PersonalFinanceTracker.PageModels
                 .Where(r => r.Timestamp >= utcMonthStart && r.Timestamp < utcMonthEndExclusive)
                 .ToList();
 
-            var income = monthly.Where(r => r.Type == "ÊÕÈë").Sum(r => r.Amount);
-            var expense = monthly.Where(r => r.Type == "Ö§³ö").Sum(r => r.Amount);
+            var income = monthly.Where(r => r.Type == "æ”¶å…¥").Sum(r => r.Amount);
+            var expense = monthly.Where(r => r.Type == "æ”¯å‡º").Sum(r => r.Amount);
 
             _lastIncome = income;
             _lastExpense = expense;
@@ -272,7 +276,7 @@ namespace PersonalFinanceTracker.PageModels
                 .Select(g => new CategorySummaryItem
                 {
                     Category = g.Key,
-                    Amount = (double)g.Sum(r => r.Type == "Ö§³ö" ? -r.Amount : r.Amount)
+                    Amount = (double)g.Sum(r => r.Type == "æ”¯å‡º" ? -r.Amount : r.Amount)
                 })
                 .OrderByDescending(x => Math.Abs(x.Amount))
                 .ToList();
@@ -383,3 +387,4 @@ namespace PersonalFinanceTracker.PageModels
         public double Amount { get; set; }
     }
 }
+

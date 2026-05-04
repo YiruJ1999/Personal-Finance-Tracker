@@ -1,3 +1,7 @@
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Pages/RecordDetailPage.xaml.cs
+// Purpose: Contains code-behind for a MAUI page or popup.
+
 using System.Threading.Tasks;
 
 namespace PersonalFinanceTracker.Pages;

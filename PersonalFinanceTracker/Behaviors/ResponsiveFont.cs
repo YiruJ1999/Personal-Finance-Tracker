@@ -1,4 +1,8 @@
-﻿using System.Linq; 
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Behaviors/ResponsiveFont.cs
+// Purpose: Provides reusable UI behavior for responsive MAUI views.
+
+using System.Linq; 
 using Microsoft.Maui.Controls;
 
 namespace PersonalFinanceTracker.Behaviors
@@ -99,3 +103,4 @@ namespace PersonalFinanceTracker.Behaviors
         }
     }
 }
+

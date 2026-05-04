@@ -1,3 +1,7 @@
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Platforms/Tizen/Main.cs
+// Purpose: Contains platform-specific MAUI startup code.
+
 using System;
 using Microsoft.Maui;
 using Microsoft.Maui.Hosting;
@@ -15,3 +19,4 @@ namespace PersonalFinanceTracker
         }
     }
 }
+

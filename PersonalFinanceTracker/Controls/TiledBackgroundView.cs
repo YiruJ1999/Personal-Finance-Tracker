@@ -1,4 +1,8 @@
-﻿using Microsoft.Maui;                      
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Controls/TiledBackgroundView.cs
+// Purpose: Defines a reusable custom control used by the MAUI UI layer.
+
+using Microsoft.Maui;                      
 using Microsoft.Maui.Controls;              
 using Microsoft.Maui.Graphics;              
 using Microsoft.Maui.Graphics.Platform;     
@@ -190,3 +194,4 @@ namespace PersonalFinanceTracker.Controls
         }
     }
 }
+

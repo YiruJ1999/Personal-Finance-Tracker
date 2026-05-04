@@ -1,4 +1,8 @@
-﻿using ObjCRuntime;
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Platforms/iOS/Program.cs
+// Purpose: Contains platform-specific MAUI startup code.
+
+using ObjCRuntime;
 using UIKit;
 
 namespace PersonalFinanceTracker
@@ -14,3 +18,4 @@ namespace PersonalFinanceTracker
         }
     }
 }
+

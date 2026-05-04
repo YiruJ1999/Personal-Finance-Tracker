@@ -1,3 +1,7 @@
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/GlobalUsings.cs
+// Purpose: Contains application source code for Personal Finance Tracker.
+
 global using Fonts;
 global using System;
 global using System.Collections.ObjectModel;
@@ -14,3 +18,4 @@ global using PersonalFinanceTracker.Services;
 global using PersonalFinanceTracker.Utilities;
 global using PersonalFinanceTracker.Messages;
 global using PersonalFinanceTracker.Models;
+

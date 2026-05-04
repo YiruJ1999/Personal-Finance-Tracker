@@ -1,4 +1,8 @@
-﻿namespace PersonalFinanceTracker.PageModels
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/PageModels/ViewRecordPageModel.cs
+// Purpose: Coordinates page state, commands, navigation, and data loading for a MAUI page.
+
+namespace PersonalFinanceTracker.PageModels
 {
     public partial class ViewRecordPageModel : ObservableObject
     {
@@ -248,3 +252,4 @@
     }
 
 }
+

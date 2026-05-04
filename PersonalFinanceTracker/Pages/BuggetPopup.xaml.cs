@@ -1,3 +1,7 @@
+ï»¿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Pages/BuggetPopup.xaml.cs
+// Purpose: Contains code-behind for a MAUI page or popup.
+
 using PersonalFinanceTracker.Resources.Strings;
 using CommunityToolkit.Maui.Views;
 using System.Text.RegularExpressions;
@@ -16,25 +20,25 @@ public partial class BuggetPopup : Popup
     private void ConfirmClicked(object sender, EventArgs e)
     {
         Amount = AmountEntry.Text ?? string.Empty;
-        Close(Amount); // ¹Ø±Õµ¯´°²¢·µ»ØÖµÊäÈëÖµ
+        Close(Amount); // å…³é—­å¼¹çª—å¹¶è¿”å›žå€¼è¾“å…¥å€¼
     }
 
     private void CancelClicked(object sender, EventArgs e)
     {
-        Close(null); // ¹Ø±Õµ¯´°²¢·µ»ØÖµnull
+        Close(null); // å…³é—­å¼¹çª—å¹¶è¿”å›žå€¼null
     }
 
 
     private void AmountEntry_TextChanged(object sender, TextChangedEventArgs e)
     {
-        // Ö»ÔÊÐíÊý×ÖºÍÒ»¸öÐ¡Êýµã
+        // åªå…è®¸æ•°å­—å’Œä¸€ä¸ªå°æ•°ç‚¹
         var entry = sender as Entry;
         if (entry == null) return;
 
         string text = entry.Text ?? string.Empty;
         string filtered = Regex.Replace(text, @"[^0-9.]", "");
 
-        // Ö»ÔÊÐíÒ»¸öÐ¡Êýµã
+        // åªå…è®¸ä¸€ä¸ªå°æ•°ç‚¹
         int dotIndex = filtered.IndexOf('.');
         if (dotIndex >= 0)
         {
@@ -47,3 +51,4 @@ public partial class BuggetPopup : Popup
     }
 
 }
+

@@ -1,3 +1,7 @@
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Pages/AddRecordPage.xaml.cs
+// Purpose: Contains code-behind for a MAUI page or popup.
+
 namespace PersonalFinanceTracker.Pages;
 
 public partial class AddRecordPage : ContentPage
@@ -41,3 +45,4 @@ public partial class AddRecordPage : ContentPage
 
 
 }
+

@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Behaviors/IconAutoSizeBehavior.cs
+// Purpose: Provides reusable UI behavior for responsive MAUI views.
+
+using System;
 using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui.Controls;
@@ -186,3 +190,4 @@ namespace PersonalFinanceTracker.Behaviors
         }
     }
 }
+

@@ -1,4 +1,8 @@
-﻿namespace PersonalFinanceTracker
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/App.xaml.cs
+// Purpose: Contains application source code for Personal Finance Tracker.
+
+namespace PersonalFinanceTracker
 {
     public partial class App : Application
     {

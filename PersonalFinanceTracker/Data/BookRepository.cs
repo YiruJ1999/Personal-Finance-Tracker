@@ -1,4 +1,8 @@
-﻿using SQLite;
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Data/BookRepository.cs
+// Purpose: Encapsulates persistence and data-access behavior for the finance domain.
+
+using SQLite;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -172,3 +176,4 @@ namespace PersonalFinanceTracker.Data
         }
     }
 }
+

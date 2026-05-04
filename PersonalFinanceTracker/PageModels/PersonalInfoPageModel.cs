@@ -1,3 +1,7 @@
+ï»¿// Personal Finance Tracker
+// File: PersonalFinanceTracker/PageModels/PersonalInfoPageModel.cs
+// Purpose: Coordinates page state, commands, navigation, and data loading for a MAUI page.
+
 using PersonalFinanceTracker.Data;
 using PersonalFinanceTracker.Models;
 using PersonalFinanceTracker.Services;
@@ -111,7 +115,7 @@ namespace PersonalFinanceTracker.PageModels
         /// </summary>
         public ObservableCollection<LanguageOption> LanguageOptions { get; } = new()
         {
-            new(LanguageManager.ZhHans, "¼òÌåÖÐÎÄ"),
+            new(LanguageManager.ZhHans, "ç®€ä½“ä¸­æ–‡"),
             new(LanguageManager.En,      "English"),
             new(LanguageManager.De,      "Deutsch"),
         };
@@ -195,7 +199,7 @@ namespace PersonalFinanceTracker.PageModels
         }
 
         /// <summary>
-        /// Save personal info (including currency & language) and immediately update global currency symbol.
+        /// Save personal info, including currency and language, and immediately update the global currency symbol.
         /// </summary>
         public async Task SaveAsync()
         {
@@ -229,3 +233,4 @@ namespace PersonalFinanceTracker.PageModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 }
+

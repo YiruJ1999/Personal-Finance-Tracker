@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Converters/AmountWithSignConverter.cs
+// Purpose: Converts bound values into display-ready values for XAML views.
+
+using System;
 using System.Globalization;
 using Microsoft.Maui.Controls;
 
@@ -39,3 +43,4 @@ namespace PersonalFinanceTracker.Converters
         public object[] ConvertBack(object v, Type[] ts, object p, CultureInfo c) => throw new NotSupportedException();
     }
 }
+

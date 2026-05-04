@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Services/LanguageManager.cs
+// Purpose: Provides an application service shared across repositories and page models.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
@@ -64,3 +68,4 @@ namespace PersonalFinanceTracker.Services
         }
     }
 }
+

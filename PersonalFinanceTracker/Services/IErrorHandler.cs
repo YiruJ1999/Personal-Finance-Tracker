@@ -1,3 +1,7 @@
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Services/IErrorHandler.cs
+// Purpose: Provides an application service shared across repositories and page models.
+
 namespace PersonalFinanceTracker.Services
 {
     /// <summary>

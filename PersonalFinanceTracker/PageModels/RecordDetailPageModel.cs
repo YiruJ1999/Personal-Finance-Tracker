@@ -1,3 +1,7 @@
+ï»¿// Personal Finance Tracker
+// File: PersonalFinanceTracker/PageModels/RecordDetailPageModel.cs
+// Purpose: Coordinates page state, commands, navigation, and data loading for a MAUI page.
+
 using CommunityToolkit.Maui.Views;
 
 namespace PersonalFinanceTracker.PageModels;
@@ -32,7 +36,7 @@ public partial class RecordDetailPageModel : ObservableObject, IQueryAttributabl
 
     [ObservableProperty] private int bookId;
 
-    [ObservableProperty] private string currentBook = "Ä¬ÈÏ";
+    [ObservableProperty] private string currentBook = "é»˜è®¤";
 
     [ObservableProperty] private Record record = new();
 
@@ -66,7 +70,7 @@ public partial class RecordDetailPageModel : ObservableObject, IQueryAttributabl
         }
 
         var book = await _bookRepository.GetBookByIdAsync(BookId);
-        CurrentBook = book?.Name ?? "Ä¬ÈÏ";
+        CurrentBook = book?.Name ?? "é»˜è®¤";
 
         await LoadAsync(BookId, recordId);
     }
@@ -79,7 +83,7 @@ public partial class RecordDetailPageModel : ObservableObject, IQueryAttributabl
         Record = await _recordRepository.GetByIdAsync(bookId, id) ?? new Record();
 
         var book = await _bookRepository.GetBookByIdAsync(bookId);
-        CurrentBook = book?.Name ?? "Ä¬ÈÏ";
+        CurrentBook = book?.Name ?? "é»˜è®¤";
 
         if (Record.AccountId > 0)
         {
@@ -132,3 +136,4 @@ public partial class RecordDetailPageModel : ObservableObject, IQueryAttributabl
         
     }
 }
+

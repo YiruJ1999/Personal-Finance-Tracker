@@ -1,4 +1,8 @@
-﻿using Foundation;
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Platforms/MacCatalyst/AppDelegate.cs
+// Purpose: Contains platform-specific MAUI startup code.
+
+using Foundation;
 
 namespace PersonalFinanceTracker
 {
@@ -8,3 +12,4 @@ namespace PersonalFinanceTracker
         protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
     }
 }
+

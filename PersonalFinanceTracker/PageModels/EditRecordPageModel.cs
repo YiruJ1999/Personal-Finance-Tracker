@@ -1,3 +1,7 @@
+ï»¿// Personal Finance Tracker
+// File: PersonalFinanceTracker/PageModels/EditRecordPageModel.cs
+// Purpose: Coordinates page state, commands, navigation, and data loading for a MAUI page.
+
 namespace PersonalFinanceTracker.PageModels
 {
     public partial class EditRecordPageModel : ObservableObject, IQueryAttributable
@@ -60,7 +64,7 @@ namespace PersonalFinanceTracker.PageModels
             if (rec is null) { await Shell.Current.DisplayAlert("Error", "Record not found", "OK"); await Shell.Current.GoToAsync(".."); return; }
 
             // 3) set type first -> build category list accordingly
-            IsExpenseSelected = string.Equals(rec.Type, "Ö§³ö", StringComparison.OrdinalIgnoreCase);
+            IsExpenseSelected = string.Equals(rec.Type, "æ”¯å‡º", StringComparison.OrdinalIgnoreCase);
             RefreshCategories(preserveSelection: false);           // rebuild list by type
 
             // 4) select category by name (fallback to first)
@@ -124,7 +128,7 @@ namespace PersonalFinanceTracker.PageModels
             if (SelectedAccount == null && Accounts?.Count > 0) SelectedAccount = Accounts[0];
             if (SelectedAccount == null)
             {
-                await Shell.Current.DisplayAlert("ÌáÊ¾", "ÇëÏÈ´´½¨Ò»¸öÕË»§¡£", "ºÃµÄ");
+                await Shell.Current.DisplayAlert("æç¤º", "è¯·å…ˆåˆ›å»ºä¸€ä¸ªè´¦æˆ·ã€‚", "å¥½çš„");
                 return;
             }
 
@@ -138,9 +142,9 @@ namespace PersonalFinanceTracker.PageModels
 
             // Map back
             rec.Amount = amt;
-            rec.Category = SelectedCategory?.Name ?? "Î´·ÖÀà";
+            rec.Category = SelectedCategory?.Name ?? "æœªåˆ†ç±»";
             rec.Note = string.IsNullOrWhiteSpace(Note) ? null : Note.Trim();
-            rec.Type = IsExpenseSelected ? "Ö§³ö" : "ÊÕÈë";
+            rec.Type = IsExpenseSelected ? "æ”¯å‡º" : "æ”¶å…¥";
             rec.AccountId = SelectedAccount.Id;
             rec.Timestamp = DateTime.SpecifyKind(SelectedDate == default ? DateTime.Now : SelectedDate, DateTimeKind.Local);
 
@@ -184,3 +188,4 @@ namespace PersonalFinanceTracker.PageModels
 
     }
 }
+

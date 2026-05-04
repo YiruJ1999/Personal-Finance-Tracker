@@ -1,3 +1,7 @@
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Models/PersonalInfo.cs
+// Purpose: Defines a finance domain model persisted or displayed by the app.
+
 using SQLite;
 using System;
 
@@ -22,3 +26,4 @@ namespace PersonalFinanceTracker.Models
     }
 
 }
+

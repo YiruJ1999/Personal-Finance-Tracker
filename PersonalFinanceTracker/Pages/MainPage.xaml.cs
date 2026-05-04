@@ -1,4 +1,8 @@
-﻿using CommunityToolkit.Maui.Views;
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Pages/MainPage.xaml.cs
+// Purpose: Contains code-behind for a MAUI page or popup.
+
+using CommunityToolkit.Maui.Views;
 using PersonalFinanceTracker.Models;
 using PersonalFinanceTracker.PageModels;
 using PersonalFinanceTracker.Resources.Strings;
@@ -33,3 +37,4 @@ namespace PersonalFinanceTracker.Pages
 
     }
 }
+

@@ -1,4 +1,9 @@
 ﻿<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  Personal Finance Tracker
+  File: PersonalFinanceTracker/Resources/Styles/Colors.xaml
+  Purpose: Defines shared visual resources for the MAUI application.
+-->
 <?xaml-comp compile="true" ?>
 <ResourceDictionary 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
@@ -62,3 +67,5 @@
     <SolidColorBrush x:Key="PrimaryDarkBrush" Color="{StaticResource PrimaryDark}"/>
     <SolidColorBrush x:Key="PrimaryLightBrush" Color="{StaticResource Tertiary}"/>
 </ResourceDictionary>
+
+

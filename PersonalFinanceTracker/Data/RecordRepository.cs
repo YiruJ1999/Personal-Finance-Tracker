@@ -1,4 +1,8 @@
-﻿using PersonalFinanceTracker.Models;
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Data/RecordRepository.cs
+// Purpose: Encapsulates persistence and data-access behavior for the finance domain.
+
+using PersonalFinanceTracker.Models;
 using PersonalFinanceTracker.Services;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -172,3 +176,4 @@ namespace PersonalFinanceTracker.Data
 
     }
 }
+

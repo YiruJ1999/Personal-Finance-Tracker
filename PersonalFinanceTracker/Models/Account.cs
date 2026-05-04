@@ -1,4 +1,8 @@
-﻿using SQLite;
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Models/Account.cs
+// Purpose: Defines a finance domain model persisted or displayed by the app.
+
+using SQLite;
 using System;
 
 
@@ -20,3 +24,4 @@ namespace PersonalFinanceTracker.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }
+

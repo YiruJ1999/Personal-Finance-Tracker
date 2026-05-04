@@ -1,4 +1,8 @@
-﻿using CommunityToolkit.Maui.Views;
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/PageModels/AccountPageModel.cs
+// Purpose: Coordinates page state, commands, navigation, and data loading for a MAUI page.
+
+using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -395,3 +399,4 @@ namespace PersonalFinanceTracker.PageModels
         }
     }
 }
+

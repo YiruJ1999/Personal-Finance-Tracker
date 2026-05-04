@@ -1,4 +1,8 @@
-﻿using CommunityToolkit.Maui.Alerts;
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/AppShell.xaml.cs
+// Purpose: Contains application source code for Personal Finance Tracker.
+
+using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 using Font = Microsoft.Maui.Font;
 using PersonalFinanceTracker.Pages;
@@ -51,3 +55,4 @@ namespace PersonalFinanceTracker
         }
     }
 }
+

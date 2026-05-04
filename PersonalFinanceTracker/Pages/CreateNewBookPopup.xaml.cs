@@ -1,3 +1,7 @@
+ï»¿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Pages/CreateNewBookPopup.xaml.cs
+// Purpose: Contains code-behind for a MAUI page or popup.
+
 using CommunityToolkit.Maui.Views;
 using System.Text.RegularExpressions;
 using PersonalFinanceTracker.Resources.Strings;
@@ -16,13 +20,14 @@ public partial class CreateNewBookPopup : Popup
     private void ConfirmClicked(object sender, EventArgs e)
     {
         Amount = AmountEntry.Text ?? string.Empty;
-        Close(Amount); // ¹Ø±Õµ¯´°²¢·µ»ØÖµÊäÈëÖµ
+        Close(Amount); // å…³é—­å¼¹çª—å¹¶è¿”å›žå€¼è¾“å…¥å€¼
     }
 
     private void CancelClicked(object sender, EventArgs e)
     {
-        Close(null); // ¹Ø±Õµ¯´°²¢·µ»ØÖµnull
+        Close(null); // å…³é—­å¼¹çª—å¹¶è¿”å›žå€¼null
     }
 
 
 }
+

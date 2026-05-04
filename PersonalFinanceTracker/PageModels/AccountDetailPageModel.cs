@@ -1,3 +1,7 @@
+ï»¿// Personal Finance Tracker
+// File: PersonalFinanceTracker/PageModels/AccountDetailPageModel.cs
+// Purpose: Coordinates page state, commands, navigation, and data loading for a MAUI page.
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Maui.Controls;
@@ -177,8 +181,8 @@ namespace PersonalFinanceTracker.PageModels
                         return;
                     }
 
-                    // For DB compatibility, we keep Chinese literals "ÊÕÈë"/"Ö§³ö"
-                    var type = delta > 0 ? "ÊÕÈë" : "Ö§³ö";
+                    // For DB compatibility, we keep Chinese literals "æ”¶å…¥"/"æ”¯å‡º"
+                    var type = delta > 0 ? "æ”¶å…¥" : "æ”¯å‡º";
                     var amount = Math.Abs(delta);
 
                     // 4) Confirm with a localized preview (type + formatted delta)
@@ -202,10 +206,10 @@ namespace PersonalFinanceTracker.PageModels
                     // 6) Persist an adjustment record (keep invariant internal strings)
                     var adjustment = new Record
                     {
-                        Type = type,                                // "ÊÕÈë"/"Ö§³ö"
+                        Type = type,                                // "æ”¶å…¥"/"æ”¯å‡º"
                         Amount = amount,
-                        Category = "Óà¶îµ÷Õû",                        // invariant DB string; UI can localize when displaying
-                        Note = "ÕË»§ÏêÇéÒ³ÊÖ¶¯µ÷Õû",                   // invariant DB string
+                        Category = "ä½™é¢è°ƒæ•´",                        // invariant DB string; UI can localize when displaying
+                        Note = "è´¦æˆ·è¯¦æƒ…é¡µæ‰‹åŠ¨è°ƒæ•´",                   // invariant DB string
                         Timestamp = DateTime.Now,
                         AccountId = AccountId
                     };
@@ -252,8 +256,8 @@ namespace PersonalFinanceTracker.PageModels
                 if (id > 0) return id;
             }
 
-            var legacyName = Preferences.Default.Get(PrefKeyCurrentBook, "Ä¬ÈÏ");
-            var book = await _bookRepo.EnsureBookAsync(string.IsNullOrWhiteSpace(legacyName) ? "Ä¬ÈÏ" : legacyName.Trim());
+            var legacyName = Preferences.Default.Get(PrefKeyCurrentBook, "é»˜è®¤");
+            var book = await _bookRepo.EnsureBookAsync(string.IsNullOrWhiteSpace(legacyName) ? "é»˜è®¤" : legacyName.Trim());
             Preferences.Default.Set(PrefKeyCurrentBookId, book.Id);
             return book.Id;
         }
@@ -287,3 +291,4 @@ namespace PersonalFinanceTracker.PageModels
         public string Display => $"{Year}-{Month:00}";
     }
 }
+

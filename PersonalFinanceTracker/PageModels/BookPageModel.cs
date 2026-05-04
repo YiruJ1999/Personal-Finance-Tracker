@@ -1,3 +1,7 @@
+ï»¿// Personal Finance Tracker
+// File: PersonalFinanceTracker/PageModels/BookPageModel.cs
+// Purpose: Coordinates page state, commands, navigation, and data loading for a MAUI page.
+
 using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -22,7 +26,7 @@ namespace PersonalFinanceTracker.PageModels
         // Preference keys (id-based is the source of truth; name is kept for display/back-compat)
         private const string PrefKeyCurrentBookId = "current_book_id";
         private const string PrefKeyCurrentBookName = "current_book";
-        private const string DefaultBookDisplayName = "Ä¬ÈÏ";
+        private const string DefaultBookDisplayName = "é»˜è®¤";
 
         public BookPageModel(DatabaseService db, IServiceProvider sp, BookRepository bookRepository)
         {
@@ -72,7 +76,7 @@ namespace PersonalFinanceTracker.PageModels
                 Preferences.Default.Set(PrefKeyCurrentBookName, book.Name);
 
                 await LoadAllBooksAsync();
-                await AppShell.DisplayToastAsync($"ÒÑ´´½¨ÕË±¾£º{book.Name}");
+                await AppShell.DisplayToastAsync($"å·²åˆ›å»ºè´¦æœ¬ï¼š{book.Name}");
                 return;
             }
 
@@ -97,8 +101,8 @@ namespace PersonalFinanceTracker.PageModels
                 // Aggregate sums and last modified (MAX of Timestamp text; ISO 8601 works lexicographically)
                 var rows = await _db.QueryAsync<_AggRow>($@"
                     SELECT
-                        COALESCE(SUM(CASE WHEN Type = 'ÊÕÈë' THEN Amount ELSE 0 END), 0) AS IncomeAmount,
-                        COALESCE(SUM(CASE WHEN Type = 'Ö§³ö' THEN Amount ELSE 0 END), 0) AS ExpenseAmount,
+                        COALESCE(SUM(CASE WHEN Type = 'æ”¶å…¥' THEN Amount ELSE 0 END), 0) AS IncomeAmount,
+                        COALESCE(SUM(CASE WHEN Type = 'æ”¯å‡º' THEN Amount ELSE 0 END), 0) AS ExpenseAmount,
                         MAX(Timestamp) AS LastModified
                     FROM {q};");
 
@@ -133,9 +137,9 @@ namespace PersonalFinanceTracker.PageModels
             var name = item.BookName;
 
             bool ok = await Application.Current.MainPage.DisplayAlert(
-                "É¾³ıÕË±¾",
-                $"È·¶¨É¾³ı¡°{name}¡±Âğ£¿¸ÃÕË±¾µÄËùÓĞ¼ÇÂ¼½«±»ÓÀ¾ÃÒÆ³ı£¡",
-                "É¾³ı", "È¡Ïû");
+                "åˆ é™¤è´¦æœ¬",
+                $"ç¡®å®šåˆ é™¤â€œ{name}â€å—ï¼Ÿè¯¥è´¦æœ¬çš„æ‰€æœ‰è®°å½•å°†è¢«æ°¸ä¹…ç§»é™¤ï¼",
+                "åˆ é™¤", "å–æ¶ˆ");
             if (!ok) return;
 
             try
@@ -168,11 +172,11 @@ namespace PersonalFinanceTracker.PageModels
                     }
                 }
 
-                await AppShell.DisplayToastAsync($"ÒÑÉ¾³ıÕË±¾£º{name}");
+                await AppShell.DisplayToastAsync($"å·²åˆ é™¤è´¦æœ¬ï¼š{name}");
             }
             catch (Exception ex)
             {
-                await AppShell.DisplaySnackbarAsync($"É¾³ıÊ§°Ü£º{ex.Message}");
+                await AppShell.DisplaySnackbarAsync($"åˆ é™¤å¤±è´¥ï¼š{ex.Message}");
             }
         }
 
@@ -213,3 +217,4 @@ namespace PersonalFinanceTracker.PageModels
         public decimal BudgetAmount { get; set; }
     }
 }
+

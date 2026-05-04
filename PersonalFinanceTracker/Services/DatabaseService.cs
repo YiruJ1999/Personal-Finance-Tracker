@@ -1,4 +1,8 @@
-﻿using SQLite;
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Services/DatabaseService.cs
+// Purpose: Provides an application service shared across repositories and page models.
+
+using SQLite;
 using System.IO;
 using System.Threading.Tasks;
 using System.Linq;
@@ -110,6 +114,7 @@ namespace PersonalFinanceTracker.Services
     }
 
 }
+
 
 
 

@@ -1,3 +1,7 @@
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Data/Constants.cs
+// Purpose: Encapsulates persistence and data-access behavior for the finance domain.
+
 namespace PersonalFinanceTracker.Data
 {
     public static class Constants

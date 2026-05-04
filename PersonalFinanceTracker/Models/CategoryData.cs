@@ -1,4 +1,8 @@
-﻿using PersonalFinanceTracker.Resources.Strings; 
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Models/CategoryData.cs
+// Purpose: Defines a finance domain model persisted or displayed by the app.
+
+using PersonalFinanceTracker.Resources.Strings; 
 
 public static class CategoryData
 {
@@ -19,3 +23,4 @@ public static class CategoryData
         new() { Name = AppResources.Category_Bonus,  Icon = "bonus.png" },
     };
 }
+

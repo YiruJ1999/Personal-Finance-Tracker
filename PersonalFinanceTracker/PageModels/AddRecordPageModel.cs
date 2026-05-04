@@ -1,4 +1,8 @@
-﻿using System.Globalization;
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/PageModels/AddRecordPageModel.cs
+// Purpose: Coordinates page state, commands, navigation, and data loading for a MAUI page.
+
+using System.Globalization;
 
 namespace PersonalFinanceTracker.PageModels
 {
@@ -242,3 +246,4 @@ namespace PersonalFinanceTracker.PageModels
         }
     }
 }
+

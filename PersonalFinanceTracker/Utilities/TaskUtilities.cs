@@ -1,3 +1,7 @@
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Utilities/TaskUtilities.cs
+// Purpose: Provides shared helper functionality for asynchronous app workflows.
+
 using PersonalFinanceTracker.Services;
 
 namespace PersonalFinanceTracker.Utilities

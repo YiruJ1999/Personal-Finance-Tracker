@@ -1,3 +1,7 @@
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Pages/AddAccountPopup.xaml.cs
+// Purpose: Contains code-behind for a MAUI page or popup.
+
 using System;
 using System.Globalization;
 using CommunityToolkit.Maui.Views;
@@ -44,3 +48,4 @@ namespace PersonalFinanceTracker.Popups
         }
     }
 }
+

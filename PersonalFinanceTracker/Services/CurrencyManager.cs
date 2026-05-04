@@ -1,4 +1,8 @@
-﻿using System.Globalization;
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Services/CurrencyManager.cs
+// Purpose: Provides an application service shared across repositories and page models.
+
+using System.Globalization;
 using System.Threading;                 
 using Microsoft.Maui.ApplicationModel; 
 
@@ -96,3 +100,4 @@ namespace PersonalFinanceTracker.Services
         }
     }
 }
+

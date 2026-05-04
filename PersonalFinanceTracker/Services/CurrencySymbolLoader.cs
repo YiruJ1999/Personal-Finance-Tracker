@@ -1,4 +1,8 @@
-﻿// Services/CurrencySymbolLoader.cs
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Services/CurrencySymbolLoader.cs
+// Purpose: Provides an application service shared across repositories and page models.
+
+// Services/CurrencySymbolLoader.cs
 // Requires: using System.Text.Json; using System.Text.Json.Nodes;
 
 using System.Text.Json.Nodes;
@@ -47,3 +51,4 @@ namespace PersonalFinanceTracker.Services
         }
     }
 }
+

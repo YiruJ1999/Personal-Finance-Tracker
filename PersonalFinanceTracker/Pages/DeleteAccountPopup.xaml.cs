@@ -1,3 +1,7 @@
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Pages/DeleteAccountPopup.xaml.cs
+// Purpose: Contains code-behind for a MAUI page or popup.
+
 using System;
 using CommunityToolkit.Maui.Views;
 using PersonalFinanceTracker.Resources.Strings;
@@ -42,3 +46,4 @@ namespace PersonalFinanceTracker.Popups
         }
     }
 }
+

@@ -1,3 +1,7 @@
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Pages/PersonalInfoPage.xaml.cs
+// Purpose: Contains code-behind for a MAUI page or popup.
+
 using PersonalFinanceTracker.PageModels;
 using PersonalFinanceTracker.Resources.Strings;
 
@@ -68,3 +72,4 @@ public partial class PersonalInfoPage : ContentPage
             AppResources.Dialog_OK);
     }
 }
+

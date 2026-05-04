@@ -1,3 +1,7 @@
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Pages/DeleteRecordPopup.xaml.cs
+// Purpose: Contains code-behind for a MAUI page or popup.
+
 using CommunityToolkit.Maui.Views;
 using PersonalFinanceTracker.Resources.Strings;
 
@@ -29,3 +33,4 @@ public partial class DeleteRecordPopup : Popup
     // User confirmed deletion
     private void OnDeleteClicked(object? sender, EventArgs e) => Close(true);
 }
+

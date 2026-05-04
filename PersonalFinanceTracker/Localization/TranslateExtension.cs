@@ -1,4 +1,8 @@
-﻿using Microsoft.Maui.Controls;
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/Localization/TranslateExtension.cs
+// Purpose: Connects XAML views to localized RESX resources.
+
+using Microsoft.Maui.Controls;
 using System;
 using System.ComponentModel;
 using PersonalFinanceTracker.Resources.Strings;
@@ -61,3 +65,4 @@ namespace PersonalFinanceTracker.Localization
         }
     }
 }
+

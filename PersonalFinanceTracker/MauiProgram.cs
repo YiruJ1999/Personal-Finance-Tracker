@@ -1,4 +1,8 @@
-﻿using CommunityToolkit.Maui;
+﻿// Personal Finance Tracker
+// File: PersonalFinanceTracker/MauiProgram.cs
+// Purpose: Contains application source code for Personal Finance Tracker.
+
+using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
 using Syncfusion.Maui.Toolkit.Hosting;
 using Syncfusion.Maui.Core.Hosting;
@@ -87,3 +91,4 @@ namespace PersonalFinanceTracker
         }
     }
 }
+

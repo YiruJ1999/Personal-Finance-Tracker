@@ -1,4 +1,9 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Personal Finance Tracker
+  File: PersonalFinanceTracker/Pages/AccountPage.xaml
+  Purpose: Defines a user-facing MAUI page or popup layout.
+-->
 <!-- Accounts overview & management. Teal-themed. -->
 <ContentPage
     x:Class="PersonalFinanceTracker.Pages.AccountPage"
@@ -154,3 +159,5 @@
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>
+
+
